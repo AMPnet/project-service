@@ -1,6 +1,5 @@
-package com.ampnet.projectservice.service.impl
+package com.ampnet.projectservice.grpc.mailservice
 
-import com.ampnet.projectservice.service.MailService
 import com.ampnet.mailservice.proto.DepositInfoRequest
 import com.ampnet.mailservice.proto.DepositRequest
 import com.ampnet.mailservice.proto.Empty

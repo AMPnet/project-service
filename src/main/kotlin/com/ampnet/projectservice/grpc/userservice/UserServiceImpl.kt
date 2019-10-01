@@ -1,8 +1,7 @@
-package com.ampnet.projectservice.service.impl
+package com.ampnet.projectservice.grpc.userservice
 
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.GrpcException
-import com.ampnet.projectservice.service.UserService
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc

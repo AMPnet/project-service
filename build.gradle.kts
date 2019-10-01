@@ -94,7 +94,7 @@ jib {
     val dockerUsername: String = System.getenv("DOCKER_USERNAME") ?: "DOCKER_USERNAME"
     val dockerPassword: String = System.getenv("DOCKER_PASSWORD") ?: "DOCKER_PASSWORD"
     to {
-        image = "ampnet/ampnet-wallet-service:$version"
+        image = "ampnet/ampnet-project-service:$version"
         auth {
             username = dockerUsername
             password = dockerPassword
@@ -115,14 +115,14 @@ tasks.jacocoTestReport {
     }
     sourceDirectories.setFrom(listOf(file("${project.projectDir}/src/main/kotlin")))
     classDirectories.setFrom(fileTree("$buildDir/classes/kotlin/main").apply {
-        exclude("**/model/**", "**/pojo/**", "com/ampnet/walletservice/grpc/**")
+        exclude("**/model/**", "**/pojo/**", "com/ampnet/projectservice/grpc/**")
     })
     dependsOn(tasks.test)
 }
 tasks.jacocoTestCoverageVerification {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
-            exclude("com/ampnet/*/proto/**", "com/ampnet/walletservice/grpc/**")
+            exclude("com/ampnet/*/proto/**", "com/ampnet/projectservice/grpc/**")
         }
     )
     violationRules {

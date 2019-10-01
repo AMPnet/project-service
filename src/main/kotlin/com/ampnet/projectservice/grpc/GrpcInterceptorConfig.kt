@@ -1,4 +1,4 @@
-package com.ampnet.projectservice.config.grpc
+package com.ampnet.projectservice.grpc
 
 import net.devh.boot.grpc.client.interceptor.GlobalClientInterceptorConfigurer
 import org.springframework.context.annotation.Bean

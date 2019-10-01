@@ -18,8 +18,8 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.CloudStorageService
-import com.ampnet.projectservice.service.MailService
-import com.ampnet.projectservice.service.UserService
+import com.ampnet.projectservice.grpc.mailservice.MailService
+import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue

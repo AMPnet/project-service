@@ -1,4 +1,4 @@
-package com.ampnet.projectservice.service
+package com.ampnet.projectservice.grpc.userservice
 
 import com.ampnet.userservice.proto.UserResponse
 import java.util.UUID

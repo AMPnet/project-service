@@ -1,4 +1,4 @@
-package com.ampnet.projectservice.config.grpc
+package com.ampnet.projectservice.grpc
 
 import io.grpc.CallOptions
 import io.grpc.Channel

@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.config
 
-import com.ampnet.projectservice.service.UserService
+import com.ampnet.projectservice.grpc.userservice.UserService
 import org.mockito.Mockito
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

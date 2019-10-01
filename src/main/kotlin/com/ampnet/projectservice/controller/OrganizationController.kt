@@ -10,7 +10,7 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocume
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
-import com.ampnet.projectservice.service.UserService
+import com.ampnet.projectservice.grpc.userservice.UserService
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

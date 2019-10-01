@@ -1,4 +1,4 @@
-package com.ampnet.projectservice.service
+package com.ampnet.projectservice.grpc.mailservice
 
 import java.util.UUID
 
