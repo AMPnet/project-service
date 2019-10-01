@@ -23,10 +23,8 @@ import com.ampnet.projectservice.service.UserService
 import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.restdocs.RestDocumentationContextProvider
@@ -100,9 +98,9 @@ abstract class ControllerTestBase : TestBase() {
         assert(response.errCode == expectedErrorCode)
     }
 
-
     protected fun createOrganization(name: String, userUuid: UUID): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()
+        organization.uuid = UUID.randomUUID()
         organization.name = name
         organization.legalInfo = "some legal info"
         organization.createdAt = ZonedDateTime.now()
@@ -112,10 +110,10 @@ abstract class ControllerTestBase : TestBase() {
         return organizationRepository.save(organization)
     }
 
-    protected fun addUserToOrganization(userUuid: UUID, organizationId: Int, role: OrganizationRoleType) {
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.userUuid = userUuid
-        membership.organizationId = organizationId
+        membership.organizationUuid = organizationUuid
         membership.role = roleRepository.getOne(role.id)
         membership.createdAt = ZonedDateTime.now()
         membershipRepository.save(membership)
@@ -133,6 +131,7 @@ abstract class ControllerTestBase : TestBase() {
         maxPerUser: Long = 10_000
     ): Project {
         val project = Project::class.java.newInstance()
+        project.uuid = UUID.randomUUID()
         project.organization = organization
         project.name = name
         project.description = "description"
@@ -183,22 +182,22 @@ abstract class ControllerTestBase : TestBase() {
                     .setEnabled(enabled)
                     .build()
 
-    protected fun createProjectRequest(organizationId: Int, name: String): ProjectRequest {
+    protected fun createProjectRequest(organizationUuid: UUID, name: String): ProjectRequest {
         val time = ZonedDateTime.now()
         return ProjectRequest(
-                organizationId,
-                name,
-                "description",
-                "location",
-                "locationText",
-                "1%-100%",
-                time,
-                time.plusDays(30),
-                1_000_000,
-                Currency.EUR,
-                1,
-                1_000_000,
-                true
+            organizationUuid,
+            name,
+            "description",
+            "location",
+            "locationText",
+            "1%-100%",
+            time,
+            time.plusDays(30),
+            1_000_000,
+            Currency.EUR,
+            1,
+            1_000_000,
+            true
         )
     }
 

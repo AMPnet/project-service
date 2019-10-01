@@ -40,16 +40,20 @@ class OrganizationServiceImpl(
             throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_NAME,
                     "Organization with name: ${serviceRequest.name} already exists")
         }
-
-        val organization = Organization::class.java.getConstructor().newInstance()
-        organization.name = serviceRequest.name
-        organization.createdByUserUuid = serviceRequest.ownerUuid
-        organization.legalInfo = serviceRequest.legalInfo
-        organization.approved = false
-        organization.createdAt = ZonedDateTime.now()
-
+        val organization = Organization(
+            UUID.randomUUID(),
+            serviceRequest.name,
+            serviceRequest.legalInfo,
+            serviceRequest.ownerUuid,
+            ZonedDateTime.now(),
+            null,
+            false,
+            null,
+            null,
+            null
+        )
         val savedOrganization = organizationRepository.save(organization)
-        addUserToOrganization(serviceRequest.ownerUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+        addUserToOrganization(serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
 
         logger.info { "Created organization: ${organization.name}" }
 
@@ -62,8 +66,8 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findOrganizationById(id: Int): Organization? {
-        return ServiceUtils.wrapOptional(organizationRepository.findByIdWithDocuments(id))
+    override fun findOrganizationById(organizationUuid: UUID): Organization? {
+        return ServiceUtils.wrapOptional(organizationRepository.findByIdWithDocuments(organizationUuid))
     }
 
     @Transactional(readOnly = true)
@@ -72,25 +76,25 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getOrganizationMemberships(organizationId: Int): List<OrganizationMembership> {
-        return membershipRepository.findByOrganizationId(organizationId)
+    override fun getOrganizationMemberships(organizationUuid: UUID): List<OrganizationMembership> {
+        return membershipRepository.findByOrganizationUuid(organizationUuid)
     }
 
     @Transactional
     override fun addUserToOrganization(
         userUuid: UUID,
-        organizationId: Int,
+        organizationUuid: UUID,
         role: OrganizationRoleType
     ): OrganizationMembership {
         // user can have only one membership(role) per one organization
-        membershipRepository.findByOrganizationIdAndUserUuid(organizationId, userUuid).ifPresent {
+        membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
             throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_USER,
-                    "User ${it.userUuid} is already a member of this organization ${it.organizationId}")
+                    "User ${it.userUuid} is already a member of this organization ${it.organizationUuid}")
         }
-        logger.debug { "Adding user: $userUuid to organization: $organizationId" }
+        logger.debug { "Adding user: $userUuid to organization: $organizationUuid" }
 
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
-        membership.organizationId = organizationId
+        membership.organizationUuid = organizationUuid
         membership.userUuid = userUuid
         membership.role = getRole(role)
         membership.createdAt = ZonedDateTime.now()
@@ -98,24 +102,24 @@ class OrganizationServiceImpl(
     }
 
     @Transactional
-    override fun removeUserFromOrganization(userUuid: UUID, organizationId: Int) {
-        membershipRepository.findByOrganizationIdAndUserUuid(organizationId, userUuid).ifPresent {
-            logger.debug { "Removing user: $userUuid from organization: $organizationId" }
+    override fun removeUserFromOrganization(userUuid: UUID, organizationUuid: UUID) {
+        membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
+            logger.debug { "Removing user: $userUuid from organization: $organizationUuid" }
             membershipRepository.delete(it)
         }
     }
 
     @Transactional
-    override fun addDocument(organizationId: Int, request: DocumentSaveRequest): Document {
-        val organization = getOrganization(organizationId)
+    override fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document {
+        val organization = getOrganization(organizationUuid)
         val document = storageService.saveDocument(request)
         addDocumentToOrganization(organization, document)
         return document
     }
 
     @Transactional
-    override fun removeDocument(organizationId: Int, documentId: Int) {
-        val organization = getOrganization(organizationId)
+    override fun removeDocument(organizationUuid: UUID, documentId: Int) {
+        val organization = getOrganization(organizationUuid)
         val storedDocuments = organization.documents.orEmpty().toMutableList()
         storedDocuments.firstOrNull { it.id == documentId }.let {
             storedDocuments.remove(it)
@@ -124,17 +128,17 @@ class OrganizationServiceImpl(
         }
     }
 
-    private fun getOrganization(organizationId: Int): Organization =
-            findOrganizationById(organizationId)
+    private fun getOrganization(organizationUuid: UUID): Organization =
+            findOrganizationById(organizationUuid)
                     ?: throw ResourceNotFoundException(ErrorCode.ORG_MISSING,
-                            "Missing organization with id: $organizationId")
+                            "Missing organization with uuid: $organizationUuid")
 
     private fun addDocumentToOrganization(organization: Organization, document: Document) {
         val documents = organization.documents.orEmpty().toMutableList()
         documents += document
         organization.documents = documents
         organizationRepository.save(organization)
-        logger.debug { "Add document: ${document.name} to organization: ${organization.id}" }
+        logger.debug { "Add document: ${document.name} to organization: ${organization.uuid}" }
     }
 
     private fun getRole(role: OrganizationRoleType): Role {

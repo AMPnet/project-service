@@ -42,11 +42,11 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added as admin") {
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("User has admin role") {
-            verifyUserMembership(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            verifyUserMembership(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
     }
 
@@ -56,11 +56,11 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added to organization as member") {
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User has member role") {
-            verifyUserMembership(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            verifyUserMembership(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
     }
 
@@ -70,12 +70,12 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added to organization as member") {
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("Service will throw an exception for adding second role to the user in the same organization") {
             assertThrows<ResourceAlreadyExistsException> {
-                organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+                organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
             }
         }
     }
@@ -86,15 +86,15 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
             testContext.secondOrganization = createOrganization("Second org", userUuid)
 
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
             organizationService.addUserToOrganization(
-                    userUuid, testContext.secondOrganization.id, OrganizationRoleType.ORG_MEMBER)
+                    userUuid, testContext.secondOrganization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User is a member of two organizations") {
             val organizations = organizationService.findAllOrganizationsForUser(userUuid)
             assertThat(organizations).hasSize(2)
-            assertThat(organizations.map { it.id }).contains(organization.id, testContext.secondOrganization.id)
+            assertThat(organizations.map { it.uuid }).contains(organization.uuid, testContext.secondOrganization.uuid)
         }
     }
 
@@ -105,9 +105,9 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service returns organization with document") {
-            val organizationWithDocument = organizationService.findOrganizationById(organization.id)
+            val organizationWithDocument = organizationService.findOrganizationById(organization.uuid)
                     ?: fail("Organization must not be null")
-            assertThat(organizationWithDocument.id).isEqualTo(organization.id)
+            assertThat(organizationWithDocument.uuid).isEqualTo(organization.uuid)
             assertThat(organizationWithDocument.documents).hasSize(1)
             val document = organizationWithDocument.documents?.first() ?: fail("Organization must have one document")
             verifyDocument(document, testContext.document)
@@ -123,9 +123,9 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service returns organization with documents") {
-            val organizationWithDocument = organizationService.findOrganizationById(organization.id)
+            val organizationWithDocument = organizationService.findOrganizationById(organization.uuid)
                     ?: fail("Organization must not be null")
-            assertThat(organizationWithDocument.id).isEqualTo(organization.id)
+            assertThat(organizationWithDocument.uuid).isEqualTo(organization.uuid)
             assertThat(organizationWithDocument.documents).hasSize(3)
             assertThat(organizationWithDocument.documents?.map { it.link })
                     .containsAll(listOf("link1", "link2", "link3"))
@@ -137,7 +137,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         verify("Service will throw an exception that organization is missing") {
             val request = DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid)
             val exception = assertThrows<ResourceNotFoundException> {
-                organizationService.addDocument(0, request)
+                organizationService.addDocument(UUID.randomUUID(), request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_MISSING)
         }
@@ -158,7 +158,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will append new document") {
-            val document = organizationService.addDocument(organization.id, testContext.documentSaveRequest)
+            val document = organizationService.addDocument(organization.uuid, testContext.documentSaveRequest)
             assertThat(document.id).isNotNull()
             assertThat(document.name).isEqualTo(testContext.documentSaveRequest.name)
             assertThat(document.size).isEqualTo(testContext.documentSaveRequest.size)
@@ -169,7 +169,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             assertThat(document.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
         verify("Organization has 3 documents") {
-            val organizationWithDocuments = organizationService.findOrganizationById(organization.id)
+            val organizationWithDocuments = organizationService.findOrganizationById(organization.uuid)
                     ?: fail("Organization documents must not be null")
             assertThat(organizationWithDocuments.documents).hasSize(3)
             assertThat(organizationWithDocuments.documents?.map { it.link }).contains(testContext.documentLink)
@@ -180,7 +180,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     fun mustNotBeAbleToRemoveOrganizationDocumentForNonExistingOrganization() {
         verify("Service will throw an exception for non existing organization") {
             val exception = assertThrows<ResourceNotFoundException> {
-                organizationService.removeDocument(0, 0)
+                organizationService.removeDocument(UUID.randomUUID(), 0)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_MISSING)
         }
@@ -201,18 +201,18 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToGetMembersOfOrganization() {
         suppose("There are users in organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
             organizationService.addUserToOrganization(
-                    testContext.member, organization.id, OrganizationRoleType.ORG_MEMBER)
+                    testContext.member, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
         suppose("There is another organization with members") {
             val additionalOrganization = createOrganization("Second organization", userUuid)
             organizationService.addUserToOrganization(
-                    UUID.randomUUID(), additionalOrganization.id, OrganizationRoleType.ORG_MEMBER)
+                    UUID.randomUUID(), additionalOrganization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("Service will list all members of organization") {
-            val memberships = organizationService.getOrganizationMemberships(organization.id)
+            val memberships = organizationService.getOrganizationMemberships(organization.uuid)
             assertThat(memberships).hasSize(2)
             assertThat(memberships.map { it.userUuid }).containsAll(listOf(userUuid, testContext.member))
         }
@@ -222,14 +222,14 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToRemoveUserFromOrganization() {
         suppose("There are users in organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User can be removed from organization") {
-            organizationService.removeUserFromOrganization(userUuid, organization.id)
+            organizationService.removeUserFromOrganization(userUuid, organization.uuid)
         }
         verify("User is no longer member of organization") {
-            val memberships = membershipRepository.findByOrganizationId(organization.id)
+            val memberships = membershipRepository.findByOrganizationUuid(organization.uuid)
             assertThat(memberships).hasSize(0)
         }
     }
@@ -244,12 +244,12 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         assertThat(receivedDocument.createdByUserUuid).isEqualTo(savedDocument.createdByUserUuid)
     }
 
-    private fun verifyUserMembership(userUuid: UUID, organizationId: Int, role: OrganizationRoleType) {
+    private fun verifyUserMembership(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
         val memberships = membershipRepository.findByUserUuid(userUuid)
         assertThat(memberships).hasSize(1)
         val membership = memberships[0]
         assertThat(membership.userUuid).isEqualTo(userUuid)
-        assertThat(membership.organizationId).isEqualTo(organizationId)
+        assertThat(membership.organizationUuid).isEqualTo(organizationUuid)
         assertThat(OrganizationRoleType.fromInt(membership.role.id)).isEqualTo(role)
         assertThat(membership.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
     }

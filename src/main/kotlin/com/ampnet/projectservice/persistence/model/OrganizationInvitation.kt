@@ -20,7 +20,7 @@ data class OrganizationInvitation(
     val id: Int,
 
     @Column(nullable = false)
-    var organizationId: Int,
+    var organizationUuid: UUID,
 
     @Column(nullable = false)
     var email: String,
@@ -36,6 +36,6 @@ data class OrganizationInvitation(
     var createdAt: ZonedDateTime,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizationId", insertable = false, updatable = false)
+    @JoinColumn(name = "organizationUuid", insertable = false, updatable = false)
     var organization: Organization?
 )

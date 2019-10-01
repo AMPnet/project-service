@@ -8,9 +8,9 @@ import java.util.UUID
 
 interface OrganizationInviteService {
     fun sendInvitation(request: OrganizationInviteServiceRequest): OrganizationInvitation
-    fun revokeInvitation(organizationId: Int, email: String)
+    fun revokeInvitation(organizationUuid: UUID, email: String)
     fun getAllInvitationsForUser(email: String): List<OrganizationInvitation>
     fun answerToInvitation(request: OrganizationInviteAnswerRequest)
-    fun followOrganization(userUuid: UUID, organizationId: Int): OrganizationFollower
-    fun unfollowOrganization(userUuid: UUID, organizationId: Int)
+    fun followOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationFollower
+    fun unfollowOrganization(userUuid: UUID, organizationUuid: UUID)
 }

@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class ProjectControllerTest : ControllerTestBase() {
 
@@ -42,7 +43,6 @@ class ProjectControllerTest : ControllerTestBase() {
         testContext = TestContext()
     }
 
-
     @Test
     fun mustBeAbleToGetSpecificProject() {
         suppose("Project exists") {
@@ -50,12 +50,12 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Project response is valid") {
-            val result = mockMvc.perform(get("/public/project/${testContext.project.id}"))
+            val result = mockMvc.perform(get("/public/project/${testContext.project.uuid}"))
                 .andExpect(status().isOk)
                 .andReturn()
 
             val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.id).isEqualTo(testContext.project.id)
+            assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
             assertThat(projectResponse.location).isEqualTo(testContext.project.location)
@@ -82,7 +82,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return forbidden for missing organization membership") {
-            val request = createProjectRequest(0, "Error project")
+            val request = createProjectRequest(UUID.randomUUID(), "Error project")
             mockMvc.perform(
                     post(projectPath)
                             .content(objectMapper.writeValueAsString(request))
@@ -95,7 +95,7 @@ class ProjectControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustReturnErrorForUserWithoutOrganizationMembership() {
         verify("Controller will forbidden for user without membership to create project") {
-            val request = createProjectRequest(organization.id, "Error project")
+            val request = createProjectRequest(organization.uuid, "Error project")
             mockMvc.perform(
                     post(projectPath)
                             .content(objectMapper.writeValueAsString(request))
@@ -109,11 +109,11 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnErrorForUserOrganizationMembership() {
         suppose("User is a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("Controller will return forbidden for missing organization membership") {
-            val request = createProjectRequest(organization.id, "Error project")
+            val request = createProjectRequest(organization.uuid, "Error project")
             mockMvc.perform(
                     post(projectPath)
                             .content(objectMapper.writeValueAsString(request))
@@ -127,11 +127,11 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToCreateProject() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("Controller will return create project") {
-            testContext.projectRequest = createProjectRequest(organization.id, "Das project")
+            testContext.projectRequest = createProjectRequest(organization.uuid, "Das project")
             val result = mockMvc.perform(
                     post(projectPath)
                             .content(objectMapper.writeValueAsString(testContext.projectRequest))
@@ -140,7 +140,7 @@ class ProjectControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.id).isNotNull()
+            assertThat(projectResponse.uuid).isNotNull()
             assertThat(projectResponse.name).isEqualTo(testContext.projectRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectRequest.description)
             assertThat(projectResponse.location).isEqualTo(testContext.projectRequest.location)
@@ -157,10 +157,10 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.gallery).isNullOrEmpty()
             assertThat(projectResponse.news).isNullOrEmpty()
 
-            testContext.projectId = projectResponse.id
+            testContext.projectUuid = projectResponse.uuid
         }
         verify("Project is stored in database") {
-            val optionalProject = projectRepository.findByIdWithOrganization(testContext.projectId)
+            val optionalProject = projectRepository.findByIdWithOrganization(testContext.projectUuid)
             assertThat(optionalProject).isPresent
         }
     }
@@ -170,7 +170,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToUpdateProject() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
@@ -180,14 +180,14 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest =
                     ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false)
             val result = mockMvc.perform(
-                    post("$projectPath/${testContext.project.id}")
+                    post("$projectPath/${testContext.project.uuid}")
                             .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk)
                     .andReturn()
 
             val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.id).isEqualTo(testContext.project.id)
+            assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectUpdateRequest.description)
             assertThat(projectResponse.location).isEqualTo(testContext.projectUpdateRequest.location)
@@ -197,7 +197,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
         }
         verify("Project is updated") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             val updatedProject = optionalProject.get()
             assertThat(updatedProject.name).isEqualTo(testContext.projectUpdateRequest.name)
@@ -227,8 +227,8 @@ class ProjectControllerTest : ControllerTestBase() {
 
             val projectsResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectsResponse.projects).hasSize(2)
-            assertThat(projectsResponse.projects.map { it.id })
-                    .containsAll(listOf(testContext.project.id, testContext.secondProject.id))
+            assertThat(projectsResponse.projects.map { it.uuid })
+                    .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
         }
     }
 
@@ -246,15 +246,15 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return all projects for specified organization") {
-            val result = mockMvc.perform(get("$projectPath/organization/${organization.id}"))
+            val result = mockMvc.perform(get("$projectPath/organization/${organization.uuid}"))
                     .andExpect(status().isOk)
                     .andReturn()
 
             val projectListResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectListResponse.projects).hasSize(3)
-            assertThat(projectListResponse.projects.map { it.id }).doesNotContain(testContext.secondProject.id)
+            assertThat(projectListResponse.projects.map { it.uuid }).doesNotContain(testContext.secondProject.uuid)
 
-            val filterResponse = projectListResponse.projects.filter { it.id == testContext.project.id }
+            val filterResponse = projectListResponse.projects.filter { it.uuid == testContext.project.uuid }
             assertThat(filterResponse).hasSize(1)
             val projectResponse = filterResponse.first()
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
@@ -280,7 +280,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnForbiddenIfUserIsMissingOrgPrivileges() {
         suppose("User is a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
@@ -290,7 +290,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest =
                     ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false)
             mockMvc.perform(
-                    post("$projectPath/${testContext.project.id}")
+                    post("$projectPath/${testContext.project.uuid}")
                             .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden)
@@ -304,7 +304,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest =
                     ProjectUpdateRequest("new name", "description", null, null, null, false)
             val response = mockMvc.perform(
-                    post("$projectPath/0")
+                    post("$projectPath/${UUID.randomUUID()}")
                             .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andReturn()
@@ -320,7 +320,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store document") {
             testContext.multipartFile = MockMultipartFile("file", "test.txt",
@@ -333,7 +333,7 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("User can add document") {
             val result = mockMvc.perform(
-                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.id}/document")
+                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/document")
                             .file(testContext.multipartFile))
                     .andExpect(status().isOk)
                     .andReturn()
@@ -346,7 +346,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(documentResponse.link).isEqualTo(testContext.documentLink)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.id)
+            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             val projectDocuments = optionalProject.get().documents ?: fail("Project documents must not be null")
             assertThat(projectDocuments).hasSize(1)
@@ -367,7 +367,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Project has some documents") {
             testContext.document =
@@ -377,11 +377,11 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("User admin can delete document") {
             mockMvc.perform(
-                    delete("$projectPath/${testContext.project.id}/document/${testContext.document.id}"))
+                    delete("$projectPath/${testContext.project.uuid}/document/${testContext.document.id}"))
                     .andExpect(status().isOk)
         }
         verify("Document is deleted") {
-            val project = projectRepository.findByIdWithAllData(testContext.project.id)
+            val project = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(project).isPresent
             val documents = project.get().documents
             assertThat(documents).hasSize(1).doesNotContain(testContext.document)
@@ -396,7 +396,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store image") {
             testContext.multipartFile = MockMultipartFile("image", "image.png",
@@ -409,12 +409,12 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("User can add main image") {
             mockMvc.perform(
-                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.id}/image/main")
+                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/main")
                             .file(testContext.multipartFile))
                     .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.id)
+            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().mainImage).isEqualTo(testContext.imageLink)
         }
@@ -428,7 +428,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store image") {
             testContext.multipartFile = MockMultipartFile("image", "image.png",
@@ -441,12 +441,12 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("User can add main image") {
             mockMvc.perform(
-                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.id}/image/gallery")
+                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/gallery")
                             .file(testContext.multipartFile))
                     .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.id)
+            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().gallery).contains(testContext.imageLink)
         }
@@ -460,7 +460,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Project has gallery images") {
             testContext.project.gallery = listOf("image-link-1", "image-link-2", "image-link-3")
@@ -470,19 +470,18 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can add main image") {
             val request = ImageLinkListRequest(listOf("image-link-1"))
             mockMvc.perform(
-                    delete("$projectPath/${testContext.project.id}/image/gallery")
+                    delete("$projectPath/${testContext.project.uuid}/image/gallery")
                             .contentType(MediaType.APPLICATION_JSON_UTF8)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.id)
+            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().gallery).contains("image-link-2", "image-link-3")
             assertThat(optionalProject.get().gallery).doesNotContain("image-link-1")
         }
     }
-
 
     @Test
     @WithMockCrowdfoundUser
@@ -492,19 +491,19 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("User can add news link") {
             val request = LinkRequest(testContext.newsLink)
             mockMvc.perform(
-                    post("$projectPath/${testContext.project.id}/news")
+                    post("$projectPath/${testContext.project.uuid}/news")
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk)
         }
         verify("News link is added to project") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().newsLinks).hasSize(1).contains(testContext.newsLink)
         }
@@ -518,7 +517,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Project has news links") {
             testContext.project.newsLinks = listOf(testContext.newsLink, "link-2", "link-3")
@@ -528,13 +527,13 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can remove news link") {
             val request = LinkRequest(testContext.newsLink)
             mockMvc.perform(
-                    delete("$projectPath/${testContext.project.id}/news")
+                    delete("$projectPath/${testContext.project.uuid}/news")
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk)
         }
         verify("News link is removed to project") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().newsLinks).hasSize(2).doesNotContain(testContext.newsLink)
         }
@@ -550,6 +549,6 @@ class ProjectControllerTest : ControllerTestBase() {
         val documentLink = "link"
         val imageLink = "image-link"
         val newsLink = "news-link"
-        var projectId: Int = -1
+        lateinit var projectUuid: UUID
     }
 }

@@ -43,7 +43,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Project is created") {
-            val optionalProject = projectRepository.findByIdWithOrganization(testContext.project.id)
+            val optionalProject = projectRepository.findByIdWithOrganization(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             val project = optionalProject.get()
             val request = testContext.createProjectRequest
@@ -59,7 +59,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.minPerUser).isEqualTo(request.minPerUser)
             assertThat(project.maxPerUser).isEqualTo(request.maxPerUser)
             assertThat(project.createdByUserUuid).isEqualTo(request.createdByUserUuid)
-            assertThat(project.organization.id).isEqualTo(organization.id)
+            assertThat(project.organization.uuid).isEqualTo(organization.uuid)
             assertThat(project.active).isEqualTo(request.active)
             assertThat(project.mainImage.isNullOrEmpty()).isTrue()
             assertThat(project.gallery.isNullOrEmpty()).isTrue()
@@ -125,7 +125,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Image is stored in project") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().mainImage).isEqualTo(testContext.imageLink)
         }
@@ -147,7 +147,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("The project gallery contains added images") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().gallery).containsAll(testContext.gallery)
         }
@@ -174,7 +174,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Gallery has additional image") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             val gallery = optionalProject.get().gallery
             assertThat(gallery).containsAll(testContext.gallery)
@@ -199,7 +199,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Gallery does not have deleted image") {
-            val optionalProject = projectRepository.findById(testContext.project.id)
+            val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             val gallery = optionalProject.get().gallery
             assertThat(gallery).doesNotContain("link-1", "link-3")
@@ -341,7 +341,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
             projectService.addNews(testContext.project, newsLink)
         }
         verify("News is added to project") {
-            val project = projectService.getProjectById(testContext.project.id) ?: fail("Missing project")
+            val project = projectService.getProjectById(testContext.project.uuid) ?: fail("Missing project")
             assertThat(project.newsLinks).hasSize(1).contains(testContext.news.first())
         }
     }
@@ -363,7 +363,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
             projectService.removeNews(testContext.project, testContext.news.first())
         }
         verify("News is removed to project") {
-            val project = projectService.getProjectById(testContext.project.id) ?: fail("Missing project")
+            val project = projectService.getProjectById(testContext.project.uuid) ?: fail("Missing project")
             assertThat(project.newsLinks).hasSize(2).doesNotContain(testContext.news.first())
         }
     }

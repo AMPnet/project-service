@@ -11,13 +11,13 @@ import java.util.UUID
 interface OrganizationService {
     fun createOrganization(serviceRequest: OrganizationServiceRequest): Organization
     fun getAllOrganizations(): List<Organization>
-    fun findOrganizationById(id: Int): Organization?
+    fun findOrganizationById(organizationUuid: UUID): Organization?
     fun findAllOrganizationsForUser(userUuid: UUID): List<Organization>
 
-    fun getOrganizationMemberships(organizationId: Int): List<OrganizationMembership>
-    fun addUserToOrganization(userUuid: UUID, organizationId: Int, role: OrganizationRoleType): OrganizationMembership
-    fun removeUserFromOrganization(userUuid: UUID, organizationId: Int)
+    fun getOrganizationMemberships(organizationUuid: UUID): List<OrganizationMembership>
+    fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType): OrganizationMembership
+    fun removeUserFromOrganization(userUuid: UUID, organizationUuid: UUID)
 
-    fun addDocument(organizationId: Int, request: DocumentSaveRequest): Document
-    fun removeDocument(organizationId: Int, documentId: Int)
+    fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document
+    fun removeDocument(organizationUuid: UUID, documentId: Int)
 }

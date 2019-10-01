@@ -1,6 +1,5 @@
 package com.ampnet.projectservice.config.auth
 
-import com.ampnet.projectservice.config.auth.JwtAuthToken
 import mu.KLogging
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component

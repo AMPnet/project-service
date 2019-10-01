@@ -15,9 +15,7 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
 import com.ampnet.projectservice.service.impl.MailServiceImpl
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.api.fail
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -57,6 +55,7 @@ abstract class JpaServiceTestBase : TestBase() {
 
     protected fun createOrganization(name: String, createdByUuid: UUID): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()
+        organization.uuid = UUID.randomUUID()
         organization.name = name
         organization.legalInfo = "some legal info"
         organization.createdAt = ZonedDateTime.now()
@@ -78,6 +77,7 @@ abstract class JpaServiceTestBase : TestBase() {
         maxPerUser: Long = 10_000
     ): Project {
         val project = Project::class.java.newInstance()
+        project.uuid = UUID.randomUUID()
         project.organization = organization
         project.name = name
         project.description = "description"

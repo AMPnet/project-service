@@ -14,6 +14,7 @@ import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class ProjectServiceImpl(
@@ -42,18 +43,18 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectById(id: Int): Project? {
+    override fun getProjectById(id: UUID): Project? {
         return ServiceUtils.wrapOptional(projectRepository.findByIdWithOrganization(id))
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectByIdWithAllData(id: Int): Project? {
+    override fun getProjectByIdWithAllData(id: UUID): Project? {
         return ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectsForOrganization(organizationId: Int): List<Project> {
-        return projectRepository.findAllByOrganizationId(organizationId)
+    override fun getAllProjectsForOrganization(organizationId: UUID): List<Project> {
+        return projectRepository.findAllByOrganizationUuid(organizationId)
     }
 
     @Transactional(readOnly = true)
@@ -159,24 +160,29 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
-    private fun createProjectFromRequest(request: CreateProjectServiceRequest): Project {
-        val project = Project::class.java.newInstance()
-        project.organization = request.organization
-        project.name = request.name
-        project.description = request.description
-        project.location = request.location
-        project.locationText = request.locationText
-        project.returnOnInvestment = request.returnOnInvestment
-        project.startDate = request.startDate
-        project.endDate = request.endDate
-        project.expectedFunding = request.expectedFunding
-        project.currency = request.currency
-        project.minPerUser = request.minPerUser
-        project.maxPerUser = request.maxPerUser
-        project.createdByUserUuid = request.createdByUserUuid
-        project.active = request.active
-        return project
-    }
+    private fun createProjectFromRequest(request: CreateProjectServiceRequest) =
+        Project(
+            UUID.randomUUID(),
+            request.organization,
+            request.name,
+            request.description,
+            request.location,
+            request.locationText,
+            request.returnOnInvestment,
+            request.startDate,
+            request.endDate,
+            request.expectedFunding,
+            request.currency,
+            request.minPerUser,
+            request.maxPerUser,
+            null,
+            null,
+            null,
+            request.createdByUserUuid,
+            ZonedDateTime.now(),
+            request.active,
+            null
+        )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {
         project.gallery = gallery

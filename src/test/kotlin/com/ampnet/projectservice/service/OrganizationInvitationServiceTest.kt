@@ -35,16 +35,16 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationFollowers()
         }
         suppose("User started to follow the organization") {
-            service.followOrganization(userUuid, organization.id)
+            service.followOrganization(userUuid, organization.uuid)
         }
 
         verify("User is following the organization") {
-            val followers = followerRepository.findByOrganizationId(organization.id)
+            val followers = followerRepository.findByOrganizationUuid(organization.uuid)
             assertThat(followers).hasSize(1)
 
             val follower = followers[0]
             assertThat(follower.userUuid).isEqualTo(userUuid)
-            assertThat(follower.organizationId).isEqualTo(organization.id)
+            assertThat(follower.organizationUuid).isEqualTo(organization.uuid)
             assertThat(follower.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
     }
@@ -53,16 +53,16 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     fun userCanUnFollowOrganization() {
         suppose("User is following the organization") {
             databaseCleanerService.deleteAllOrganizationFollowers()
-            service.followOrganization(userUuid, organization.id)
-            val followers = followerRepository.findByOrganizationId(organization.id)
+            service.followOrganization(userUuid, organization.uuid)
+            val followers = followerRepository.findByOrganizationUuid(organization.uuid)
             assertThat(followers).hasSize(1)
         }
         suppose("User un followed the organization") {
-            service.unfollowOrganization(userUuid, organization.id)
+            service.unfollowOrganization(userUuid, organization.uuid)
         }
 
         verify("User is not following the organization") {
-            val followers = followerRepository.findByOrganizationId(organization.id)
+            val followers = followerRepository.findByOrganizationUuid(organization.uuid)
             assertThat(followers).hasSize(0)
         }
     }
@@ -71,21 +71,21 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     fun adminUserCanInviteOtherUserToOrganization() {
         suppose("User is admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationService.addUserToOrganization(userUuid, organization.id, OrganizationRoleType.ORG_ADMIN)
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("The admin can invite user to organization") {
             val request = OrganizationInviteServiceRequest(
-                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.id, userUuid)
+                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid)
             service.sendInvitation(request)
         }
         verify("Invitation is stored in database") {
             val optionalInvitation =
-                    inviteRepository.findByOrganizationIdAndEmail(organization.id, invitedUser)
+                    inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUser)
             assertThat(optionalInvitation).isPresent
             val invitation = optionalInvitation.get()
             assertThat(invitation.email).isEqualTo(invitedUser)
-            assertThat(invitation.organizationId).isEqualTo(organization.id)
+            assertThat(invitation.organizationUuid).isEqualTo(organization.uuid)
             assertThat(invitation.invitedByUserUuid).isEqualTo(userUuid)
             assertThat(OrganizationRoleType.fromInt(invitation.role.id)).isEqualTo(OrganizationRoleType.ORG_MEMBER)
             assertThat(invitation.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -101,13 +101,13 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         suppose("User has organization invite") {
             databaseCleanerService.deleteAllOrganizationInvitations()
             val request = OrganizationInviteServiceRequest(
-                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.id, userUuid)
+                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid)
             service.sendInvitation(request)
         }
 
         verify("Service will throw an error for duplicate user invite to organization") {
             val request = OrganizationInviteServiceRequest(
-                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.id, userUuid)
+                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid)
             assertThrows<ResourceAlreadyExistsException> {
                 service.sendInvitation(request)
             }

@@ -17,7 +17,7 @@ data class OrganizationFollower(
     val id: Int,
 
     @Column(nullable = false)
-    var organizationId: Int,
+    var organizationUuid: UUID,
 
     @Column(nullable = false)
     var userUuid: UUID,

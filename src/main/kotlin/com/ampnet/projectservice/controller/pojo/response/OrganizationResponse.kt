@@ -2,16 +2,17 @@ package com.ampnet.projectservice.controller.pojo.response
 
 import com.ampnet.projectservice.persistence.model.Organization
 import java.time.ZonedDateTime
+import java.util.UUID
 
 data class OrganizationResponse(
-    val id: Int,
+    val uuid: UUID,
     val name: String,
     val createdAt: ZonedDateTime,
     val approved: Boolean,
     val legalInfo: String
 ) {
     constructor(organization: Organization) : this(
-        organization.id,
+        organization.uuid,
         organization.name,
         organization.createdAt,
         organization.approved,
@@ -22,7 +23,7 @@ data class OrganizationResponse(
 data class OrganizationListResponse(val organizations: List<OrganizationResponse>)
 
 data class OrganizationWithDocumentResponse(
-    val id: Int,
+    val uuid: UUID,
     val name: String,
     val createdAt: ZonedDateTime,
     val approved: Boolean,
@@ -30,7 +31,7 @@ data class OrganizationWithDocumentResponse(
     val documents: List<DocumentResponse>
 ) {
     constructor(organization: Organization) : this(
-        organization.id,
+        organization.uuid,
         organization.name,
         organization.createdAt,
         organization.approved,

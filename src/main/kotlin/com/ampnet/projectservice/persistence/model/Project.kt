@@ -10,8 +10,6 @@ import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
@@ -23,11 +21,10 @@ import javax.persistence.Table
 @Table(name = "project")
 data class Project(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    var uuid: UUID,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id")
+    @JoinColumn(name = "organization_uuid")
     var organization: Organization,
 
     @Column(nullable = false)
@@ -86,7 +83,7 @@ data class Project(
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "project_document",
-            joinColumns = [JoinColumn(name = "project_id")],
+            joinColumns = [JoinColumn(name = "project_uuid")],
             inverseJoinColumns = [JoinColumn(name = "document_id")]
     )
     var documents: List<Document>?

@@ -3,9 +3,10 @@ package com.ampnet.projectservice.controller.pojo.response
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.persistence.model.Project
 import java.time.ZonedDateTime
+import java.util.UUID
 
 data class ProjectResponse(
-    val id: Int,
+    val uuid: UUID,
     val name: String,
     val description: String,
     val location: String,
@@ -23,7 +24,7 @@ data class ProjectResponse(
     val active: Boolean
 ) {
     constructor(project: Project) : this(
-        project.id,
+        project.uuid,
         project.name,
         project.description,
         project.location,

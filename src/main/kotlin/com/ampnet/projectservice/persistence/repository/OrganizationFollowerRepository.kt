@@ -6,6 +6,6 @@ import java.util.Optional
 import java.util.UUID
 
 interface OrganizationFollowerRepository : JpaRepository<OrganizationFollower, Int> {
-    fun findByOrganizationId(organizationId: Int): List<OrganizationFollower>
-    fun findByUserUuidAndOrganizationId(userUuid: UUID, organizationId: Int): Optional<OrganizationFollower>
+    fun findByOrganizationUuid(organizationUuid: UUID): List<OrganizationFollower>
+    fun findByUserUuidAndOrganizationUuid(userUuid: UUID, organizationUuid: UUID): Optional<OrganizationFollower>
 }

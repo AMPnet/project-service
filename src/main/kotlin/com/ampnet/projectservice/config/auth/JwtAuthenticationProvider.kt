@@ -1,7 +1,6 @@
 package com.ampnet.projectservice.config.auth
 
 import com.ampnet.projectservice.exception.TokenException
-import com.ampnet.projectservice.config.auth.JwtAuthToken
 import mu.KLogging
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException

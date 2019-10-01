@@ -5,12 +5,13 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import java.util.UUID
 
 interface ProjectService {
     fun createProject(request: CreateProjectServiceRequest): Project
-    fun getProjectById(id: Int): Project?
-    fun getProjectByIdWithAllData(id: Int): Project?
-    fun getAllProjectsForOrganization(organizationId: Int): List<Project>
+    fun getProjectById(id: UUID): Project?
+    fun getProjectByIdWithAllData(id: UUID): Project?
+    fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
     fun getAllProjects(): List<Project>
     fun updateProject(project: Project, request: ProjectUpdateRequest): Project
 

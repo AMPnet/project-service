@@ -2,11 +2,12 @@ package com.ampnet.projectservice.controller.pojo.request
 
 import com.ampnet.projectservice.enums.Currency
 import java.time.ZonedDateTime
+import java.util.UUID
 import javax.validation.constraints.Size
 
 data class ProjectRequest(
 
-    val organizationId: Int,
+    val organizationUuid: UUID,
 
     @Size(max = 255)
     val name: String,

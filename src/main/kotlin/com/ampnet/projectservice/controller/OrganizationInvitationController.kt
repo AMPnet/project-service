@@ -37,61 +37,61 @@ class OrganizationInvitationController(
         return ResponseEntity.ok(OrganizationInvitesListResponse(invites))
     }
 
-    @PostMapping("/invites/me/{organizationId}/accept")
+    @PostMapping("/invites/me/{organizationUuid}/accept")
     @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PWO_ORG_INVITE)")
-    fun acceptOrganizationInvitation(@PathVariable("organizationId") organizationId: Int): ResponseEntity<Unit> {
-        logger.debug { "Received request accept organization invite for organization: $organizationId" }
+    fun acceptOrganizationInvitation(@PathVariable("organizationUuid") organizationUuid: UUID): ResponseEntity<Unit> {
+        logger.debug { "Received request accept organization invite for organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val request = OrganizationInviteAnswerRequest(userPrincipal.uuid, userPrincipal.email, true, organizationId)
+        val request = OrganizationInviteAnswerRequest(userPrincipal.uuid, userPrincipal.email, true, organizationUuid)
         organizationInviteService.answerToInvitation(request)
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/invites/me/{organizationId}/reject")
+    @PostMapping("/invites/me/{organizationUuid}/reject")
     @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PWO_ORG_INVITE)")
-    fun rejectOrganizationInvitation(@PathVariable("organizationId") organizationId: Int): ResponseEntity<Unit> {
-        logger.debug { "Received request reject organization invite for organization: $organizationId" }
+    fun rejectOrganizationInvitation(@PathVariable("organizationUuid") organizationUuid: UUID): ResponseEntity<Unit> {
+        logger.debug { "Received request reject organization invite for organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val request = OrganizationInviteAnswerRequest(userPrincipal.uuid, userPrincipal.email, false, organizationId)
+        val request = OrganizationInviteAnswerRequest(userPrincipal.uuid, userPrincipal.email, false, organizationUuid)
         organizationInviteService.answerToInvitation(request)
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/invites/organization/{id}/invite")
+    @PostMapping("/invites/organization/{uuid}/invite")
     fun inviteToOrganization(
-        @PathVariable("id") id: Int,
+        @PathVariable("uuid") uuid: UUID,
         @RequestBody @Valid request: OrganizationInviteRequest
     ): ResponseEntity<Unit> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to invited user to organization $id by user: ${userPrincipal.email}" }
+        logger.debug { "Received request to invited user to organization $uuid by user: ${userPrincipal.email}" }
 
-        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, id) {
-            val serviceRequest = OrganizationInviteServiceRequest(request, id, userPrincipal.uuid)
+        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
+            val serviceRequest = OrganizationInviteServiceRequest(request, uuid, userPrincipal.uuid)
             organizationInviteService.sendInvitation(serviceRequest)
             Unit
         }
     }
 
-    @PostMapping("/invites/organization/{organizationId}/{revokeEmail}/revoke")
+    @PostMapping("/invites/organization/{organizationUuid}/{revokeEmail}/revoke")
     fun revokeInvitationToOrganization(
-        @PathVariable("organizationId") organizationId: Int,
+        @PathVariable("organizationUuid") organizationUuid: UUID,
         @PathVariable("revokeEmail") revokeEmail: String
     ): ResponseEntity<Unit> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug {
-            "Received request to invited user to organization $organizationId by user: ${userPrincipal.email}"
+            "Received request to invited user to organization $organizationUuid by user: ${userPrincipal.email}"
         }
-        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationId) {
-            organizationInviteService.revokeInvitation(organizationId, revokeEmail)
+        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
+            organizationInviteService.revokeInvitation(organizationUuid, revokeEmail)
         }
     }
 
     private fun <T> ifUserHasPrivilegeWriteUserInOrganizationThenReturn(
         userUuid: UUID,
-        organizationId: Int,
+        organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationService.getOrganizationMemberships(organizationId)
+        organizationService.getOrganizationMemberships(organizationUuid)
                 .find { it.userUuid == userUuid }
                 ?.let { orgMembership ->
                     return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
@@ -102,7 +102,7 @@ class OrganizationInvitationController(
                         ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                     }
                 }
-        logger.info { "User $userUuid is not a member of organization $organizationId" }
+        logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }
 }

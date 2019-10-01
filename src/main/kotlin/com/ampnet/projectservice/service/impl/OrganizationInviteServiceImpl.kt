@@ -38,23 +38,23 @@ class OrganizationInviteServiceImpl(
 
     @Transactional
     override fun sendInvitation(request: OrganizationInviteServiceRequest): OrganizationInvitation {
-        val invitedToOrganization = organizationService.findOrganizationById(request.organizationId)
+        val invitedToOrganization = organizationService.findOrganizationById(request.organizationUuid)
                 ?: throw ResourceNotFoundException(ErrorCode.ORG_MISSING,
-                        "Missing organization with id: ${request.organizationId}")
+                        "Missing organization with id: ${request.organizationUuid}")
 
-        inviteRepository.findByOrganizationIdAndEmail(request.organizationId, request.email).ifPresent {
+        inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
             throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_INVITE,
                     "User is already invited to join organization")
         }
 
         val organizationInvite = OrganizationInvitation::class.java.getConstructor().newInstance()
-        organizationInvite.organizationId = request.organizationId
+        organizationInvite.organizationUuid = request.organizationUuid
         organizationInvite.email = request.email
         organizationInvite.role = getRole(request.roleType)
         organizationInvite.invitedByUserUuid = request.invitedByUserUuid
         organizationInvite.createdAt = ZonedDateTime.now()
 
-        logger.debug { "User: ${request.email} invited to organization: ${request.organizationId}" }
+        logger.debug { "User: ${request.email} invited to organization: ${request.organizationUuid}" }
 
         val savedInvite = inviteRepository.save(organizationInvite)
         sendMailInvitationToJoinOrganization(request.email, invitedToOrganization)
@@ -62,9 +62,9 @@ class OrganizationInviteServiceImpl(
     }
 
     @Transactional
-    override fun revokeInvitation(organizationId: Int, email: String) {
-        inviteRepository.findByOrganizationIdAndEmail(organizationId, email).ifPresent {
-            logger.debug { "Revoked user: $email invitation to organization: $organizationId" }
+    override fun revokeInvitation(organizationUuid: UUID, email: String) {
+        inviteRepository.findByOrganizationUuidAndEmail(organizationUuid, email).ifPresent {
+            logger.debug { "Revoked user: $email invitation to organization: $organizationUuid" }
             inviteRepository.delete(it)
         }
     }
@@ -76,34 +76,36 @@ class OrganizationInviteServiceImpl(
 
     @Transactional
     override fun answerToInvitation(request: OrganizationInviteAnswerRequest) {
-        inviteRepository.findByOrganizationIdAndEmail(request.organizationId, request.email).ifPresent {
+        inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
             if (request.join) {
                 val role = OrganizationRoleType.fromInt(it.role.id)
                         ?: throw ResourceNotFoundException(ErrorCode.USER_ROLE_MISSING,
                                 "Missing role with id: ${it.role.id}")
-                organizationService.addUserToOrganization(request.userUuid, it.organizationId, role)
+                organizationService.addUserToOrganization(request.userUuid, it.organizationUuid, role)
             }
             inviteRepository.delete(it)
             logger.debug { "User: ${request.userUuid} answer = ${request.join} " +
-                "to join organization: ${request.organizationId}" }
+                "to join organization: ${request.organizationUuid}" }
         }
     }
 
     @Transactional
-    override fun followOrganization(userUuid: UUID, organizationId: Int): OrganizationFollower {
-        ServiceUtils.wrapOptional(followerRepository.findByUserUuidAndOrganizationId(userUuid, organizationId))?.let {
+    override fun followOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationFollower {
+        ServiceUtils.wrapOptional(
+            followerRepository.findByUserUuidAndOrganizationUuid(userUuid, organizationUuid))?.let {
             return it
         }
         val follower = OrganizationFollower::class.java.getConstructor().newInstance()
         follower.userUuid = userUuid
-        follower.organizationId = organizationId
+        follower.organizationUuid = organizationUuid
         follower.createdAt = ZonedDateTime.now()
         return followerRepository.save(follower)
     }
 
     @Transactional
-    override fun unfollowOrganization(userUuid: UUID, organizationId: Int) {
-        ServiceUtils.wrapOptional(followerRepository.findByUserUuidAndOrganizationId(userUuid, organizationId))?.let {
+    override fun unfollowOrganization(userUuid: UUID, organizationUuid: UUID) {
+        ServiceUtils.wrapOptional(
+            followerRepository.findByUserUuidAndOrganizationUuid(userUuid, organizationUuid))?.let {
             followerRepository.delete(it)
         }
     }

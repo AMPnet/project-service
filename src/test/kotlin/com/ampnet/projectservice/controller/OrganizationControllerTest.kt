@@ -66,19 +66,19 @@ class OrganizationControllerTest : ControllerTestBase() {
                     objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organizationWithDocumentResponse.legalInfo).isEqualTo(testContext.organizationRequest.legalInfo)
-            assertThat(organizationWithDocumentResponse.id).isNotNull()
+            assertThat(organizationWithDocumentResponse.uuid).isNotNull()
             assertThat(organizationWithDocumentResponse.approved).isFalse()
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
             assertThat(organizationWithDocumentResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
-            testContext.createdOrganizationId = organizationWithDocumentResponse.id
+            testContext.createdOrganizationUuid = organizationWithDocumentResponse.uuid
         }
         verify("Organization is stored in database") {
-            val organization = organizationService.findOrganizationById(testContext.createdOrganizationId)
+            val organization = organizationService.findOrganizationById(testContext.createdOrganizationUuid)
                     ?: fail("Organization must no be null")
             assertThat(organization.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organization.legalInfo).isEqualTo(testContext.organizationRequest.legalInfo)
-            assertThat(organization.id).isNotNull()
+            assertThat(organization.uuid).isNotNull()
             assertThat(organization.approved).isFalse()
             assertThat(organization.documents).isEmpty()
             assertThat(organization.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -97,7 +97,7 @@ class OrganizationControllerTest : ControllerTestBase() {
         }
 
         verify("User can get organization with id") {
-            val result = mockMvc.perform(get("$organizationPath/${testContext.organization.id}"))
+            val result = mockMvc.perform(get("$organizationPath/${testContext.organization.uuid}"))
                     .andExpect(status().isOk)
                     .andReturn()
 
@@ -105,7 +105,7 @@ class OrganizationControllerTest : ControllerTestBase() {
                     objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organization.name)
             assertThat(organizationWithDocumentResponse.legalInfo).isEqualTo(testContext.organization.legalInfo)
-            assertThat(organizationWithDocumentResponse.id).isEqualTo(testContext.organization.id)
+            assertThat(organizationWithDocumentResponse.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(organizationWithDocumentResponse.approved).isEqualTo(testContext.organization.approved)
             assertThat(organizationWithDocumentResponse.documents.size)
                     .isEqualTo(testContext.organization.documents?.size)
@@ -147,7 +147,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustReturnNotFoundForNonExistingOrganization() {
         verify("Response not found for non existing organization") {
-            mockMvc.perform(get("$organizationPath/1299"))
+            mockMvc.perform(get("$organizationPath/${UUID.randomUUID()}"))
                     .andExpect(status().isNotFound)
         }
     }
@@ -160,7 +160,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a member of organization") {
-            addUserToOrganization(userUuid, testContext.organization.id, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
         suppose("Another organization exists") {
             createOrganization("new organization", userUuid)
@@ -185,20 +185,20 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Organization has a member") {
             testContext.member = UUID.randomUUID()
-            addUserToOrganization(testContext.member, testContext.organization.id, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User can delete organization member") {
             mockMvc.perform(
-                    delete("$organizationPath/${testContext.organization.id}/members/${testContext.member}"))
+                    delete("$organizationPath/${testContext.organization.uuid}/members/${testContext.member}"))
                     .andExpect(status().isOk)
         }
         verify("Member is delete from organization") {
-            val memberships = membershipRepository.findByOrganizationId(testContext.organization.id)
+            val memberships = membershipRepository.findByOrganizationUuid(testContext.organization.uuid)
             assertThat(memberships).hasSize(1)
             assertThat(memberships[0].userUuid).isNotEqualTo(testContext.member)
         }
@@ -212,14 +212,14 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Organization has two members") {
             testContext.member = UUID.randomUUID()
             testContext.memberSecond = UUID.randomUUID()
-            addUserToOrganization(testContext.member, testContext.organization.id, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
             addUserToOrganization(
-                    testContext.memberSecond, testContext.organization.id, OrganizationRoleType.ORG_ADMIN)
+                    testContext.memberSecond, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("User service will return user data") {
             val userResponse = createUserResponse(testContext.memberSecond, "email@mail.com", "first", "last", true)
@@ -232,7 +232,7 @@ class OrganizationControllerTest : ControllerTestBase() {
         }
 
         verify("Controller returns all organization members") {
-            val result = mockMvc.perform(get("$organizationPath/${testContext.organization.id}/members"))
+            val result = mockMvc.perform(get("$organizationPath/${testContext.organization.uuid}/members"))
                     .andExpect(status().isOk)
                     .andReturn()
 
@@ -254,7 +254,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is an admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File storage will store document") {
             testContext.multipartFile = MockMultipartFile("file", "test.txt",
@@ -267,7 +267,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
         verify("User can add document to organization") {
             val result = mockMvc.perform(
-                    fileUpload("$organizationPath/${testContext.organization.id}/document")
+                    fileUpload("$organizationPath/${testContext.organization.uuid}/document")
                             .file(testContext.multipartFile))
                     .andExpect(status().isOk)
                     .andReturn()
@@ -280,7 +280,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(documentResponse.link).isEqualTo(testContext.documentLink)
         }
         verify("Document is stored in database and connected to organization") {
-            val organizationDocuments = organizationService.findOrganizationById(testContext.organization.id)?.documents
+            val organizationDocuments = organizationService.findOrganizationById(testContext.organization.uuid)?.documents
                     ?: fail("Organization documents must not be null")
             assertThat(organizationDocuments).hasSize(1)
 
@@ -305,16 +305,16 @@ class OrganizationControllerTest : ControllerTestBase() {
             createOrganizationDocument(testContext.organization, userUuid, "second.pdf", "second-link.pdf")
         }
         suppose("User is an admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.id, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("User admin can delete document") {
             mockMvc.perform(
-                    delete("$organizationPath/${testContext.organization.id}/document/${testContext.document.id}"))
+                    delete("$organizationPath/${testContext.organization.uuid}/document/${testContext.document.id}"))
                     .andExpect(status().isOk)
         }
         verify("Document is deleted") {
-            val organizationWithDocument = organizationService.findOrganizationById(testContext.organization.id)
+            val organizationWithDocument = organizationService.findOrganizationById(testContext.organization.uuid)
             assertThat(organizationWithDocument?.documents).hasSize(1).doesNotContain(testContext.document)
         }
     }
@@ -337,7 +337,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
     private class TestContext {
         lateinit var organizationRequest: OrganizationRequest
-        var createdOrganizationId: Int = -1
+        lateinit var createdOrganizationUuid: UUID
         lateinit var organization: Organization
         val documentLink = "link"
         lateinit var document: Document

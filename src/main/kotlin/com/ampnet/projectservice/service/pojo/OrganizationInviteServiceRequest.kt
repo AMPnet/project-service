@@ -7,10 +7,10 @@ import java.util.UUID
 data class OrganizationInviteServiceRequest(
     val email: String,
     val roleType: OrganizationRoleType,
-    val organizationId: Int,
+    val organizationUuid: UUID,
     val invitedByUserUuid: UUID
 ) {
-    constructor(request: OrganizationInviteRequest, organizationId: Int, userUuid: UUID) : this(
-        request.email, request.roleType, organizationId, userUuid
+    constructor(request: OrganizationInviteRequest, organizationUuid: UUID, userUuid: UUID) : this(
+        request.email, request.roleType, organizationUuid, userUuid
     )
 }

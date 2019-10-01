@@ -5,8 +5,6 @@ import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
@@ -17,8 +15,7 @@ import javax.persistence.Table
 @Table(name = "organization")
 data class Organization(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    var uuid: UUID,
 
     @Column(nullable = false)
     var name: String,
@@ -43,12 +40,12 @@ data class Organization(
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "organization_document",
-            joinColumns = [JoinColumn(name = "organization_id")],
+            joinColumns = [JoinColumn(name = "organization_uuid")],
             inverseJoinColumns = [JoinColumn(name = "document_id")]
     )
     var documents: List<Document>?,
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizationId")
+    @JoinColumn(name = "organizationUuid")
     var memberships: List<OrganizationMembership>?
 )

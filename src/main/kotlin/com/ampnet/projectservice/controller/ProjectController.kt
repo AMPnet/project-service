@@ -38,10 +38,10 @@ class ProjectController(
 
     companion object : KLogging()
 
-    @GetMapping("/public/project/{id}")
-    fun getProject(@PathVariable id: Int): ResponseEntity<ProjectResponse> {
-        logger.debug { "Received request to get project with id: $id" }
-        projectService.getProjectByIdWithAllData(id)?.let { project ->
+    @GetMapping("/public/project/{uuid}")
+    fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectResponse> {
+        logger.debug { "Received request to get project with uuid: $uuid" }
+        projectService.getProjectByIdWithAllData(uuid)?.let { project ->
             return ResponseEntity.ok(ProjectResponse(project))
         }
         return ResponseEntity.notFound().build()
@@ -52,21 +52,21 @@ class ProjectController(
         logger.debug { "Received request to create project: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, request.organizationId) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, request.organizationUuid) {
             createProject(request, userPrincipal.uuid)
         }
     }
 
-    @PostMapping("/project/{projectId}")
+    @PostMapping("/project/{projectUuid}")
     fun updateProject(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestBody @Valid request: ProjectUpdateRequest
     ): ResponseEntity<ProjectResponse> {
-        logger.debug { "Received request to update project with id: $projectId" }
+        logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectId)
+        val project = getProjectById(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val updatedProject = projectService.updateProject(project, request)
             ProjectResponse(updatedProject)
         }
@@ -80,111 +80,111 @@ class ProjectController(
         return ResponseEntity.ok(response)
     }
 
-    @GetMapping("/project/organization/{organizationId}")
-    fun getAllProjectsForOrganization(@PathVariable organizationId: Int): ResponseEntity<ProjectListResponse> {
-        logger.debug { "Received request to get all projects for organization: $organizationId" }
-        val projects = projectService.getAllProjectsForOrganization(organizationId).map { ProjectResponse(it) }
+    @GetMapping("/project/organization/{organizationUuid}")
+    fun getAllProjectsForOrganization(@PathVariable organizationUuid: UUID): ResponseEntity<ProjectListResponse> {
+        logger.debug { "Received request to get all projects for organization: $organizationUuid" }
+        val projects = projectService.getAllProjectsForOrganization(organizationUuid).map { ProjectResponse(it) }
         return ResponseEntity.ok(ProjectListResponse(projects))
     }
 
-    @PostMapping("/project/{projectId}/document")
+    @PostMapping("/project/{projectUuid}/document")
     fun addDocument(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<DocumentResponse> {
-        logger.debug { "Received request to add document to project: $projectId" }
+        logger.debug { "Received request to add document to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectId)
+        val project = getProjectByIdWithAllData(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val request = DocumentSaveRequest(file, userPrincipal.uuid)
             val document = projectService.addDocument(project, request)
             DocumentResponse(document)
         }
     }
 
-    @DeleteMapping("/project/{projectId}/document/{documentId}")
+    @DeleteMapping("/project/{projectUuid}/document/{documentId}")
     fun removeDocument(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @PathVariable("documentId") documentId: Int
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to delete document: $documentId for project $projectId" }
+        logger.debug { "Received request to delete document: $documentId for project $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectId)
+        val project = getProjectByIdWithAllData(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.removeDocument(project, documentId)
         }
     }
 
-    @PostMapping("/project/{projectId}/image/main")
+    @PostMapping("/project/{projectUuid}/image/main")
     fun addMainImage(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestParam("image") image: MultipartFile
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to add main image to project: $projectId" }
+        logger.debug { "Received request to add main image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectId)
+        val project = getProjectById(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val imageName = getImageNameFromMultipartFile(image)
             projectService.addMainImage(project, imageName, image.bytes)
         }
     }
 
-    @PostMapping("/project/{projectId}/image/gallery")
+    @PostMapping("/project/{projectUuid}/image/gallery")
     fun addGalleryImage(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestParam("image") image: MultipartFile
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to add gallery image to project: $projectId" }
+        logger.debug { "Received request to add gallery image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectId)
+        val project = getProjectById(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val imageName = getImageNameFromMultipartFile(image)
             projectService.addImageToGallery(project, imageName, image.bytes)
         }
     }
 
-    @DeleteMapping("/project/{projectId}/image/gallery")
+    @DeleteMapping("/project/{projectUuid}/image/gallery")
     fun removeImageFromGallery(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestBody request: ImageLinkListRequest
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to delete gallery images for project: $projectId" }
+        logger.debug { "Received request to delete gallery images for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectId)
+        val project = getProjectById(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.removeImagesFromGallery(project, request.images)
         }
     }
 
-    @PostMapping("/project/{projectId}/news")
+    @PostMapping("/project/{projectUuid}/news")
     fun addNews(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestBody request: LinkRequest
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to add gallery image to project: $projectId" }
+        logger.debug { "Received request to add gallery image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectId)
+        val project = getProjectById(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.addNews(project, request.link)
         }
     }
 
-    @DeleteMapping("/project/{projectId}/news")
+    @DeleteMapping("/project/{projectUuid}/news")
     fun removeNews(
-        @PathVariable("projectId") projectId: Int,
+        @PathVariable("projectUuid") projectUuid: UUID,
         @RequestBody request: LinkRequest
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to delete gallery images for project: $projectId" }
+        logger.debug { "Received request to delete gallery images for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectId)
+        val project = getProjectById(projectUuid)
 
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.id) {
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.removeNews(project, request.link)
         }
     }
@@ -193,34 +193,34 @@ class ProjectController(
             multipartFile.originalFilename ?: multipartFile.name
 
     private fun createProject(request: ProjectRequest, userUuid: UUID): ProjectResponse {
-        val organization = getOrganization(request.organizationId)
+        val organization = getOrganization(request.organizationUuid)
         val serviceRequest = CreateProjectServiceRequest(request, organization, userUuid)
         val project = projectService.createProject(serviceRequest)
         return ProjectResponse(project)
     }
 
-    private fun getOrganization(organizationId: Int): Organization =
-            organizationService.findOrganizationById(organizationId)
+    private fun getOrganization(organizationUuid: UUID): Organization =
+            organizationService.findOrganizationById(organizationUuid)
                     ?: throw ResourceNotFoundException(
-                            ErrorCode.ORG_MISSING, "Missing organization with id: $organizationId")
+                            ErrorCode.ORG_MISSING, "Missing organization with id: $organizationUuid")
 
-    private fun getUserMembershipInOrganization(userUuid: UUID, organizationId: Int): OrganizationMembership? =
-            organizationService.getOrganizationMemberships(organizationId).find { it.userUuid == userUuid }
+    private fun getUserMembershipInOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationMembership? =
+            organizationService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
 
-    private fun getProjectById(projectId: Int): Project =
-        projectService.getProjectById(projectId)
-            ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectId")
+    private fun getProjectById(projectUuid: UUID): Project =
+        projectService.getProjectById(projectUuid)
+            ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectUuid")
 
-    private fun getProjectByIdWithAllData(projectId: Int): Project =
-            projectService.getProjectByIdWithAllData(projectId)
-                    ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectId")
+    private fun getProjectByIdWithAllData(projectUuid: UUID): Project =
+            projectService.getProjectByIdWithAllData(projectUuid)
+                    ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectUuid")
 
     private fun <T> ifUserHasPrivilegeToWriteInProjectThenReturn(
         userUuid: UUID,
-        organizationId: Int,
+        organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        getUserMembershipInOrganization(userUuid, organizationId)?.let { orgMembership ->
+        getUserMembershipInOrganization(userUuid, organizationUuid)?.let { orgMembership ->
             return if (orgMembership.hasPrivilegeToWriteProject()) {
                 val response = action()
                 ResponseEntity.ok(response)
@@ -229,7 +229,7 @@ class ProjectController(
                 ResponseEntity.status(HttpStatus.FORBIDDEN).build()
             }
         }
-        logger.info { "User $userUuid is not a member of organization $organizationId" }
+        logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }
 }

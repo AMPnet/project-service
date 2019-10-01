@@ -52,10 +52,10 @@ class OrganizationController(
         return ResponseEntity.ok(OrganizationListResponse(organizations))
     }
 
-    @GetMapping("/organization/{id}")
-    fun getOrganization(@PathVariable("id") id: Int): ResponseEntity<OrganizationWithDocumentResponse> {
-        logger.debug { "Received request for organization with id: $id" }
-        organizationService.findOrganizationById(id)?.let {
+    @GetMapping("/organization/{uuid}")
+    fun getOrganization(@PathVariable("uuid") uuid: UUID): ResponseEntity<OrganizationWithDocumentResponse> {
+        logger.debug { "Received request for organization with uuid: $uuid" }
+        organizationService.findOrganizationById(uuid)?.let {
             return ResponseEntity.ok(OrganizationWithDocumentResponse(it))
         }
         return ResponseEntity.notFound().build()
@@ -73,15 +73,15 @@ class OrganizationController(
         return ResponseEntity.ok(OrganizationWithDocumentResponse(organization))
     }
 
-    @GetMapping("/organization/{organizationId}/members")
+    @GetMapping("/organization/{uuid}/members")
     fun getOrganizationMembers(
-        @PathVariable("organizationId") organizationId: Int
+        @PathVariable("uuid") uuid: UUID
     ): ResponseEntity<OrganizationMembershipsResponse> {
-        logger.debug { "Received request to get members for organization: $organizationId" }
+        logger.debug { "Received request to get members for organization: $uuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationId) {
-            val members = organizationService.getOrganizationMemberships(organizationId)
+        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
+            val members = organizationService.getOrganizationMemberships(uuid)
             val membersWithoutMe = members.filter { userPrincipal.uuid != it.userUuid }
             val users = userService.getUsers(membersWithoutMe.map { it.userUuid })
 
@@ -92,53 +92,53 @@ class OrganizationController(
         }
     }
 
-    @DeleteMapping("/organization/{organizationId}/members/{memberUuid}")
+    @DeleteMapping("/organization/{organizationUuid}/members/{memberUuid}")
     fun deleteOrganizationMember(
-        @PathVariable("organizationId") organizationId: Int,
+        @PathVariable("organizationUuid") organizationUuid: UUID,
         @PathVariable("memberUuid") memberUuid: UUID
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to remove member: $memberUuid from organization: $organizationId" }
+        logger.debug { "Received request to remove member: $memberUuid from organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationId) {
-            organizationService.removeUserFromOrganization(memberUuid, organizationId)
+        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
+            organizationService.removeUserFromOrganization(memberUuid, organizationUuid)
         }
     }
 
-    @PostMapping("/organization/{organizationId}/document")
+    @PostMapping("/organization/{organizationUuid}/document")
     fun addDocument(
-        @PathVariable("organizationId") organizationId: Int,
+        @PathVariable("organizationUuid") organizationUuid: UUID,
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<DocumentResponse> {
-        logger.debug { "Received request to add document: ${file.name} to organization: $organizationId" }
+        logger.debug { "Received request to add document: ${file.name} to organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationId) {
+        return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
             val documentSaveRequest = DocumentSaveRequest(file, userPrincipal.uuid)
-            val document = organizationService.addDocument(organizationId, documentSaveRequest)
+            val document = organizationService.addDocument(organizationUuid, documentSaveRequest)
             DocumentResponse(document)
         }
     }
 
     @DeleteMapping("/organization/{organizationId}/document/{documentId}")
     fun removeDocument(
-        @PathVariable("organizationId") organizationId: Int,
+        @PathVariable("organizationId") organizationUuid: UUID,
         @PathVariable("documentId") documentId: Int
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to delete document: $documentId for organization $organizationId" }
+        logger.debug { "Received request to delete document: $documentId for organization $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationId) {
-            organizationService.removeDocument(organizationId, documentId)
+        return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
+            organizationService.removeDocument(organizationUuid, documentId)
         }
     }
 
     private fun <T> ifUserHasPrivilegeWriteUserInOrganizationThenReturn(
         userUuid: UUID,
-        organizationId: Int,
+        organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationService.getOrganizationMemberships(organizationId)
+        organizationService.getOrganizationMemberships(organizationUuid)
                 .find { it.userUuid == userUuid }
                 ?.let { orgMembership ->
                     return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
@@ -149,16 +149,16 @@ class OrganizationController(
                         ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                     }
                 }
-        logger.info { "User $userUuid is not a member of organization $organizationId" }
+        logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }
 
     private fun <T> ifUserHasPrivilegeToWriteOrganizationThenReturn(
         userUuid: UUID,
-        organizationId: Int,
+        organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationService.getOrganizationMemberships(organizationId)
+        organizationService.getOrganizationMemberships(organizationUuid)
                 .find { it.userUuid == userUuid }
                 ?.let { orgMembership ->
                     return if (orgMembership.hasPrivilegeToWriteOrganization()) {
@@ -169,7 +169,7 @@ class OrganizationController(
                         ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                     }
                 }
-        logger.info { "User $userUuid is not a member of organization $organizationId" }
+        logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }
 }
