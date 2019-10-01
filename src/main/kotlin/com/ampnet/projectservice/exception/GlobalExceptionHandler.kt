@@ -32,13 +32,6 @@ class GlobalExceptionHandler {
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SocialException::class)
-    fun handleSocialException(exception: SocialException): ErrorResponse {
-        logger.warn("SocialException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message)
-    }
-
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(InternalException::class)
     fun handleInternalException(exception: InternalException): ErrorResponse {
