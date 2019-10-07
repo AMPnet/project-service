@@ -1,0 +1,206 @@
+= AMPnet Project Service API documentation
+:toc: left
+:sectnums:
+:toclevels: 2
+:source-highlighter: prettify
+:docinfo: shared
+
+== Organization API
+Collection of endpoints for managing organization
+
+=== Create organization
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToCreateOrganization/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToCreateOrganization/http-response.adoc[]
+
+=== Get organization by id
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganization/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganization/http-response.adoc[]
+
+=== Get all organizations
+To get a list of all organization user must have a privilege: `PrivilegeType.PRA_ORG`
+
+.Request
+include::{snippets}/OrganizationControllerTest/mustReturnListOfOrganizations/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustReturnListOfOrganizations/http-response.adoc[]
+
+=== Get personal organizations
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToGetPersonalOrganizations/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToGetPersonalOrganizations/http-response.adoc[]
+
+=== Documents
+
+==== Add document for organization
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToStoreDocumentForOrganization/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToStoreDocumentForOrganization/http-response.adoc[]
+
+==== Remove organization document
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationDocument/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationDocument/http-response.adoc[]
+
+=== Organization Invitation
+
+==== Get a list of invitations
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetOrganizationInvitations/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetOrganizationInvitations/http-response.adoc[]
+
+==== Invite user to organization
+
+===== Send invitation
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToInviteUserToOrganizationWithOrgAdminRole/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToInviteUserToOrganizationWithOrgAdminRole/http-response.adoc[]
+
+===== Failed to send invitation without organization admin role
+User missing a privilege: `OrganizationPrivilegeType.PW_USERS`
+
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustNotBeAbleToInviteUserToOrganizationWithoutOrgAdminRole/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustNotBeAbleToInviteUserToOrganizationWithoutOrgAdminRole/http-response.adoc[]
+
+===== Revoke invitation
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRevokeUserInvitation/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRevokeUserInvitation/http-response.adoc[]
+
+==== Accept invitation
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToAcceptOrganizationInvitions/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToAcceptOrganizationInvitions/http-response.adoc[]
+
+==== Reject invitation
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvition/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvition/http-response.adoc[]
+
+=== Members
+
+==== List all members
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
+
+==== Delete a member
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMember/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
+
+== Project API
+Collection of endpoints for managing project
+
+=== Public
+
+==== Get project
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetSpecificProject/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetSpecificProject/http-response.adoc[]
+
+=== Create project
+
+==== Successfully create
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToCreateProject/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToCreateProject/http-response.adoc[]
+
+==== Cannot create project without privilege
+User cannot create project without admin role in organization, privilege: `OrganizationPrivilegeType.PW_PROJECT`
+
+.Request
+include::{snippets}/ProjectControllerTest/mustReturnErrorForUserWithoutOrganizationMembership/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustReturnErrorForUserWithoutOrganizationMembership/http-response.adoc[]
+
+=== Get all projects for organization
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
+
+=== Get all projects
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-response.adoc[]
+
+=== Update
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-response.adoc[]
+
+=== Documents
+
+==== Add document for project
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddDocumentForProject/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddDocumentForProject/http-response.adoc[]
+
+==== Remove project document
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveProjectDocument/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveProjectDocument/http-response.adoc[]
+
+=== Images
+
+==== Add main image
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddMainImage/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddMainImage/http-response.adoc[]
+
+==== Add gallery image
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddGalleryImage/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddGalleryImage/http-response.adoc[]
+
+==== Delete gallery image
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-response.adoc[]
+
+=== News
+
+==== Add news
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-response.adoc[]
+
+==== Delete news
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveNews/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveNews/http-response.adoc[]
+
+== Search API
+
+=== Search organizations and projects by name
+.Request
+include::{snippets}/SearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
+.Response
+include::{snippets}/SearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
