@@ -5,7 +5,7 @@ import com.ampnet.projectservice.persistence.repository.DocumentRepository
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
-import mu.KLogging
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
@@ -15,7 +15,10 @@ class StorageServiceImpl(
     private val cloudStorageService: CloudStorageService
 ) : StorageService {
 
-    companion object : KLogging()
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+        private const val MAX_DOCUMENT_TYPE_NAME = 16
+    }
 
     override fun saveDocument(request: DocumentSaveRequest): Document {
         logger.debug { "Storing document: ${request.name}" }
@@ -29,7 +32,7 @@ class StorageServiceImpl(
         document.size = request.size
         document.createdAt = ZonedDateTime.now()
         document.createdByUserUuid = request.userUuid
-        document.type = request.type.take(16)
+        document.type = request.type.take(MAX_DOCUMENT_TYPE_NAME)
         return documentRepository.save(document)
     }
 

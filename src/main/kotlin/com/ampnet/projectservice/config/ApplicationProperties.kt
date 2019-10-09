@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration
 class ApplicationProperties {
     var jwt: JwtProperties = JwtProperties()
     var fileStorage: FileStorageProperties = FileStorageProperties()
+    var investment: InvestmentProperties = InvestmentProperties()
 }
 
 class JwtProperties {
@@ -18,4 +19,10 @@ class FileStorageProperties {
     lateinit var url: String
     lateinit var bucket: String
     lateinit var folder: String
+}
+
+@Suppress("MagicNumber")
+class InvestmentProperties {
+    var maxPerProject: Long = 100_000_000_000_000_00
+    var maxPerUser: Long = 1_000_000_000_000_00
 }

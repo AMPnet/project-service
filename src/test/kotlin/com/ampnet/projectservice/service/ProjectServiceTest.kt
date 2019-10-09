@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -18,9 +19,10 @@ import java.time.ZonedDateTime
 
 class ProjectServiceTest : JpaServiceTestBase() {
 
+    private val applicationProperties = ApplicationProperties()
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        ProjectServiceImpl(projectRepository, storageServiceImpl)
+        ProjectServiceImpl(projectRepository, storageServiceImpl, applicationProperties)
     }
     private val imageContent = "data".toByteArray()
 
@@ -283,7 +285,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                     10_000_000_000_000,
                     Currency.EUR,
                     1,
-                    projectService.maxPerUserInvestment + 1,
+                    applicationProperties.investment.maxPerUser + 1,
                     false,
                     userUuid
             )
@@ -310,7 +312,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                     "1-2%",
                     currentTime,
                     currentTime.plusDays(30),
-                    projectService.maxProjectInvestment + 1,
+                    applicationProperties.investment.maxPerProject + 1,
                     Currency.EUR,
                     1,
                     1_000_000_000,

@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
+import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -19,13 +20,11 @@ import java.util.UUID
 @Service
 class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
-    private val storageService: StorageService
+    private val storageService: StorageService,
+    private val applicationProperties: ApplicationProperties
 ) : ProjectService {
 
     companion object : KLogging()
-
-    val maxProjectInvestment: Long = 100_000_000_000_000_00
-    val maxPerUserInvestment: Long = 1_000_000_000_000_00
 
     @Transactional
     override fun createProject(request: CreateProjectServiceRequest): Project {
@@ -132,6 +131,7 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
+    @Suppress("ThrowsCount")
     private fun validateCreateProjectRequest(request: CreateProjectServiceRequest) {
         if (request.endDate.isBefore(request.startDate)) {
             throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before start date")
@@ -143,13 +143,13 @@ class ProjectServiceImpl(
             throw InvalidRequestException(ErrorCode.PRJ_MIN_ABOVE_MAX,
                     "Min: ${request.minPerUser} > Max: ${request.maxPerUser}")
         }
-        if (maxProjectInvestment <= request.expectedFunding) {
+        if (applicationProperties.investment.maxPerProject <= request.expectedFunding) {
             throw InvalidRequestException(ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH,
-                    "Max expected funding is: $maxProjectInvestment")
+                    "Max expected funding is: ${applicationProperties.investment.maxPerProject}")
         }
-        if (maxPerUserInvestment <= request.maxPerUser) {
+        if (applicationProperties.investment.maxPerUser <= request.maxPerUser) {
             throw InvalidRequestException(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
-                    "Max funds per user is: $maxPerUserInvestment")
+                    "Max funds per user is: ${applicationProperties.investment.maxPerUser}")
         }
     }
 

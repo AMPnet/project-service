@@ -15,7 +15,11 @@ interface OrganizationService {
     fun findAllOrganizationsForUser(userUuid: UUID): List<Organization>
 
     fun getOrganizationMemberships(organizationUuid: UUID): List<OrganizationMembership>
-    fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType): OrganizationMembership
+    fun addUserToOrganization(
+        userUuid: UUID,
+        organizationUuid: UUID,
+        role: OrganizationRoleType
+    ): OrganizationMembership
     fun removeUserFromOrganization(userUuid: UUID, organizationUuid: UUID)
 
     fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document
