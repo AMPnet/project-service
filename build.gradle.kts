@@ -94,7 +94,7 @@ jib {
     val dockerUsername: String = System.getenv("DOCKER_USERNAME") ?: "DOCKER_USERNAME"
     val dockerPassword: String = System.getenv("DOCKER_PASSWORD") ?: "DOCKER_PASSWORD"
     to {
-        image = "ampnet/ampnet-project-service:$version"
+        image = "ampnet/project-service:$version"
         auth {
             username = dockerUsername
             password = dockerPassword
@@ -140,8 +140,7 @@ detekt {
 }
 
 task("qualityCheck") {
-    // add detekt
-    dependsOn(tasks.ktlintCheck, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
+    dependsOn(tasks.ktlintCheck, tasks.detekt, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
 tasks.asciidoctor {
