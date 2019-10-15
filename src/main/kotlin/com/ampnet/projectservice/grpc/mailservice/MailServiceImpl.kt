@@ -8,10 +8,10 @@ import com.ampnet.mailservice.proto.OrganizationInvitationRequest
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
 import io.grpc.stub.StreamObserver
+import java.util.UUID
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class MailServiceImpl(

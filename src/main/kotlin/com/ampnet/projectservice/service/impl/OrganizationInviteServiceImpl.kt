@@ -4,6 +4,7 @@ import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
+import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
@@ -11,16 +12,15 @@ import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
-import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
+import java.time.ZonedDateTime
+import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
 class OrganizationInviteServiceImpl(

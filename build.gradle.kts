@@ -1,4 +1,9 @@
-import com.google.protobuf.gradle.*
+import com.google.protobuf.gradle.generateProtoTasks
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.ofSourceSet
+import com.google.protobuf.gradle.plugins
+import com.google.protobuf.gradle.protobuf
+import com.google.protobuf.gradle.protoc
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -24,12 +29,13 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
+    jcenter()
+    maven(url = "https://jitpack.io")
 }
 
 extra["snippetsDir"] = file("build/generated-snippets")
 
 dependencies {
-    val jjwtVersion = "0.10.7"
     val junitVersion = "5.3.2"
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -44,14 +50,12 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-    implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
     implementation("io.github.microutils:kotlin-logging:1.7.6")
     implementation("net.logstash.logback:logstash-logback-encoder:6.2")
     implementation("io.micrometer:micrometer-registry-prometheus:1.3.0")
     implementation("net.devh:grpc-spring-boot-starter:2.5.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
+    implementation("com.github.AMPnet:jwt:0.0.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("junit")

@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.controller
 
-import com.ampnet.projectservice.config.auth.UserPrincipal
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.exception.TokenException
 import org.springframework.security.core.context.SecurityContextHolder
 
