@@ -132,7 +132,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
                     post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk)
         }
@@ -162,7 +162,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
                     post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isForbidden)
         }
@@ -180,7 +180,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val request = OrganizationInviteRequest("some@user.ocm", OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
                     post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isForbidden)
         }

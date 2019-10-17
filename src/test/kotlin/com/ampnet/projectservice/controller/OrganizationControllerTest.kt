@@ -57,7 +57,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
             val result = mockMvc.perform(
                     post(organizationPath)
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(testContext.organizationRequest)))
                     .andExpect(status().isOk)
                     .andReturn()

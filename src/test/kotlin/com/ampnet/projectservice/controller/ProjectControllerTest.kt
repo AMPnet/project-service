@@ -471,7 +471,7 @@ class ProjectControllerTest : ControllerTestBase() {
             val request = ImageLinkListRequest(listOf("image-link-1"))
             mockMvc.perform(
                     delete("$projectPath/${testContext.project.uuid}/image/gallery")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk)
         }
