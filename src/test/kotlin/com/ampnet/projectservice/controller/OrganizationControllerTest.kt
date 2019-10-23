@@ -13,6 +13,8 @@ import com.ampnet.projectservice.security.WithMockCrowdfoundUser
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.ZonedDateTime
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
@@ -20,14 +22,12 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.fileUpload
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class OrganizationControllerTest : ControllerTestBase() {
 
@@ -57,7 +57,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
             val result = mockMvc.perform(
                     post(organizationPath)
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(testContext.organizationRequest)))
                     .andExpect(status().isOk)
                     .andReturn()

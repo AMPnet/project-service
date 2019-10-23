@@ -8,18 +8,18 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Role
-import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
+import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
-import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.OrganizationService
+import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
+import java.time.ZonedDateTime
+import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
 class OrganizationServiceImpl(

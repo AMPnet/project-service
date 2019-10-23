@@ -7,10 +7,12 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationMembership
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
+import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
-import com.ampnet.projectservice.grpc.userservice.UserService
+import java.util.UUID
+import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -23,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
-import javax.validation.Valid
 
 @RestController
 class OrganizationController(

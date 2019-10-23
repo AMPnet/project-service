@@ -1,9 +1,10 @@
 package com.ampnet.projectservice.config
 
-import com.ampnet.projectservice.config.auth.JwtAuthenticationProvider
-import com.ampnet.projectservice.config.auth.JwtAuthenticationEntryPoint
-import com.ampnet.projectservice.config.auth.JwtAuthenticationFilter
-import com.ampnet.projectservice.config.auth.ProfileFilter
+import com.ampnet.core.jwt.UnauthorizedEntryPoint
+import com.ampnet.core.jwt.filter.JwtAuthenticationFilter
+import com.ampnet.core.jwt.filter.ProfileFilter
+import com.ampnet.core.jwt.provider.JwtAuthenticationProvider
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
@@ -23,12 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class WebSecurityConfig(
-    val unauthorizedHandler: JwtAuthenticationEntryPoint,
-    val authenticationTokenFilter: JwtAuthenticationFilter,
-    val profileFilter: ProfileFilter,
-    val jwtAuthenticationProvider: JwtAuthenticationProvider
-) : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
     @Override
     @Bean
@@ -36,8 +32,13 @@ class WebSecurityConfig(
         return super.authenticationManagerBean()
     }
 
-    override fun configure(auth: AuthenticationManagerBuilder) {
-        auth.authenticationProvider(jwtAuthenticationProvider)
+    @Autowired
+    fun authBuilder(
+        authBuilder: AuthenticationManagerBuilder,
+        applicationProperties: ApplicationProperties
+    ) {
+        val authenticationProvider = JwtAuthenticationProvider(applicationProperties.jwt.signingKey)
+        authBuilder.authenticationProvider(authenticationProvider)
     }
 
     @Bean
@@ -65,6 +66,10 @@ class WebSecurityConfig(
     }
 
     override fun configure(http: HttpSecurity) {
+        val unauthorizedHandler = UnauthorizedEntryPoint()
+        val authenticationTokenFilter = JwtAuthenticationFilter()
+        val profileFilter = ProfileFilter()
+
         http.cors().and().csrf().disable()
             .authorizeRequests()
             .antMatchers("/actuator/**").permitAll()

@@ -4,6 +4,7 @@ import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.grpc.mailservice.MailService
+import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -15,7 +16,8 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
-import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
+import java.time.ZonedDateTime
+import java.util.UUID
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,8 +26,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZonedDateTime
-import java.util.UUID
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest

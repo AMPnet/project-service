@@ -8,6 +8,8 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.ZonedDateTime
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
@@ -16,8 +18,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.ZonedDateTime
-import java.util.UUID
 
 class OrganizationInvitationControllerTest : ControllerTestBase() {
 
@@ -132,7 +132,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
                     post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk)
         }
@@ -162,7 +162,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
                     post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isForbidden)
         }
@@ -180,7 +180,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val request = OrganizationInviteRequest("some@user.ocm", OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
                     post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isForbidden)
         }
