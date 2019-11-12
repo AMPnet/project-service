@@ -53,7 +53,7 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:6.2")
     implementation("net.devh:grpc-spring-boot-starter:2.5.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
-    implementation("com.github.AMPnet:jwt:0.0.2")
+    implementation("com.github.AMPnet:jwt:0.0.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
