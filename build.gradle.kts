@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.0.3"
+version = "0.0.4"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -40,7 +40,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-config:1.0.3.RELEASE")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -50,7 +49,6 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation("io.github.microutils:kotlin-logging:1.7.6")
-    implementation("net.logstash.logback:logstash-logback-encoder:6.2")
     implementation("net.devh:grpc-spring-boot-starter:2.5.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
     implementation("com.github.AMPnet:jwt:0.0.3")
