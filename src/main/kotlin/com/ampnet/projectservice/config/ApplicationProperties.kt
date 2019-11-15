@@ -9,6 +9,7 @@ class ApplicationProperties {
     var jwt: JwtProperties = JwtProperties()
     var fileStorage: FileStorageProperties = FileStorageProperties()
     var investment: InvestmentProperties = InvestmentProperties()
+    var grpc: GrpcProperties = GrpcProperties()
 }
 
 class JwtProperties {
@@ -25,4 +26,10 @@ class FileStorageProperties {
 class InvestmentProperties {
     var maxPerProject: Long = 100_000_000_000_000_00
     var maxPerUser: Long = 1_000_000_000_000_00
+}
+
+@Suppress("MagicNumber")
+class GrpcProperties {
+    var mailServiceTimeout: Long = 1000
+    var userServiceTimeout: Long = 1000
 }
