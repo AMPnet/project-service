@@ -26,7 +26,6 @@ class MailServiceImpl(
     private val mailServiceStub: MailServiceGrpc.MailServiceStub by lazy {
         val channel = grpcChannelFactory.createChannel("mail-service")
         MailServiceGrpc.newStub(channel)
-            .withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     override fun sendOrganizationInvitationMail(email: String, organizationName: String) {
@@ -34,9 +33,8 @@ class MailServiceImpl(
                 .setEmail(email)
                 .setOrganization(organizationName)
                 .build()
-
-        mailServiceStub.sendOrganizationInvitation(request,
-                createSteamObserver("organization invitation mail to: $email"))
+        serviceWithTimeout()
+            .sendOrganizationInvitation(request, createSteamObserver("organization invitation mail to: $email"))
     }
 
     override fun sendDepositRequest(user: UUID, amount: Long) {
@@ -44,8 +42,7 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setAmount(amount)
                 .build()
-
-        mailServiceStub.sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
+        serviceWithTimeout().sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
     }
 
     override fun sendDepositInfo(user: UUID, minted: Boolean) {
@@ -53,8 +50,7 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setMinted(minted)
                 .build()
-
-        mailServiceStub.sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
+        serviceWithTimeout().sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
     }
 
     override fun sendWithdrawRequest(user: UUID, amount: Long) {
@@ -62,8 +58,7 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setAmount(amount)
                 .build()
-
-        mailServiceStub.sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
+        serviceWithTimeout().sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
     }
 
     override fun sendWithdrawInfo(user: UUID, burned: Boolean) {
@@ -71,9 +66,11 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setBurned(burned)
                 .build()
-
-        mailServiceStub.sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
+        serviceWithTimeout().sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
     }
+
+    private fun serviceWithTimeout() = mailServiceStub
+        .withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)
 
     private fun createSteamObserver(message: String) =
         object : StreamObserver<Empty> {
