@@ -91,7 +91,7 @@ class ProjectController(
         val projects = projectService
             .getAllProjectsForOrganization(organizationUuid)
             .map { ProjectResponse(it) }
-        return ResponseEntity.ok(ProjectListResponse(projects.toList(), 0, 0))
+        return ResponseEntity.ok(ProjectListResponse(projects))
     }
 
     @PostMapping("/project/{projectUuid}/document")
