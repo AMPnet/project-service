@@ -20,7 +20,11 @@ data class OrganizationResponse(
     )
 }
 
-data class OrganizationListResponse(val organizations: List<OrganizationResponse>)
+data class OrganizationListResponse(
+    val organizations: List<OrganizationResponse>,
+    val page: Int = 0,
+    val totalPages: Int = 1
+)
 
 data class OrganizationWithDocumentResponse(
     val uuid: UUID,

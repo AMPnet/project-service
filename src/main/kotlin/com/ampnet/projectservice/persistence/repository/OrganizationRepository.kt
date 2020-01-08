@@ -3,6 +3,8 @@ package com.ampnet.projectservice.persistence.repository
 import com.ampnet.projectservice.persistence.model.Organization
 import java.util.Optional
 import java.util.UUID
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
@@ -17,5 +19,5 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
     fun findByName(name: String): Optional<Organization>
 
-    fun findByNameContainingIgnoreCase(name: String): List<Organization>
+    fun findByNameContainingIgnoreCase(name: String, pageable: Pageable): Page<Organization>
 }

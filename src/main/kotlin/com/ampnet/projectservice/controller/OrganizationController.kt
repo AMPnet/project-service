@@ -14,6 +14,7 @@ import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import java.util.UUID
 import javax.validation.Valid
 import mu.KLogging
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -36,10 +37,12 @@ class OrganizationController(
 
     @GetMapping("/organization")
     @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PRA_ORG)")
-    fun getOrganizations(): ResponseEntity<OrganizationListResponse> {
+    fun getOrganizations(pageable: Pageable): ResponseEntity<OrganizationListResponse> {
         logger.debug { "Received request for all organizations" }
-        val organizations = organizationService.getAllOrganizations().map { OrganizationResponse(it) }
-        return ResponseEntity.ok(OrganizationListResponse(organizations))
+        val organizations = organizationService.getAllOrganizations(pageable).map { OrganizationResponse(it) }
+        return ResponseEntity.ok(
+            OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages)
+        )
     }
 
     @GetMapping("/organization/personal")

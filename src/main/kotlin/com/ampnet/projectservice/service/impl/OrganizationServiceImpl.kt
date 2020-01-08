@@ -18,6 +18,8 @@ import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -61,8 +63,8 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllOrganizations(): List<Organization> {
-        return organizationRepository.findAll()
+    override fun getAllOrganizations(pageable: Pageable): Page<Organization> {
+        return organizationRepository.findAll(pageable)
     }
 
     @Transactional(readOnly = true)

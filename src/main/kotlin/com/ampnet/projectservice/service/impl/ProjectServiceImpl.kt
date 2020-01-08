@@ -14,6 +14,8 @@ import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -57,8 +59,8 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjects(): List<Project> {
-        return projectRepository.findAll()
+    override fun getAllProjects(pageable: Pageable): Page<Project> {
+        return projectRepository.findAll(pageable)
     }
 
     @Transactional
