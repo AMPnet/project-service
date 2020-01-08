@@ -21,7 +21,9 @@ include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganization/http-
 include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganization/http-response.adoc[]
 
 === Get all organizations
-To get a list of all organization user must have a privilege: `PrivilegeType.PRA_ORG`
+To get a list of all organization, user must have a privilege: `PrivilegeType.PRA_ORG`.
+List of all organizations is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 
 .Request
 include::{snippets}/OrganizationControllerTest/mustReturnListOfOrganizations/http-request.adoc[]
@@ -132,12 +134,18 @@ include::{snippets}/ProjectControllerTest/mustReturnErrorForUserWithoutOrganizat
 include::{snippets}/ProjectControllerTest/mustReturnErrorForUserWithoutOrganizationMembership/http-response.adoc[]
 
 === Get all projects for organization
+List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=name,asc`).
+
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-request.adoc[]
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
 
 === Get all projects
+List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-request.adoc[]
 .Response

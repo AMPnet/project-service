@@ -7,10 +7,12 @@ import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import java.util.UUID
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface OrganizationService {
     fun createOrganization(serviceRequest: OrganizationServiceRequest): Organization
-    fun getAllOrganizations(): List<Organization>
+    fun getAllOrganizations(pageable: Pageable): Page<Organization>
     fun findOrganizationById(organizationUuid: UUID): Organization?
     fun findAllOrganizationsForUser(userUuid: UUID): List<Organization>
 

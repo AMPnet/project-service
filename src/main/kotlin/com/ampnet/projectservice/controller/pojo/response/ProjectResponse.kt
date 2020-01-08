@@ -43,4 +43,4 @@ data class ProjectResponse(
     )
 }
 
-data class ProjectListResponse(val projects: List<ProjectResponse>)
+data class ProjectListResponse(val projects: List<ProjectResponse>, val page: Int, val totalPages: Int)

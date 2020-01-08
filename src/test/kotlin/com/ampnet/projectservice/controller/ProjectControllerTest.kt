@@ -221,9 +221,13 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return all projects") {
-            val result = mockMvc.perform(get(projectPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get(projectPath)
+                    .param("size", "10")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val projectsResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectsResponse.projects).hasSize(2)
@@ -246,9 +250,13 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return all projects for specified organization") {
-            val result = mockMvc.perform(get("$projectPath/organization/${organization.uuid}"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get("$projectPath/organization/${organization.uuid}")
+                    .param("size", "10")
+                    .param("page", "0")
+                    .param("sort", "name,asc"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val projectListResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectListResponse.projects).hasSize(3)

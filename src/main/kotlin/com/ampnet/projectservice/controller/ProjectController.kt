@@ -19,6 +19,7 @@ import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.util.UUID
 import javax.validation.Valid
 import mu.KLogging
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -73,18 +74,24 @@ class ProjectController(
     }
 
     @GetMapping("/project")
-    fun getAllProjects(): ResponseEntity<ProjectListResponse> {
+    fun getAllProjects(pageable: Pageable): ResponseEntity<ProjectListResponse> {
         logger.debug { "Received request to get project all projects" }
-        val projectsResponse = projectService.getAllProjects().map { ProjectResponse(it) }
-        val response = ProjectListResponse(projectsResponse)
+        val projectsResponse = projectService.getAllProjects(pageable).map { ProjectResponse(it) }
+        val response = ProjectListResponse(
+            projectsResponse.toList(),
+            projectsResponse.number,
+            projectsResponse.totalPages
+        )
         return ResponseEntity.ok(response)
     }
 
     @GetMapping("/project/organization/{organizationUuid}")
     fun getAllProjectsForOrganization(@PathVariable organizationUuid: UUID): ResponseEntity<ProjectListResponse> {
         logger.debug { "Received request to get all projects for organization: $organizationUuid" }
-        val projects = projectService.getAllProjectsForOrganization(organizationUuid).map { ProjectResponse(it) }
-        return ResponseEntity.ok(ProjectListResponse(projects))
+        val projects = projectService
+            .getAllProjectsForOrganization(organizationUuid)
+            .map { ProjectResponse(it) }
+        return ResponseEntity.ok(ProjectListResponse(projects.toList(), 0, 0))
     }
 
     @PostMapping("/project/{projectUuid}/document")

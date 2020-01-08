@@ -124,9 +124,13 @@ class OrganizationControllerTest : ControllerTestBase() {
         }
 
         verify("User can get all organizations") {
-            val result = mockMvc.perform(get(organizationPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get(organizationPath)
+                    .param("size", "10")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val organizationResponse: OrganizationListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationResponse.organizations).hasSize(3)

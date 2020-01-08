@@ -6,13 +6,15 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.util.UUID
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface ProjectService {
     fun createProject(request: CreateProjectServiceRequest): Project
     fun getProjectById(id: UUID): Project?
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
-    fun getAllProjects(): List<Project>
+    fun getAllProjects(pageable: Pageable): Page<Project>
     fun updateProject(project: Project, request: ProjectUpdateRequest): Project
 
     fun addMainImage(project: Project, name: String, content: ByteArray)
