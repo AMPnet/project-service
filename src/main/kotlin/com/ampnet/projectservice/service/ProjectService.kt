@@ -16,6 +16,9 @@ interface ProjectService {
     fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
     fun getAllProjects(pageable: Pageable): Page<Project>
     fun updateProject(project: Project, request: ProjectUpdateRequest): Project
+    fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project>
+    fun getAllProjectTags(): List<String>
+    fun addTagsForProject(project: Project, tags: List<String>)
 
     fun addMainImage(project: Project, name: String, content: ByteArray)
     fun addImageToGallery(project: Project, name: String, content: ByteArray)

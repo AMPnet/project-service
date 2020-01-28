@@ -151,6 +151,29 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-reques
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-response.adoc[]
 
+=== Tags
+
+==== Add project tags
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-response.adoc[]
+
+==== Get all project tags
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjectTags/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjectTags/http-response.adoc[]
+
+==== Get projects by tags
+List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-response.adoc[]
+
 === Update
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]

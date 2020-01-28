@@ -21,7 +21,8 @@ data class ProjectResponse(
     val mainImage: String?,
     val gallery: List<String>,
     val news: List<String>,
-    val active: Boolean
+    val active: Boolean,
+    val tags: List<String>
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -39,7 +40,8 @@ data class ProjectResponse(
         project.mainImage,
         project.gallery.orEmpty(),
         project.newsLinks.orEmpty(),
-        project.active
+        project.active,
+        project.tags.orEmpty()
     )
 }
 

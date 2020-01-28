@@ -7,6 +7,7 @@ import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
+    private val projectTagRepository: ProjectTagRepository,
     private val storageService: StorageService,
     private val applicationProperties: ApplicationProperties
 ) : ProjectService {
@@ -133,6 +135,23 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
+    @Transactional(readOnly = true)
+    override fun getAllProjectTags(): List<String> {
+        return projectTagRepository.getAllTags()
+    }
+
+    @Transactional(readOnly = true)
+    override fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project> {
+        return projectRepository.findByTags(tags, tags.size.toLong(), pageable)
+    }
+
+    @Transactional
+    override fun addTagsForProject(project: Project, tags: List<String>) {
+        val projectTags = project.tags.orEmpty().toMutableSet() + tags.toSet()
+        project.tags = projectTags.toList()
+        projectRepository.save(project)
+    }
+
     @Suppress("ThrowsCount")
     private fun validateCreateProjectRequest(request: CreateProjectServiceRequest) {
         if (request.endDate.isBefore(request.startDate)) {
@@ -183,7 +202,8 @@ class ProjectServiceImpl(
             request.createdByUserUuid,
             ZonedDateTime.now(),
             request.active,
-            null
+            null,
+            request.tags.map { it.toLowerCase() }
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

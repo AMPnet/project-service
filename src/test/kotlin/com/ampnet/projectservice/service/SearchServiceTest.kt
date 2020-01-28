@@ -5,8 +5,6 @@ import com.ampnet.projectservice.service.impl.SearchServiceImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 
 class SearchServiceTest : JpaServiceTestBase() {
 
@@ -15,7 +13,6 @@ class SearchServiceTest : JpaServiceTestBase() {
     }
 
     private lateinit var testContext: TestContext
-    private val defaultPageable: Pageable = PageRequest.of(0, 20)
 
     @BeforeEach
     fun inti() {

@@ -7,6 +7,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
+import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Organization
@@ -74,15 +75,42 @@ class ProjectController(
     }
 
     @GetMapping("/project")
-    fun getAllProjects(pageable: Pageable): ResponseEntity<ProjectListResponse> {
-        logger.debug { "Received request to get project all projects" }
-        val projectsResponse = projectService.getAllProjects(pageable).map { ProjectResponse(it) }
+    fun getAllProjects(
+        @RequestParam(name = "tags") tags: List<String>?,
+        pageable: Pageable
+    ): ResponseEntity<ProjectListResponse> {
+        val projects = if (tags?.isEmpty() != false) {
+            logger.debug { "Received request to get project all projects" }
+            projectService.getAllProjects(pageable)
+        } else {
+            logger.debug { "Received request to get project all projects by tags: $tags" }
+            projectService.getProjectsByTags(tags, pageable)
+        }
+        val projectsResponse = projects.map { ProjectResponse(it) }
         val response = ProjectListResponse(
             projectsResponse.toList(),
             projectsResponse.number,
             projectsResponse.totalPages
         )
         return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/project/tags")
+    fun getAllProjectTags(): ResponseEntity<TagsResponse> {
+        logger.debug { "Received request to get all project tags" }
+        val tags = projectService.getAllProjectTags()
+        return ResponseEntity.ok(TagsResponse(tags))
+    }
+
+    @PostMapping("/project/{projectUuid}/tags")
+    fun addProjectTags(@PathVariable projectUuid: UUID, @RequestParam tags: List<String>): ResponseEntity<Unit> {
+        logger.debug { "Received request to create tags: $tags for project: $projectUuid" }
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val project = getProjectById(projectUuid)
+
+        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
+            projectService.addTagsForProject(project, tags)
+        }
     }
 
     @GetMapping("/project/organization/{organizationUuid}")

@@ -7,6 +7,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
+import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.persistence.model.Document
@@ -233,6 +234,92 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectsResponse.projects).hasSize(2)
             assertThat(projectsResponse.projects.map { it.uuid })
                     .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustNotBeAbleToCreateTagWithoutOrgAdminRole() {
+        suppose("There is a project with tags") {
+            testContext.project = createProject("Projectos", organization, userUuid)
+            addTagsToProject(testContext.project, listOf("wind", "green"))
+        }
+
+        verify("User can add new tags to project") {
+            mockMvc.perform(
+                post("$projectPath/${testContext.project.uuid}/tags")
+                    .param("tags", "uber", "gg"))
+                .andExpect(status().isForbidden)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToAddProjectTags() {
+        suppose("User is admin in the organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("There is a project with tags") {
+            testContext.project = createProject("Projectos", organization, userUuid)
+            addTagsToProject(testContext.project, listOf("wind", "green"))
+        }
+
+        verify("User can add new tags to project") {
+            mockMvc.perform(
+                post("$projectPath/${testContext.project.uuid}/tags")
+                    .param("tags", "uber", "gg"))
+                .andExpect(status().isOk)
+        }
+        verify("Tags are added to project") {
+            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
+            assertThat(optionalProject).isPresent
+            assertThat(optionalProject.get().tags).containsAll(listOf("wind", "green", "uber", "gg"))
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToQueryProjectsByTags() {
+        suppose("There are projects with tags") {
+            val project1 = createProject("Project 1", organization, userUuid)
+            addTagsToProject(project1, listOf("wind", "blue"))
+            val project2 = createProject("Project 2", organization, userUuid)
+            addTagsToProject(project2, listOf("wind", "green"))
+        }
+
+        verify("Controller will return projects containing all tags") {
+            val result = mockMvc.perform(
+                get(projectPath)
+                    .param("tags", "wind", "green"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectListResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectListResponse.projects).hasSize(1)
+            assertThat(projectListResponse.projects.first().tags).containsAll(listOf("wind", "green"))
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetAllProjectTags() {
+        suppose("There are projects with tags") {
+            val project1 = createProject("Project 1", organization, userUuid)
+            addTagsToProject(project1, listOf("wind", "solar"))
+            val project2 = createProject("Project 2", organization, userUuid)
+            addTagsToProject(project2, listOf("wind", "green"))
+        }
+
+        verify("Controller will return all tags") {
+            val result = mockMvc.perform(get("$projectPath/tags"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val tagsResponse: TagsResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(tagsResponse.tags)
+                .hasSize(3)
+                .containsAll(listOf("wind", "solar", "green"))
         }
     }
 
@@ -545,6 +632,11 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().newsLinks).hasSize(2).doesNotContain(testContext.newsLink)
         }
+    }
+
+    fun addTagsToProject(project: Project, tags: List<String>) {
+        project.tags = tags
+        projectRepository.save(project)
     }
 
     private class TestContext {

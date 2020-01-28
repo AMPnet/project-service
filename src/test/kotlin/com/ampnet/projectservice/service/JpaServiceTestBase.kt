@@ -14,7 +14,9 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
+import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -23,6 +25,8 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.context.annotation.Import
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -30,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
-@Import(DatabaseCleanerService::class)
+@Import(DatabaseCleanerService::class, ProjectTagRepositoryImpl::class)
 abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
@@ -49,10 +53,13 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var projectRepository: ProjectRepository
     @Autowired
     protected lateinit var documentRepository: DocumentRepository
+    @Autowired
+    protected lateinit var projectTagRepository: ProjectTagRepository
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
+    protected val defaultPageable: Pageable = PageRequest.of(0, 20)
 
     protected fun createOrganization(name: String, createdByUuid: UUID): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()

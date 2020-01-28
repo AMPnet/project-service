@@ -20,22 +20,24 @@ data class CreateProjectServiceRequest(
     val minPerUser: Long,
     val maxPerUser: Long,
     val active: Boolean,
-    val createdByUserUuid: UUID
+    val createdByUserUuid: UUID,
+    val tags: List<String>
 ) {
     constructor(request: ProjectRequest, organization: Organization, userUuid: UUID) : this(
         organization,
-            request.name,
-            request.description,
-            request.location,
-            request.locationText,
-            request.returnOnInvestment,
-            request.startDate,
-            request.endDate,
-            request.expectedFunding,
-            request.currency,
-            request.minPerUser,
-            request.maxPerUser,
-            request.active,
-            userUuid
+        request.name,
+        request.description,
+        request.location,
+        request.locationText,
+        request.returnOnInvestment,
+        request.startDate,
+        request.endDate,
+        request.expectedFunding,
+        request.currency,
+        request.minPerUser,
+        request.maxPerUser,
+        request.active,
+        userUuid,
+        emptyList()
     )
 }

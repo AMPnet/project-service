@@ -4,8 +4,10 @@ import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.persistence.HashArrayToStringConverter
 import java.time.ZonedDateTime
 import java.util.UUID
+import javax.persistence.CollectionTable
 import javax.persistence.Column
 import javax.persistence.Convert
+import javax.persistence.ElementCollection
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
@@ -86,5 +88,10 @@ data class Project(
             joinColumns = [JoinColumn(name = "project_uuid")],
             inverseJoinColumns = [JoinColumn(name = "document_id")]
     )
-    var documents: List<Document>?
+    var documents: List<Document>?,
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
+    @Column(name = "tag")
+    var tags: List<String>?
 )
