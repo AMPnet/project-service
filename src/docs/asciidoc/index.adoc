@@ -120,6 +120,8 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToGetSpecificProject/http-re
 === Create project
 
 ==== Successfully create
+`Tags` value is optional.
+
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToCreateProject/http-request.adoc[]
 .Response
@@ -153,7 +155,9 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-respon
 
 === Tags
 
-==== Add project tags
+==== Set project tags
+Set full list of tags for project. Provided list of tags will overwrite old list of tags.
+
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-request.adoc[]
 .Response
@@ -175,6 +179,9 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-r
 include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-response.adoc[]
 
 === Update
+All values are optional. Only provided values will be updated. For list values: `tags`, old values are overwritten
+by a new list.
+
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]
 .Response

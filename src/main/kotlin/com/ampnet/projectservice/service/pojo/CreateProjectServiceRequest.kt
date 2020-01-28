@@ -38,6 +38,6 @@ data class CreateProjectServiceRequest(
         request.maxPerUser,
         request.active,
         userUuid,
-        emptyList()
+        request.tags.orEmpty()
     )
 }

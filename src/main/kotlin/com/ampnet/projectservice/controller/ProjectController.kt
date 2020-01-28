@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -59,7 +60,7 @@ class ProjectController(
         }
     }
 
-    @PostMapping("/project/{projectUuid}")
+    @PutMapping("/project/{projectUuid}")
     fun updateProject(
         @PathVariable("projectUuid") projectUuid: UUID,
         @RequestBody @Valid request: ProjectUpdateRequest
@@ -100,17 +101,6 @@ class ProjectController(
         logger.debug { "Received request to get all project tags" }
         val tags = projectService.getAllProjectTags()
         return ResponseEntity.ok(TagsResponse(tags))
-    }
-
-    @PostMapping("/project/{projectUuid}/tags")
-    fun addProjectTags(@PathVariable projectUuid: UUID, @RequestParam tags: List<String>): ResponseEntity<Unit> {
-        logger.debug { "Received request to create tags: $tags for project: $projectUuid" }
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            projectService.addTagsForProject(project, tags)
-        }
     }
 
     @GetMapping("/project/organization/{organizationUuid}")

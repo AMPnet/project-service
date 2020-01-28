@@ -73,6 +73,7 @@ class ProjectServiceImpl(
         request.locationText?.let { project.locationText = it }
         request.returnOnInvestment?.let { project.returnOnInvestment = it }
         request.active?.let { project.active = it }
+        request.tags?.let { it -> project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
         return projectRepository.save(project)
     }
 
@@ -145,13 +146,6 @@ class ProjectServiceImpl(
         return projectRepository.findByTags(tags, tags.size.toLong(), pageable)
     }
 
-    @Transactional
-    override fun addTagsForProject(project: Project, tags: List<String>) {
-        val projectTags = project.tags.orEmpty().toMutableSet() + tags.toSet()
-        project.tags = projectTags.toList()
-        projectRepository.save(project)
-    }
-
     @Suppress("ThrowsCount")
     private fun validateCreateProjectRequest(request: CreateProjectServiceRequest) {
         if (request.endDate.isBefore(request.startDate)) {
@@ -203,7 +197,7 @@ class ProjectServiceImpl(
             ZonedDateTime.now(),
             request.active,
             null,
-            request.tags.map { it.toLowerCase() }
+            request.tags.toSet().map { it.toLowerCase() }
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {
