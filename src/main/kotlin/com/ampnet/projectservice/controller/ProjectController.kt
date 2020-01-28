@@ -1,7 +1,6 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
-import com.ampnet.projectservice.controller.pojo.request.LinkRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
@@ -183,34 +182,6 @@ class ProjectController(
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.removeImagesFromGallery(project, request.images)
-        }
-    }
-
-    @PostMapping("/project/{projectUuid}/news")
-    fun addNews(
-        @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestBody request: LinkRequest
-    ): ResponseEntity<Unit> {
-        logger.debug { "Received request to add gallery image to project: $projectUuid" }
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            projectService.addNews(project, request.link)
-        }
-    }
-
-    @DeleteMapping("/project/{projectUuid}/news")
-    fun removeNews(
-        @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestBody request: LinkRequest
-    ): ResponseEntity<Unit> {
-        logger.debug { "Received request to delete gallery images for project: $projectUuid" }
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            projectService.removeNews(project, request.link)
         }
     }
 

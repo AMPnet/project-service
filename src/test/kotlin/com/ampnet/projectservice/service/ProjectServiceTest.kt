@@ -335,47 +335,6 @@ class ProjectServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustBeAbleToAddNews() {
-        suppose("Project exists") {
-            databaseCleanerService.deleteAllProjects()
-            testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
-        }
-
-        verify("News can be added to project") {
-            val newsLink = "news"
-            testContext.news = listOf(newsLink)
-            projectService.addNews(testContext.project, newsLink)
-        }
-        verify("News is added to project") {
-            val project = projectService.getProjectById(testContext.project.uuid) ?: fail("Missing project")
-            assertThat(project.newsLinks).hasSize(1).contains(testContext.news.first())
-        }
-    }
-
-    @Test
-    fun mustBeAbleToRemoveNews() {
-        suppose("Project exists") {
-            databaseCleanerService.deleteAllProjects()
-            testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
-        }
-        suppose("Project has news") {
-            testContext.news = listOf("news1", "news2", "news3")
-            testContext.project.newsLinks = testContext.news
-            projectRepository.save(testContext.project)
-        }
-
-        verify("News can be removed project") {
-            projectService.removeNews(testContext.project, testContext.news.first())
-        }
-        verify("News is removed to project") {
-            val project = projectService.getProjectById(testContext.project.uuid) ?: fail("Missing project")
-            assertThat(project.newsLinks).hasSize(2).doesNotContain(testContext.news.first())
-        }
-    }
-
-    @Test
     fun mustBeAbleToGetAllProjectTags() {
         suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
@@ -449,7 +408,6 @@ class ProjectServiceTest : JpaServiceTestBase() {
         lateinit var project: Project
         lateinit var imageLink: String
         lateinit var gallery: List<String>
-        lateinit var news: List<String>
         lateinit var tags: List<String>
     }
 }

@@ -7,5 +7,6 @@ data class ProjectUpdateRequest(
     val locationText: String? = null,
     val returnOnInvestment: String? = null,
     val active: Boolean? = null,
-    val tags: List<String>? = null
+    val tags: List<String>? = null,
+    val news: List<String>? = null
 )

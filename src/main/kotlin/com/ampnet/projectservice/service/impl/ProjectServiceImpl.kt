@@ -74,6 +74,7 @@ class ProjectServiceImpl(
         request.returnOnInvestment?.let { project.returnOnInvestment = it }
         request.active?.let { project.active = it }
         request.tags?.let { it -> project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
+        request.news?.let { project.newsLinks = it }
         return projectRepository.save(project)
     }
 
@@ -118,22 +119,6 @@ class ProjectServiceImpl(
             project.documents = storedDocuments
             projectRepository.save(project)
         }
-    }
-
-    @Transactional
-    override fun addNews(project: Project, link: String) {
-        val news = project.newsLinks.orEmpty().toMutableList()
-        news.add(link)
-        project.newsLinks = news
-        projectRepository.save(project)
-    }
-
-    @Transactional
-    override fun removeNews(project: Project, link: String) {
-        val news = project.newsLinks.orEmpty().toMutableList()
-        news.remove(link)
-        project.newsLinks = news
-        projectRepository.save(project)
     }
 
     @Transactional(readOnly = true)

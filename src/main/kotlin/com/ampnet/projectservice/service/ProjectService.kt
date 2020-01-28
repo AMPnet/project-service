@@ -24,6 +24,4 @@ interface ProjectService {
     fun removeImagesFromGallery(project: Project, images: List<String>)
     fun addDocument(project: Project, request: DocumentSaveRequest): Document
     fun removeDocument(project: Project, documentId: Int)
-    fun addNews(project: Project, link: String)
-    fun removeNews(project: Project, link: String)
 }

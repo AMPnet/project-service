@@ -179,8 +179,8 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-r
 include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-response.adoc[]
 
 === Update
-All values are optional. Only provided values will be updated. For list values: `tags`, old values are overwritten
-by a new list.
+All values are optional. Only provided values will be updated. For list values: `tags` and `news`,
+old values are overwritten by a new list.
 
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]
@@ -228,12 +228,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-re
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-request.adoc[]
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-response.adoc[]
-
-==== Delete news
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveNews/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveNews/http-response.adoc[]
 
 == Search API
 

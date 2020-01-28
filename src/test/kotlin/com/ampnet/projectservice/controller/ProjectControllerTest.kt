@@ -1,7 +1,6 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
-import com.ampnet.projectservice.controller.pojo.request.LinkRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
@@ -584,47 +583,21 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("User can add news link") {
-            val request = LinkRequest(testContext.newsLink)
-            mockMvc.perform(
-                    post("$projectPath/${testContext.project.uuid}/news")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
+            val request = ProjectUpdateRequest(news = listOf("news-link"))
+            val result = mockMvc.perform(
+                put("$projectPath/${testContext.project.uuid}")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val project: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(project.news).containsAll(listOf("news-link"))
         }
         verify("News link is added to project") {
             val optionalProject = projectRepository.findById(testContext.project.uuid)
             assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().newsLinks).hasSize(1).contains(testContext.newsLink)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustBeAbleToRemoveNews() {
-        suppose("Project exists") {
-            testContext.project = createProject("Project", organization, userUuid)
-        }
-        suppose("User is an admin of organization") {
-            databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
-        }
-        suppose("Project has news links") {
-            testContext.project.newsLinks = listOf(testContext.newsLink, "link-2", "link-3")
-            projectRepository.save(testContext.project)
-        }
-
-        verify("User can remove news link") {
-            val request = LinkRequest(testContext.newsLink)
-            mockMvc.perform(
-                    delete("$projectPath/${testContext.project.uuid}/news")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-        }
-        verify("News link is removed to project") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().newsLinks).hasSize(2).doesNotContain(testContext.newsLink)
+            assertThat(optionalProject.get().newsLinks).containsAll(listOf("news-link"))
         }
     }
 
@@ -642,7 +615,6 @@ class ProjectControllerTest : ControllerTestBase() {
         lateinit var document: Document
         val documentLink = "link"
         val imageLink = "image-link"
-        val newsLink = "news-link"
         lateinit var projectUuid: UUID
         lateinit var tags: List<String>
     }
