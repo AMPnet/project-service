@@ -555,7 +555,7 @@ class ProjectControllerTest : ControllerTestBase() {
             projectRepository.save(testContext.project)
         }
 
-        verify("User can add main image") {
+        verify("User can remove gallery image") {
             val request = ImageLinkListRequest(listOf("image-link-1"))
             mockMvc.perform(
                     delete("$projectPath/${testContext.project.uuid}/image/gallery")
@@ -563,7 +563,7 @@ class ProjectControllerTest : ControllerTestBase() {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk)
         }
-        verify("Document is stored in database and connected to project") {
+        verify("Gallery image is removed") {
             val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             assertThat(optionalProject.get().gallery).contains("image-link-2", "image-link-3")
