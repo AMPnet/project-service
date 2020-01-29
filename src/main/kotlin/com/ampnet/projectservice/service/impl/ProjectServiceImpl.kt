@@ -15,6 +15,7 @@ import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
+import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -46,13 +47,12 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectById(id: UUID): Project? {
-        return ServiceUtils.wrapOptional(projectRepository.findByIdWithOrganization(id))
-    }
-
-    @Transactional(readOnly = true)
     override fun getProjectByIdWithAllData(id: UUID): Project? {
-        return ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
+        val project = ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
+            ?: return null
+        Hibernate.initialize(project.gallery)
+        Hibernate.initialize(project.newsLinks)
+        return project
     }
 
     @Transactional(readOnly = true)

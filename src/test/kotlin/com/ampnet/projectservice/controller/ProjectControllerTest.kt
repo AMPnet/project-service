@@ -4,6 +4,7 @@ import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
@@ -55,7 +56,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
@@ -155,13 +156,11 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.projectRequest.maxPerUser)
             assertThat(projectResponse.active).isEqualTo(testContext.projectRequest.active)
             assertThat(projectResponse.mainImage).isNullOrEmpty()
-            assertThat(projectResponse.gallery).isNullOrEmpty()
-            assertThat(projectResponse.news).isNullOrEmpty()
 
             testContext.projectUuid = projectResponse.uuid
         }
         verify("Project is stored in database") {
-            val optionalProject = projectRepository.findByIdWithOrganization(testContext.projectUuid)
+            val optionalProject = projectRepository.findById(testContext.projectUuid)
             assertThat(optionalProject).isPresent
         }
     }
@@ -187,7 +186,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectUpdateRequest.description)
@@ -261,7 +260,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val project: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val project: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(project.tags).containsAll(testContext.tags)
         }
         verify("Tags are added to project") {
@@ -358,8 +357,6 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.active).isEqualTo(testContext.project.active)
-            assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
-            assertThat(projectResponse.gallery).isEqualTo(testContext.project.newsLinks.orEmpty())
         }
     }
 
@@ -534,9 +531,9 @@ class ProjectControllerTest : ControllerTestBase() {
                     .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().gallery).contains(testContext.imageLink)
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).contains(testContext.imageLink)
         }
     }
 
@@ -564,10 +561,10 @@ class ProjectControllerTest : ControllerTestBase() {
                     .andExpect(status().isOk)
         }
         verify("Gallery image is removed") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().gallery).contains("image-link-2", "image-link-3")
-            assertThat(optionalProject.get().gallery).doesNotContain("image-link-1")
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).contains("image-link-2", "image-link-3")
+            assertThat(project.gallery).doesNotContain("image-link-1")
         }
     }
 
@@ -591,13 +588,13 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val project: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val project: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(project.news).containsAll(listOf("news-link"))
         }
         verify("News link is added to project") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().newsLinks).containsAll(listOf("news-link"))
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.newsLinks).containsAll(listOf("news-link"))
         }
     }
 

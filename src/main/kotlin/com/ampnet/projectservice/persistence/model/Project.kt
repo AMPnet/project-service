@@ -16,8 +16,6 @@ import javax.persistence.JoinTable
 import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.Table
-import org.hibernate.annotations.Fetch
-import org.hibernate.annotations.FetchMode
 
 @Entity
 @Table(name = "project")
@@ -66,14 +64,12 @@ data class Project(
     @Column
     var mainImage: String?,
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Fetch(value = FetchMode.SUBSELECT)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "project_gallery", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "image")
     var gallery: List<String>?,
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Fetch(value = FetchMode.SUBSELECT)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "project_news", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "link")
     var newsLinks: List<String>?,
@@ -95,7 +91,6 @@ data class Project(
     var documents: List<Document>?,
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Fetch(value = FetchMode.SUBSELECT)
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "tag")
     var tags: List<String>?

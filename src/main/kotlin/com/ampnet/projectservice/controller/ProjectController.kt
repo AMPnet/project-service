@@ -4,6 +4,7 @@ import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
@@ -41,10 +42,10 @@ class ProjectController(
     companion object : KLogging()
 
     @GetMapping("/public/project/{uuid}")
-    fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectResponse> {
+    fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectFullResponse> {
         logger.debug { "Received request to get project with uuid: $uuid" }
         projectService.getProjectByIdWithAllData(uuid)?.let { project ->
-            return ResponseEntity.ok(ProjectResponse(project))
+            return ResponseEntity.ok(ProjectFullResponse(project))
         }
         return ResponseEntity.notFound().build()
     }
@@ -63,14 +64,14 @@ class ProjectController(
     fun updateProject(
         @PathVariable("projectUuid") projectUuid: UUID,
         @RequestBody @Valid request: ProjectUpdateRequest
-    ): ResponseEntity<ProjectResponse> {
+    ): ResponseEntity<ProjectFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
+        val project = getProjectByIdWithAllData(projectUuid)
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val updatedProject = projectService.updateProject(project, request)
-            ProjectResponse(updatedProject)
+            ProjectFullResponse(updatedProject)
         }
     }
 
@@ -148,7 +149,7 @@ class ProjectController(
     ): ResponseEntity<Unit> {
         logger.debug { "Received request to add main image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
+        val project = getProjectByIdWithAllData(projectUuid)
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val imageName = getImageNameFromMultipartFile(image)
@@ -163,7 +164,7 @@ class ProjectController(
     ): ResponseEntity<Unit> {
         logger.debug { "Received request to add gallery image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
+        val project = getProjectByIdWithAllData(projectUuid)
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             val imageName = getImageNameFromMultipartFile(image)
@@ -178,7 +179,7 @@ class ProjectController(
     ): ResponseEntity<Unit> {
         logger.debug { "Received request to delete gallery images for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectById(projectUuid)
+        val project = getProjectByIdWithAllData(projectUuid)
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.removeImagesFromGallery(project, request.images)
@@ -202,10 +203,6 @@ class ProjectController(
 
     private fun getUserMembershipInOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationMembership? =
             organizationService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
-
-    private fun getProjectById(projectUuid: UUID): Project =
-        projectService.getProjectById(projectUuid)
-            ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectUuid")
 
     private fun getProjectByIdWithAllData(projectUuid: UUID): Project =
             projectService.getProjectByIdWithAllData(projectUuid)

@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable
 
 interface ProjectService {
     fun createProject(request: CreateProjectServiceRequest): Project
-    fun getProjectById(id: UUID): Project?
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
     fun getAllProjects(pageable: Pageable): Page<Project>
