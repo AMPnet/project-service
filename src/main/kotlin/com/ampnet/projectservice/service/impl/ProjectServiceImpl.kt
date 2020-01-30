@@ -7,6 +7,7 @@ import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
@@ -14,6 +15,7 @@ import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
+import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
+    private val projectTagRepository: ProjectTagRepository,
     private val storageService: StorageService,
     private val applicationProperties: ApplicationProperties
 ) : ProjectService {
@@ -44,13 +47,12 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectById(id: UUID): Project? {
-        return ServiceUtils.wrapOptional(projectRepository.findByIdWithOrganization(id))
-    }
-
-    @Transactional(readOnly = true)
     override fun getProjectByIdWithAllData(id: UUID): Project? {
-        return ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
+        val project = ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
+            ?: return null
+        Hibernate.initialize(project.gallery)
+        Hibernate.initialize(project.newsLinks)
+        return project
     }
 
     @Transactional(readOnly = true)
@@ -71,6 +73,8 @@ class ProjectServiceImpl(
         request.locationText?.let { project.locationText = it }
         request.returnOnInvestment?.let { project.returnOnInvestment = it }
         request.active?.let { project.active = it }
+        request.tags?.let { it -> project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
+        request.news?.let { project.newsLinks = it }
         return projectRepository.save(project)
     }
 
@@ -117,20 +121,14 @@ class ProjectServiceImpl(
         }
     }
 
-    @Transactional
-    override fun addNews(project: Project, link: String) {
-        val news = project.newsLinks.orEmpty().toMutableList()
-        news.add(link)
-        project.newsLinks = news
-        projectRepository.save(project)
+    @Transactional(readOnly = true)
+    override fun getAllProjectTags(): List<String> {
+        return projectTagRepository.getAllTags()
     }
 
-    @Transactional
-    override fun removeNews(project: Project, link: String) {
-        val news = project.newsLinks.orEmpty().toMutableList()
-        news.remove(link)
-        project.newsLinks = news
-        projectRepository.save(project)
+    @Transactional(readOnly = true)
+    override fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project> {
+        return projectRepository.findByTags(tags, tags.size.toLong(), pageable)
     }
 
     @Suppress("ThrowsCount")
@@ -183,7 +181,8 @@ class ProjectServiceImpl(
             request.createdByUserUuid,
             ZonedDateTime.now(),
             request.active,
-            null
+            null,
+            request.tags.toSet().map { it.toLowerCase() }
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

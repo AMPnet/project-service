@@ -1,12 +1,13 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
-import com.ampnet.projectservice.controller.pojo.request.LinkRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
+import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.persistence.model.Document
@@ -26,6 +27,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class ProjectControllerTest : ControllerTestBase() {
@@ -54,7 +56,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
@@ -154,13 +156,11 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.projectRequest.maxPerUser)
             assertThat(projectResponse.active).isEqualTo(testContext.projectRequest.active)
             assertThat(projectResponse.mainImage).isNullOrEmpty()
-            assertThat(projectResponse.gallery).isNullOrEmpty()
-            assertThat(projectResponse.news).isNullOrEmpty()
 
             testContext.projectUuid = projectResponse.uuid
         }
         verify("Project is stored in database") {
-            val optionalProject = projectRepository.findByIdWithOrganization(testContext.projectUuid)
+            val optionalProject = projectRepository.findById(testContext.projectUuid)
             assertThat(optionalProject).isPresent
         }
     }
@@ -178,15 +178,15 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("Admin can update project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false)
+                    ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false, listOf("tag"))
             val result = mockMvc.perform(
-                    post("$projectPath/${testContext.project.uuid}")
-                            .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                put("$projectPath/${testContext.project.uuid}")
+                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
 
-            val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectUpdateRequest.description)
@@ -195,6 +195,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.returnOnInvestment)
                     .isEqualTo(testContext.projectUpdateRequest.returnOnInvestment)
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
+            assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
         }
         verify("Project is updated") {
             val optionalProject = projectRepository.findById(testContext.project.uuid)
@@ -206,6 +207,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(updatedProject.locationText).isEqualTo(testContext.projectUpdateRequest.locationText)
             assertThat(updatedProject.returnOnInvestment).isEqualTo(testContext.projectUpdateRequest.returnOnInvestment)
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
+            assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
         }
     }
 
@@ -233,6 +235,83 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectsResponse.projects).hasSize(2)
             assertThat(projectsResponse.projects.map { it.uuid })
                     .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToAddProjectTags() {
+        suppose("User is admin in the organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("There is a project with tags") {
+            testContext.project = createProject("Projectos", organization, userUuid)
+            addTagsToProject(testContext.project, listOf("wind", "green"))
+        }
+
+        verify("User can add new tags to project") {
+            testContext.tags = listOf("wind", "green", "gg")
+            testContext.projectUpdateRequest = ProjectUpdateRequest(tags = testContext.tags)
+            val result = mockMvc.perform(
+                put("$projectPath/${testContext.project.uuid}")
+                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val project: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(project.tags).containsAll(testContext.tags)
+        }
+        verify("Tags are added to project") {
+            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
+            assertThat(optionalProject).isPresent
+            assertThat(optionalProject.get().tags).containsAll(testContext.tags)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToQueryProjectsByTags() {
+        suppose("There are projects with tags") {
+            val project1 = createProject("Project 1", organization, userUuid)
+            addTagsToProject(project1, listOf("wind", "blue"))
+            val project2 = createProject("Project 2", organization, userUuid)
+            addTagsToProject(project2, listOf("wind", "green"))
+        }
+
+        verify("Controller will return projects containing all tags") {
+            val result = mockMvc.perform(
+                get(projectPath)
+                    .param("tags", "wind", "green"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectListResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectListResponse.projects).hasSize(1)
+            assertThat(projectListResponse.projects.first().tags).containsAll(listOf("wind", "green"))
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetAllProjectTags() {
+        suppose("There are projects with tags") {
+            val project1 = createProject("Project 1", organization, userUuid)
+            addTagsToProject(project1, listOf("wind", "solar"))
+            val project2 = createProject("Project 2", organization, userUuid)
+            addTagsToProject(project2, listOf("wind", "green"))
+        }
+
+        verify("Controller will return all tags") {
+            val result = mockMvc.perform(get("$projectPath/tags"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val tagsResponse: TagsResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(tagsResponse.tags)
+                .hasSize(3)
+                .containsAll(listOf("wind", "solar", "green"))
         }
     }
 
@@ -278,8 +357,6 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.active).isEqualTo(testContext.project.active)
-            assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
-            assertThat(projectResponse.gallery).isEqualTo(testContext.project.newsLinks.orEmpty())
         }
     }
 
@@ -298,10 +375,10 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest =
                     ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false)
             mockMvc.perform(
-                    post("$projectPath/${testContext.project.uuid}")
-                            .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isForbidden)
+                put("$projectPath/${testContext.project.uuid}")
+                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden)
         }
     }
 
@@ -312,10 +389,10 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest =
                     ProjectUpdateRequest("new name", "description", null, null, null, false)
             val response = mockMvc.perform(
-                    post("$projectPath/${UUID.randomUUID()}")
-                            .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
+                put("$projectPath/${UUID.randomUUID()}")
+                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
             verifyResponseErrorCode(response, ErrorCode.PRJ_MISSING)
         }
     }
@@ -454,9 +531,9 @@ class ProjectControllerTest : ControllerTestBase() {
                     .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().gallery).contains(testContext.imageLink)
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).contains(testContext.imageLink)
         }
     }
 
@@ -475,7 +552,7 @@ class ProjectControllerTest : ControllerTestBase() {
             projectRepository.save(testContext.project)
         }
 
-        verify("User can add main image") {
+        verify("User can remove gallery image") {
             val request = ImageLinkListRequest(listOf("image-link-1"))
             mockMvc.perform(
                     delete("$projectPath/${testContext.project.uuid}/image/gallery")
@@ -483,11 +560,11 @@ class ProjectControllerTest : ControllerTestBase() {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk)
         }
-        verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().gallery).contains("image-link-2", "image-link-3")
-            assertThat(optionalProject.get().gallery).doesNotContain("image-link-1")
+        verify("Gallery image is removed") {
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).contains("image-link-2", "image-link-3")
+            assertThat(project.gallery).doesNotContain("image-link-1")
         }
     }
 
@@ -503,48 +580,27 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("User can add news link") {
-            val request = LinkRequest(testContext.newsLink)
-            mockMvc.perform(
-                    post("$projectPath/${testContext.project.uuid}/news")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
+            val request = ProjectUpdateRequest(news = listOf("news-link"))
+            val result = mockMvc.perform(
+                put("$projectPath/${testContext.project.uuid}")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val project: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(project.news).containsAll(listOf("news-link"))
         }
         verify("News link is added to project") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().newsLinks).hasSize(1).contains(testContext.newsLink)
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.newsLinks).containsAll(listOf("news-link"))
         }
     }
 
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustBeAbleToRemoveNews() {
-        suppose("Project exists") {
-            testContext.project = createProject("Project", organization, userUuid)
-        }
-        suppose("User is an admin of organization") {
-            databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
-        }
-        suppose("Project has news links") {
-            testContext.project.newsLinks = listOf(testContext.newsLink, "link-2", "link-3")
-            projectRepository.save(testContext.project)
-        }
-
-        verify("User can remove news link") {
-            val request = LinkRequest(testContext.newsLink)
-            mockMvc.perform(
-                    delete("$projectPath/${testContext.project.uuid}/news")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-        }
-        verify("News link is removed to project") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().newsLinks).hasSize(2).doesNotContain(testContext.newsLink)
-        }
+    fun addTagsToProject(project: Project, tags: List<String>) {
+        project.tags = tags
+        projectRepository.save(project)
     }
 
     private class TestContext {
@@ -556,7 +612,7 @@ class ProjectControllerTest : ControllerTestBase() {
         lateinit var document: Document
         val documentLink = "link"
         val imageLink = "image-link"
-        val newsLink = "news-link"
         lateinit var projectUuid: UUID
+        lateinit var tags: List<String>
     }
 }

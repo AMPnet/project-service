@@ -7,7 +7,6 @@ import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
-import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
@@ -20,6 +19,7 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.CloudStorageService
+import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -69,7 +69,7 @@ abstract class ControllerTestBase : TestBase() {
     @Autowired
     protected lateinit var userService: UserService
     @Autowired
-    protected lateinit var mailService: MailService
+    protected lateinit var projectService: ProjectService
     @Autowired
     private lateinit var documentRepository: DocumentRepository
 

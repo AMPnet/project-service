@@ -36,5 +36,7 @@ data class ProjectRequest(
 
     val maxPerUser: Long,
 
-    val active: Boolean
+    val active: Boolean,
+
+    val tags: List<String>? = null
 )

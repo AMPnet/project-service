@@ -22,7 +22,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     private val applicationProperties = ApplicationProperties()
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        ProjectServiceImpl(projectRepository, storageServiceImpl, applicationProperties)
+        ProjectServiceImpl(projectRepository, projectTagRepository, storageServiceImpl, applicationProperties)
     }
     private val imageContent = "data".toByteArray()
 
@@ -45,9 +45,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Project is created") {
-            val optionalProject = projectRepository.findByIdWithOrganization(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            val project = optionalProject.get()
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
             val request = testContext.createProjectRequest
             assertThat(project.name).isEqualTo(request.name)
             assertThat(project.description).isEqualTo(request.description)
@@ -86,20 +85,21 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustNotBeAbleToCreateProjectWithEndDateBeforeStartDate() {
         suppose("Request has end date before start date") {
             testContext.createProjectRequest = CreateProjectServiceRequest(
-                    organization,
-                    "Invalid date",
-                    "Description",
-                    "location",
-                    "locationText",
-                    "1-2%",
-                    ZonedDateTime.now(),
-                    ZonedDateTime.now().minusDays(1),
-                    1000000,
-                    Currency.EUR,
-                    100,
-                    10000,
-                    false,
-                    userUuid
+                organization,
+                "Invalid date",
+                "Description",
+                "location",
+                "locationText",
+                "1-2%",
+                ZonedDateTime.now(),
+                ZonedDateTime.now().minusDays(1),
+                1000000,
+                Currency.EUR,
+                100,
+                10000,
+                false,
+                userUuid,
+                emptyList()
             )
         }
 
@@ -149,9 +149,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("The project gallery contains added images") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().gallery).containsAll(testContext.gallery)
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).containsAll(testContext.gallery)
         }
     }
 
@@ -176,11 +176,10 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Gallery has additional image") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            val gallery = optionalProject.get().gallery
-            assertThat(gallery).containsAll(testContext.gallery)
-            assertThat(gallery).contains(testContext.imageLink)
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).containsAll(testContext.gallery)
+            assertThat(project.gallery).contains(testContext.imageLink)
         }
     }
 
@@ -201,11 +200,10 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Gallery does not have deleted image") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            val gallery = optionalProject.get().gallery
-            assertThat(gallery).doesNotContain("link-1", "link-3")
-            assertThat(gallery).contains("link-2")
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(project.gallery).doesNotContain("link-1", "link-3")
+            assertThat(project.gallery).contains("link-2")
         }
     }
 
@@ -214,20 +212,21 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Request has end date before present date") {
             val currentTime = ZonedDateTime.now()
             testContext.createProjectRequest = CreateProjectServiceRequest(
-                    organization,
-                    "Invalid end date",
-                    "Description",
-                    "location",
-                    "locationText",
-                    "1-2%",
-                    currentTime.minusDays(60),
-                    currentTime.minusDays(30),
-                    1000000,
-                    Currency.EUR,
-                    100,
-                    10000,
-                    false,
-                    userUuid
+                organization,
+                "Invalid end date",
+                "Description",
+                "location",
+                "locationText",
+                "1-2%",
+                currentTime.minusDays(60),
+                currentTime.minusDays(30),
+                1000000,
+                Currency.EUR,
+                100,
+                10000,
+                false,
+                userUuid,
+                emptyList()
             )
         }
 
@@ -244,20 +243,21 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Request has min per user value above max per user") {
             val currentTime = ZonedDateTime.now()
             testContext.createProjectRequest = CreateProjectServiceRequest(
-                    organization,
-                    "Invalid end date",
-                    "Description",
-                    "location",
-                    "locationText",
-                    "1-2%",
-                    currentTime,
-                    currentTime.plusDays(30),
-                    1000000,
-                    Currency.EUR,
-                    1_000,
-                    1,
-                    false,
-                    userUuid
+                organization,
+                "Invalid end date",
+                "Description",
+                "location",
+                "locationText",
+                "1-2%",
+                currentTime,
+                currentTime.plusDays(30),
+                1000000,
+                Currency.EUR,
+                1_000,
+                1,
+                false,
+                userUuid,
+                emptyList()
             )
         }
 
@@ -274,20 +274,21 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Request has max per user value above system max") {
             val currentTime = ZonedDateTime.now()
             testContext.createProjectRequest = CreateProjectServiceRequest(
-                    organization,
-                    "Invalid end date",
-                    "Description",
-                    "location",
-                    "locationText",
-                    "1-2%",
-                    currentTime,
-                    currentTime.plusDays(30),
-                    10_000_000_000_000,
-                    Currency.EUR,
-                    1,
-                    applicationProperties.investment.maxPerUser + 1,
-                    false,
-                    userUuid
+                organization,
+                "Invalid end date",
+                "Description",
+                "location",
+                "locationText",
+                "1-2%",
+                currentTime,
+                currentTime.plusDays(30),
+                10_000_000_000_000,
+                Currency.EUR,
+                1,
+                applicationProperties.investment.maxPerUser + 1,
+                false,
+                userUuid,
+                emptyList()
             )
         }
 
@@ -304,20 +305,21 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Request has max per user value above system max") {
             val currentTime = ZonedDateTime.now()
             testContext.createProjectRequest = CreateProjectServiceRequest(
-                    organization,
-                    "Invalid end date",
-                    "Description",
-                    "location",
-                    "locationText",
-                    "1-2%",
-                    currentTime,
-                    currentTime.plusDays(30),
-                    applicationProperties.investment.maxPerProject + 1,
-                    Currency.EUR,
-                    1,
-                    1_000_000_000,
-                    false,
-                    userUuid
+                organization,
+                "Invalid end date",
+                "Description",
+                "location",
+                "locationText",
+                "1-2%",
+                currentTime,
+                currentTime.plusDays(30),
+                applicationProperties.investment.maxPerProject + 1,
+                Currency.EUR,
+                1,
+                1_000_000_000,
+                false,
+                userUuid,
+                emptyList()
             )
         }
 
@@ -330,62 +332,71 @@ class ProjectServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustBeAbleToAddNews() {
-        suppose("Project exists") {
+    fun mustBeAbleToGetAllProjectTags() {
+        suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
-            testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            val project = projectService.createProject(createProjectRequest("First project"))
+            testContext.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.tags = testContext.tags
+            projectRepository.save(project)
+        }
+        suppose("Another project has tags") {
+            val project = projectService.createProject(createProjectRequest("Second project"))
+            project.tags = listOf("tag 1", "tag 4")
+            projectRepository.save(project)
+            testContext.tags.toMutableList().add("tag 4")
         }
 
-        verify("News can be added to project") {
-            val newsLink = "news"
-            testContext.news = listOf(newsLink)
-            projectService.addNews(testContext.project, newsLink)
-        }
-        verify("News is added to project") {
-            val project = projectService.getProjectById(testContext.project.uuid) ?: fail("Missing project")
-            assertThat(project.newsLinks).hasSize(1).contains(testContext.news.first())
+        verify("Service can get all project tags") {
+            val allTags = projectTagRepository.getAllTags()
+            assertThat(allTags).hasSize(4).containsAll(testContext.tags)
         }
     }
 
     @Test
-    fun mustBeAbleToRemoveNews() {
-        suppose("Project exists") {
+    fun mustBeAbleToGetProjectsByTags() {
+        suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
-            testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            val project = projectService.createProject(createProjectRequest("First project"))
+            project.tags = listOf("tag 1", "tag 3")
+            projectRepository.save(project)
         }
-        suppose("Project has news") {
-            testContext.news = listOf("news1", "news2", "news3")
-            testContext.project.newsLinks = testContext.news
-            projectRepository.save(testContext.project)
+        suppose("Second project has tags") {
+            val project = projectService.createProject(createProjectRequest("Second project"))
+            project.tags = listOf("tag 1", "tag 2", "tag 3")
+            projectRepository.save(project)
+        }
+        suppose("Third project has tags") {
+            val project = projectService.createProject(createProjectRequest("Third project"))
+            project.tags = listOf("tag 1", "tag 3")
+            projectRepository.save(project)
         }
 
-        verify("News can be removed project") {
-            projectService.removeNews(testContext.project, testContext.news.first())
-        }
-        verify("News is removed to project") {
-            val project = projectService.getProjectById(testContext.project.uuid) ?: fail("Missing project")
-            assertThat(project.newsLinks).hasSize(2).doesNotContain(testContext.news.first())
+        verify("Service will return project for tags") {
+            val tags = listOf("tag 1", "tag 2")
+            val projects = projectService.getProjectsByTags(tags, defaultPageable)
+            val project = projects.first()
+            assertThat(project.tags).containsAll(tags)
         }
     }
 
     private fun createProjectRequest(name: String): CreateProjectServiceRequest {
         return CreateProjectServiceRequest(
-                organization,
-                name,
-                "Description",
-                "location",
-                "locationText",
-                "1-2%",
-                ZonedDateTime.now(),
-                ZonedDateTime.now().plusDays(30),
-                1000000,
-                Currency.EUR,
-                100,
-                10000,
-                false,
-                userUuid
+            organization,
+            name,
+            "Description",
+            "location",
+            "locationText",
+            "1-2%",
+            ZonedDateTime.now(),
+            ZonedDateTime.now().plusDays(30),
+            1000000,
+            Currency.EUR,
+            100,
+            10000,
+            false,
+            userUuid,
+            emptyList()
         )
     }
 
@@ -394,6 +405,6 @@ class ProjectServiceTest : JpaServiceTestBase() {
         lateinit var project: Project
         lateinit var imageLink: String
         lateinit var gallery: List<String>
-        lateinit var news: List<String>
+        lateinit var tags: List<String>
     }
 }
