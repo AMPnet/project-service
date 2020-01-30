@@ -197,14 +197,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-request.adoc[
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-response.adoc[]
 
-== Search API
-
-=== Search organizations and projects by name
-.Request
-include::{snippets}/SearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
-.Response
-include::{snippets}/SearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
-
 == Public API
 
 === Get project
@@ -237,3 +229,8 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/ht
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-response.adoc[]
 
+=== Search organizations and projects by name
+.Request
+include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
+.Response
+include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]

@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class SearchController(private val searchService: SearchService) {
+class PublicSearchController(private val searchService: SearchService) {
 
     companion object : KLogging()
 
-    @GetMapping("/search")
+    @GetMapping("/public/search")
     fun findOrganizationsAndProjects(
         @RequestParam(name = "name") name: String,
         pageable: Pageable
