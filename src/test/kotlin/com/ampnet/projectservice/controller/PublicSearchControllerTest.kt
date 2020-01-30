@@ -8,9 +8,9 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class SearchControllerTest : ControllerTestBase() {
+class PublicSearchControllerTest : ControllerTestBase() {
 
-    private val searchPath = "/search"
+    private val searchPath = "/public/search"
 
     @Test
     @WithMockUser

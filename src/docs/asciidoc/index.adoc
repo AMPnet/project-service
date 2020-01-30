@@ -109,14 +109,6 @@ include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMem
 == Project API
 Collection of endpoints for managing project
 
-=== Public
-
-==== Get project
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetSpecificProject/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetSpecificProject/http-response.adoc[]
-
 === Create project
 
 ==== Successfully create
@@ -144,14 +136,14 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrgani
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
 
-=== Get all projects
-List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
-List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+=== Update
+All values are optional. Only provided values will be updated. For list values: `tags` and `news`,
+old values are overwritten by a new list.
 
 .Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-request.adoc[]
+include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]
 .Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjects/http-response.adoc[]
+include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-response.adoc[]
 
 === Tags
 
@@ -162,30 +154,6 @@ Set full list of tags for project. Provided list of tags will overwrite old list
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-request.adoc[]
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-response.adoc[]
-
-==== Get all project tags
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjectTags/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetAllProjectTags/http-response.adoc[]
-
-==== Get projects by tags
-List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
-List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
-
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-response.adoc[]
-
-=== Update
-All values are optional. Only provided values will be updated. For list values: `tags` and `news`,
-old values are overwritten by a new list.
-
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-response.adoc[]
 
 === Documents
 
@@ -229,10 +197,40 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-request.adoc[
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-response.adoc[]
 
-== Search API
+== Public API
+
+=== Get project
+.Request
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProject/http-request.adoc[]
+.Response
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProject/http-response.adoc[]
+
+=== Get all projects
+List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+
+.Request
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjects/http-request.adoc[]
+.Response
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjects/http-response.adoc[]
+
+=== Get projects by tags
+List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+
+.Request
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-request.adoc[]
+.Response
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-response.adoc[]
+
+=== Get all project tags
+.Request
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-request.adoc[]
+.Response
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-response.adoc[]
 
 === Search organizations and projects by name
 .Request
-include::{snippets}/SearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
+include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
 .Response
-include::{snippets}/SearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
+include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
