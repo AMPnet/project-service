@@ -1,12 +1,19 @@
 = AMPnet Project Service API documentation
+Version {version}, {date}
+:doctype: book
 :toc: left
 :sectnums:
 :toclevels: 2
 :source-highlighter: prettify
 :docinfo: shared
 
+== Introduction
+This document contains generated documentation for `AMPnet project service`. Project service contains all endpoints
+need to manage projects and organizations for AMPnet crowdfunding project.
+Source code is available on https://github.com/AMPnet/project-service[Github]
+
 == Organization API
-Collection of endpoints for managing organization
+All requests need header: `Authorization: Bearer JWT`.
 
 === Create organization
 .Request
@@ -107,7 +114,7 @@ include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMem
 include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
 
 == Project API
-Collection of endpoints for managing project
+All requests need header: `Authorization: Bearer JWT`.
 
 === Create project
 
@@ -145,16 +152,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-response.adoc[]
 
-=== Tags
-
-==== Set project tags
-Set full list of tags for project. Provided list of tags will overwrite old list of tags.
-
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddProjectTags/http-response.adoc[]
-
 === Documents
 
 ==== Add document for project
@@ -188,14 +185,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToAddGalleryImage/http-respo
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-request.adoc[]
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-response.adoc[]
-
-=== News
-
-==== Add news
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddNews/http-response.adoc[]
 
 == Public API
 
