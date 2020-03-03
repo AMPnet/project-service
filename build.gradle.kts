@@ -51,7 +51,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation("io.github.microutils:kotlin-logging:1.7.8")
-    implementation("net.devh:grpc-spring-boot-starter:2.6.2.RELEASE")
+    implementation("net.devh:grpc-spring-boot-starter:2.7.0.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
     implementation("com.github.AMPnet:jwt:v0.0.4")
 
