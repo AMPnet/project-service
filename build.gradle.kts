@@ -14,19 +14,19 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("org.springframework.boot") version "2.2.2.RELEASE"
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    id("org.springframework.boot") version "2.2.4.RELEASE"
+    id("io.spring.dependency-management") version "1.0.9.RELEASE"
     id("org.asciidoctor.convert") version "1.5.8"
-    id("com.google.cloud.tools.jib") version "1.8.0"
-    id("org.jlleitschuh.gradle.ktlint") version "9.1.1"
-    id("io.gitlab.arturbosch.detekt").version("1.4.0")
+    id("com.google.cloud.tools.jib") version "2.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
+    id("io.gitlab.arturbosch.detekt").version("1.6.0")
     id("com.google.protobuf") version "0.8.11"
     idea
     jacoco
 }
 
 group = "com.ampnet"
-version = "0.1.1"
+version = "0.1.2"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -50,8 +50,8 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.micrometer:micrometer-registry-prometheus")
 
-    implementation("io.github.microutils:kotlin-logging:1.7.6")
-    implementation("net.devh:grpc-spring-boot-starter:2.6.2.RELEASE")
+    implementation("io.github.microutils:kotlin-logging:1.7.8")
+    implementation("net.devh:grpc-spring-boot-starter:2.7.0.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
     implementation("com.github.AMPnet:jwt:v0.0.4")
 
@@ -73,11 +73,11 @@ tasks.test {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.10.0"
+        artifact = "com.google.protobuf:protoc:3.11.4"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.25.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.27.1"
         }
     }
     generateProtoTasks {
@@ -137,6 +137,7 @@ tasks.jacocoTestCoverageVerification {
 
 detekt {
     input = files("src/main/kotlin")
+    config = files("detekt-config.yml")
 }
 
 task("qualityCheck") {
