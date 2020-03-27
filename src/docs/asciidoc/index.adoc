@@ -139,9 +139,9 @@ List of all projects is pageable. Define size of the list using param: `size` an
 List can be sorted using param: `sort` (e.g. `sort=name,asc`).
 
 .Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-request.adoc[]
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-request.adoc[]
 .Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
 
 === Update
 All values are optional. Only provided values will be updated. For list values: `tags` and `news`,
