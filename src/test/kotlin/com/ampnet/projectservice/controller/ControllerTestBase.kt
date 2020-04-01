@@ -130,7 +130,7 @@ abstract class ControllerTestBase : TestBase() {
         minPerUser: Long = 10,
         maxPerUser: Long = 10_000
     ): Project {
-        val project = Project::class.java.newInstance()
+        val project = Project::class.java.getDeclaredConstructor().newInstance()
         project.uuid = UUID.randomUUID()
         project.organization = organization
         project.name = name
