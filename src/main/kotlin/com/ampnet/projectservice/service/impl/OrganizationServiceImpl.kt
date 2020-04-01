@@ -42,18 +42,7 @@ class OrganizationServiceImpl(
             throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_NAME,
                     "Organization with name: ${serviceRequest.name} already exists")
         }
-        val organization = Organization(
-            UUID.randomUUID(),
-            serviceRequest.name,
-            serviceRequest.legalInfo,
-            serviceRequest.ownerUuid,
-            ZonedDateTime.now(),
-            null,
-            false,
-            null,
-            null,
-            null
-        )
+        val organization = Organization(serviceRequest.name, serviceRequest.legalInfo, serviceRequest.ownerUuid)
         val savedOrganization = organizationRepository.save(organization)
         addUserToOrganization(serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
 
