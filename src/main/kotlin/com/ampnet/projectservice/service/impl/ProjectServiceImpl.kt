@@ -65,6 +65,11 @@ class ProjectServiceImpl(
         return projectRepository.findAll(pageable)
     }
 
+    @Transactional(readOnly = true)
+    override fun getActiveProjects(pageable: Pageable): Page<Project> {
+        return projectRepository.findByActive(true, pageable)
+    }
+
     @Transactional
     override fun updateProject(project: Project, request: ProjectUpdateRequest): Project {
         request.name?.let { project.name = it }

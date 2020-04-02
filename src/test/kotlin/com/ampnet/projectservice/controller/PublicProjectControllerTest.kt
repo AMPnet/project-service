@@ -94,6 +94,35 @@ class PublicProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
+    fun mustBeAbleToGetActiveProjects() {
+        suppose("Active project exists") {
+            testContext.project = createProject("Active project", organization, userUuid)
+        }
+        suppose("Another organization has active project") {
+            val secondOrganization = createOrganization("Second organization", userUuid)
+            testContext.secondProject = createProject("Second active project", secondOrganization, userUuid)
+        }
+        suppose("One project is not active") {
+            createProject("Not active", organization, userUuid, active = false)
+        }
+
+        verify("Controller will return active projects") {
+            val result = mockMvc.perform(
+                get("$publicProjectPath/active")
+                    .param("size", "10")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectsResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectsResponse.projects).hasSize(2)
+            assertThat(projectsResponse.projects.map { it.uuid })
+                .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+        }
+    }
+
+    @Test
     fun mustBeAbleToQueryProjectsByTags() {
         suppose("There are projects with tags") {
             val project1 = createProject("Project 1", organization, userUuid)

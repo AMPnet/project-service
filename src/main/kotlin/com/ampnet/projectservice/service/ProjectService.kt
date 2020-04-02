@@ -11,10 +11,12 @@ import org.springframework.data.domain.Pageable
 
 interface ProjectService {
     fun createProject(request: CreateProjectServiceRequest): Project
+    fun updateProject(project: Project, request: ProjectUpdateRequest): Project
+
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
     fun getAllProjects(pageable: Pageable): Page<Project>
-    fun updateProject(project: Project, request: ProjectUpdateRequest): Project
+    fun getActiveProjects(pageable: Pageable): Page<Project>
     fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project>
     fun getAllProjectTags(): List<String>
 
