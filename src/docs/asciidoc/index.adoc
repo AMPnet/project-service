@@ -203,6 +203,15 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjects/http-
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjects/http-response.adoc[]
 
+=== Get active projects
+List of active projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+
+.Request
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetActiveProjects/http-request.adoc[]
+.Response
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetActiveProjects/http-response.adoc[]
+
 === Get projects by tags
 List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
 List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).

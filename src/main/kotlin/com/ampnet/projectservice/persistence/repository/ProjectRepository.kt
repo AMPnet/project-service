@@ -22,6 +22,7 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     fun findAllByOrganizationUuid(organizationUuid: UUID): List<Project>
 
     fun findByNameContainingIgnoreCase(name: String, pageable: Pageable): Page<Project>
+    fun findByActive(active: Boolean, pageable: Pageable): Page<Project>
 
     @Query("SELECT project FROM Project project JOIN project.tags t " +
         "WHERE t IN (:tags) GROUP BY project.uuid HAVING COUNT (project.uuid) = :size")
