@@ -58,11 +58,21 @@ CREATE TABLE project (
     min_per_user BIGINT NOT NULL,
     max_per_user BIGINT NOT NULL,
     main_image VARCHAR,
-    gallery TEXT,
-    news_links TEXT,
     created_by_user_uuid UUID NOT NULL,
     created_at TIMESTAMP NOT NULL,
     active BOOLEAN NOT NULL
+);
+CREATE TABLE project_tag (
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    tag VARCHAR(128) NOT NULL
+);
+CREATE TABLE project_news (
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    link VARCHAR NOT NULL
+);
+CREATE TABLE project_gallery (
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    image VARCHAR NOT NULL
 );
 
 -- Document
