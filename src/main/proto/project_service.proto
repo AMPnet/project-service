@@ -28,7 +28,6 @@ message ProjectResponse {
     string organization_uuid = 11;
     string image_url = 12;
     string description = 13;
-    string returnOnInvestment = 14;
 }
 
 message OrganizationsResponse {

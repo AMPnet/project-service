@@ -1,16 +1,20 @@
 package com.ampnet.projectservice.service.impl
 
 import com.ampnet.projectservice.config.ApplicationProperties
+import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
+import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.persistence.model.Document
+import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.persistence.model.ProjectLocation
+import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
-import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -32,16 +36,10 @@ class ProjectServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    override fun createProject(request: CreateProjectServiceRequest): Project {
+    override fun createProject(user: UUID, organization: Organization, request: ProjectRequest): Project {
         validateCreateProjectRequest(request)
-        // if (request.organization.wallet == null) {
-        //     throw InvalidRequestException(ErrorCode.WALLET_MISSING,
-        //             "Trying to create project without organization wallet. " +
-        //                     "Organization: ${request.organization.id}")
-        // }
-
         logger.debug { "Creating project: ${request.name}" }
-        val project = createProjectFromRequest(request)
+        val project = createProjectFromRequest(user, organization, request)
         project.createdAt = ZonedDateTime.now()
         return projectRepository.save(project)
     }
@@ -72,11 +70,17 @@ class ProjectServiceImpl(
 
     @Transactional
     override fun updateProject(project: Project, request: ProjectUpdateRequest): Project {
+        validateRoi(request.roi)
         request.name?.let { project.name = it }
         request.description?.let { project.description = it }
-        request.location?.let { project.location = it }
-        request.locationText?.let { project.locationText = it }
-        request.returnOnInvestment?.let { project.returnOnInvestment = it }
+        request.location?.let {
+            project.location.lat = it.lat
+            project.location.long = it.long
+        }
+        request.roi?.let {
+            project.roi.from = it.from
+            project.roi.to = it.to
+        }
         request.active?.let { project.active = it }
         request.tags?.let { it -> project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
         request.news?.let { project.newsLinks = it }
@@ -137,7 +141,7 @@ class ProjectServiceImpl(
     }
 
     @Suppress("ThrowsCount")
-    private fun validateCreateProjectRequest(request: CreateProjectServiceRequest) {
+    private fun validateCreateProjectRequest(request: ProjectRequest) {
         if (request.endDate.isBefore(request.startDate)) {
             throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before start date")
         }
@@ -156,6 +160,15 @@ class ProjectServiceImpl(
             throw InvalidRequestException(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
                     "Max funds per user is: ${applicationProperties.investment.maxPerUser}")
         }
+        validateRoi(request.roi)
+    }
+
+    private fun validateRoi(roiRequest: ProjectRoiRequest?) {
+        roiRequest?.let {
+            if (it.from > it.to) {
+                throw InvalidRequestException(ErrorCode.PRJ_ROI, "ROI from is bigger than ROI to")
+            }
+        }
     }
 
     private fun addDocumentToProject(project: Project, document: Document) {
@@ -165,15 +178,14 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
-    private fun createProjectFromRequest(request: CreateProjectServiceRequest) =
+    private fun createProjectFromRequest(user: UUID, organization: Organization, request: ProjectRequest) =
         Project(
             UUID.randomUUID(),
-            request.organization,
+            organization,
             request.name,
             request.description,
-            request.location,
-            request.locationText,
-            request.returnOnInvestment,
+            ProjectLocation(request.location.lat, request.location.long),
+            ProjectRoi(request.roi.from, request.roi.to),
             request.startDate,
             request.endDate,
             request.expectedFunding,
@@ -183,11 +195,11 @@ class ProjectServiceImpl(
             null,
             null,
             null,
-            request.createdByUserUuid,
+            user,
             ZonedDateTime.now(),
             request.active,
             null,
-            request.tags.toSet().map { it.toLowerCase() }
+            request.tags?.toSet()?.map { it.toLowerCase() }
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

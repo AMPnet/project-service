@@ -6,6 +6,7 @@ import java.util.UUID
 import javax.persistence.CollectionTable
 import javax.persistence.Column
 import javax.persistence.ElementCollection
+import javax.persistence.Embedded
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
@@ -33,14 +34,11 @@ data class Project(
     @Column(nullable = false)
     var description: String,
 
-    @Column(nullable = false)
-    var location: String,
+    @Embedded
+    var location: ProjectLocation,
 
-    @Column(nullable = false)
-    var locationText: String,
-
-    @Column(nullable = false, length = 16)
-    var returnOnInvestment: String,
+    @Embedded
+    var roi: ProjectRoi,
 
     @Column(nullable = false)
     var startDate: ZonedDateTime,
@@ -94,4 +92,5 @@ data class Project(
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "tag")
     var tags: List<String>?
+
 )

@@ -87,6 +87,5 @@ class GrpcProjectServer(
             .setOrganizationUuid(project.organization.uuid.toString())
             .setImageUrl(project.mainImage ?: "missing")
             .setDescription(project.description)
-            .setReturnOnInvestment(project.returnOnInvestment)
             .build()
 }

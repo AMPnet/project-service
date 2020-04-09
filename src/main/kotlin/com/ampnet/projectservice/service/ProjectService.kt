@@ -1,16 +1,17 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.persistence.model.Document
+import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
-import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.util.UUID
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface ProjectService {
-    fun createProject(request: CreateProjectServiceRequest): Project
+    fun createProject(user: UUID, organization: Organization, request: ProjectRequest): Project
     fun updateProject(project: Project, request: ProjectUpdateRequest): Project
 
     fun getProjectByIdWithAllData(id: UUID): Project?

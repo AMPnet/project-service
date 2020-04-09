@@ -48,9 +48,10 @@ CREATE TABLE project (
     organization_uuid UUID REFERENCES organization(uuid) NOT NULL,
     name VARCHAR NOT NULL,
     description TEXT NOT NULL,
-    location VARCHAR(128) NOT NULL,
-    location_text VARCHAR NOT NULL,
-    return_on_investment VARCHAR(16) NOT NULL,
+    location_lat FLOAT NOT NULL,
+    location_long FLOAT NOT NULL,
+    roi_from FLOAT NOT NULL,
+    roi_to FLOAT NOT NULL,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
     expected_funding BIGINT NOT NULL,
@@ -58,11 +59,21 @@ CREATE TABLE project (
     min_per_user BIGINT NOT NULL,
     max_per_user BIGINT NOT NULL,
     main_image VARCHAR,
-    gallery TEXT,
-    news_links TEXT,
     created_by_user_uuid UUID NOT NULL,
     created_at TIMESTAMP NOT NULL,
     active BOOLEAN NOT NULL
+);
+CREATE TABLE project_tag (
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    tag VARCHAR(128) NOT NULL
+);
+CREATE TABLE project_news (
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    link VARCHAR NOT NULL
+);
+CREATE TABLE project_gallery (
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    image VARCHAR NOT NULL
 );
 
 -- Document
