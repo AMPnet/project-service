@@ -12,8 +12,7 @@ data class ProjectRequest(
     @Size(max = 255)
     val description: String,
     val location: ProjectLocationRequest,
-    @Size(max = 16)
-    val returnOnInvestment: String,
+    val roi: ProjectRoiRequest,
     val startDate: ZonedDateTime,
     val endDate: ZonedDateTime,
     val expectedFunding: Long,
@@ -24,12 +23,14 @@ data class ProjectRequest(
     val tags: List<String>? = null
 )
 data class ProjectLocationRequest(val lat: Double, val long: Double)
+data class ProjectRoiRequest(val from: Double, val to: Double)
 data class ProjectUpdateRequest(
     @Size(max = 255)
     val name: String? = null,
+    @Size(max = 255)
     val description: String? = null,
     val location: ProjectLocationRequest? = null,
-    val returnOnInvestment: String? = null,
+    val roi: ProjectRoiRequest? = null,
     val active: Boolean? = null,
     val tags: List<String>? = null,
     val news: List<String>? = null

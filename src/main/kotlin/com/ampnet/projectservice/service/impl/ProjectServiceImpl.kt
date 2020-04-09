@@ -2,6 +2,7 @@ package com.ampnet.projectservice.service.impl
 
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
+import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -9,6 +10,7 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
+import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
@@ -68,13 +70,17 @@ class ProjectServiceImpl(
 
     @Transactional
     override fun updateProject(project: Project, request: ProjectUpdateRequest): Project {
+        validateRoi(request.roi)
         request.name?.let { project.name = it }
         request.description?.let { project.description = it }
         request.location?.let {
             project.location.lat = it.lat
             project.location.long = it.long
         }
-        request.returnOnInvestment?.let { project.returnOnInvestment = it }
+        request.roi?.let {
+            project.roi.from = it.from
+            project.roi.to = it.to
+        }
         request.active?.let { project.active = it }
         request.tags?.let { it -> project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
         request.news?.let { project.newsLinks = it }
@@ -154,6 +160,15 @@ class ProjectServiceImpl(
             throw InvalidRequestException(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
                     "Max funds per user is: ${applicationProperties.investment.maxPerUser}")
         }
+        validateRoi(request.roi)
+    }
+
+    private fun validateRoi(roiRequest: ProjectRoiRequest?) {
+        roiRequest?.let {
+            if (it.from > it.to) {
+                throw InvalidRequestException(ErrorCode.PRJ_ROI, "ROI from is bigger than ROI to")
+            }
+        }
     }
 
     private fun addDocumentToProject(project: Project, document: Document) {
@@ -170,7 +185,7 @@ class ProjectServiceImpl(
             request.name,
             request.description,
             ProjectLocation(request.location.lat, request.location.long),
-            request.returnOnInvestment,
+            ProjectRoi(request.roi.from, request.roi.to),
             request.startDate,
             request.endDate,
             request.expectedFunding,

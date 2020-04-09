@@ -3,6 +3,7 @@ package com.ampnet.projectservice.controller.pojo.response
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
+import com.ampnet.projectservice.persistence.model.ProjectRoi
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -11,7 +12,7 @@ data class ProjectResponse(
     val name: String,
     val description: String,
     val location: ProjectLocationResponse,
-    val returnOnInvestment: String,
+    val roi: ProjectRoiResponse,
     val startDate: ZonedDateTime,
     val endDate: ZonedDateTime,
     val expectedFunding: Long,
@@ -27,7 +28,7 @@ data class ProjectResponse(
         project.name,
         project.description,
         ProjectLocationResponse(project.location),
-        project.returnOnInvestment,
+        ProjectRoiResponse(project.roi),
         project.startDate,
         project.endDate,
         project.expectedFunding,
@@ -42,6 +43,9 @@ data class ProjectResponse(
 data class ProjectLocationResponse(val lat: Double, val long: Double) {
     constructor(location: ProjectLocation) : this(location.lat, location.long)
 }
+data class ProjectRoiResponse(val from: Double, val to: Double) {
+    constructor(roi: ProjectRoi) : this(roi.from, roi.to)
+}
 
 data class ProjectListResponse(val projects: List<ProjectResponse>, val page: Int = 0, val totalPages: Int = 1)
 
@@ -50,7 +54,7 @@ data class ProjectFullResponse(
     val name: String,
     val description: String,
     val location: ProjectLocationResponse,
-    val returnOnInvestment: String,
+    val roi: ProjectRoiResponse,
     val startDate: ZonedDateTime,
     val endDate: ZonedDateTime,
     val expectedFunding: Long,
@@ -69,7 +73,7 @@ data class ProjectFullResponse(
         project.name,
         project.description,
         ProjectLocationResponse(project.location),
-        project.returnOnInvestment,
+        ProjectRoiResponse(project.roi),
         project.startDate,
         project.endDate,
         project.expectedFunding,

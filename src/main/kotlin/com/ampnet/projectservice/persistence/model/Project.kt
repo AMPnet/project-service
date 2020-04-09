@@ -37,8 +37,8 @@ data class Project(
     @Embedded
     var location: ProjectLocation,
 
-    @Column(nullable = false, length = 16)
-    var returnOnInvestment: String,
+    @Embedded
+    var roi: ProjectRoi,
 
     @Column(nullable = false)
     var startDate: ZonedDateTime,
@@ -93,7 +93,4 @@ data class Project(
     @Column(name = "tag")
     var tags: List<String>?
 
-) {
-    // constructor(organization: Organization, name: String, description: String,
-    //     startDate: ZonedDateTime, endDate: ZonedDateTime, expectedFunding: Long, )
-}
+)

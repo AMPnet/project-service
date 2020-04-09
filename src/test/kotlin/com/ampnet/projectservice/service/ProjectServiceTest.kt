@@ -3,6 +3,7 @@ package com.ampnet.projectservice.service
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
+import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -53,7 +54,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.description).isEqualTo(request.description)
             assertThat(project.location.lat).isEqualTo(request.location.lat)
             assertThat(project.location.long).isEqualTo(request.location.long)
-            assertThat(project.returnOnInvestment).isEqualTo(request.returnOnInvestment)
+            assertThat(project.roi.from).isEqualTo(request.roi.from)
+            assertThat(project.roi.to).isEqualTo(request.roi.to)
             assertThat(project.startDate).isEqualTo(request.startDate)
             assertThat(project.endDate).isEqualTo(request.endDate)
             assertThat(project.expectedFunding).isEqualTo(request.expectedFunding)
@@ -77,7 +79,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 "Invalid date",
                 "Description",
                 ProjectLocationRequest(12.34, 3.1324),
-                "1-2%",
+                ProjectRoiRequest(2.22, 4.44),
                 ZonedDateTime.now(),
                 ZonedDateTime.now().minusDays(1),
                 1000000,
@@ -202,7 +204,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 "Invalid end date",
                 "Description",
                 ProjectLocationRequest(12.34, 3.1324),
-                "1-2%",
+                ProjectRoiRequest(1.11, 5.55),
                 currentTime.minusDays(60),
                 currentTime.minusDays(30),
                 1000000,
@@ -231,7 +233,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 "Invalid end date",
                 "Description",
                 ProjectLocationRequest(12.34, 3.1324),
-                "1-2%",
+                ProjectRoiRequest(6.66, 7.77),
                 currentTime,
                 currentTime.plusDays(30),
                 1000000,
@@ -260,7 +262,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 "Invalid end date",
                 "Description",
                 ProjectLocationRequest(12.34, 3.1324),
-                "1-2%",
+                ProjectRoiRequest(4.2, 9.99),
                 currentTime,
                 currentTime.plusDays(30),
                 10_000_000_000_000,
@@ -289,7 +291,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 "Invalid end date",
                 "Description",
                 ProjectLocationRequest(12.34, 3.1324),
-                "1-2%",
+                ProjectRoiRequest(2.22, 3.23),
                 currentTime,
                 currentTime.plusDays(30),
                 applicationProperties.investment.maxPerProject + 1,
@@ -363,13 +365,71 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustValidateProjectRoiOnProjectCreate() {
+        suppose("Request has roi from higher than roi to") {
+            val currentTime = ZonedDateTime.now()
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
+                "Invalid roi",
+                "Description",
+                ProjectLocationRequest(12.34, 3.1324),
+                ProjectRoiRequest(12.22, 2.23),
+                currentTime,
+                currentTime.plusDays(30),
+                1000000,
+                Currency.EUR,
+                10,
+                10000,
+                false,
+                emptyList()
+            )
+        }
+
+        verify("Service will throw an exception") {
+            val exception = assertThrows<InvalidRequestException> {
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_ROI)
+        }
+    }
+
+    @Test
+    fun mustValidateProjectRoiOnProjectUpdate() {
+        suppose("Update request has roi from higher than roi to") {
+            val currentTime = ZonedDateTime.now()
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
+                "Invalid roi update",
+                "Description",
+                ProjectLocationRequest(12.34, 12.33),
+                ProjectRoiRequest(12.22, 2.23),
+                currentTime,
+                currentTime.plusDays(30),
+                1000000,
+                Currency.EUR,
+                10,
+                10000,
+                false,
+                emptyList()
+            )
+        }
+
+        verify("Service will throw an exception") {
+            val exception = assertThrows<InvalidRequestException> {
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_ROI)
+        }
+    }
+
     private fun createProjectRequest(name: String): ProjectRequest {
         return ProjectRequest(
             organization.uuid,
             name,
             "Description",
             ProjectLocationRequest(12.34, 3.1324),
-            "1-2%",
+            ProjectRoiRequest(1.23, 12.44),
             ZonedDateTime.now(),
             ZonedDateTime.now().plusDays(30),
             1000000,
