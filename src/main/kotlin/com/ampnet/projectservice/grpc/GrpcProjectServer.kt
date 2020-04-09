@@ -79,6 +79,8 @@ class GrpcProjectServer(
             .setCreatedByUser(project.createdByUserUuid.toString())
             .setStartDate(project.startDate.toInstant().toEpochMilli())
             .setEndDate(project.endDate.toInstant().toEpochMilli())
+            .setMinPerUser(project.minPerUser)
+            .setMaxPerUser(project.maxPerUser)
             .setExpectedFunding(project.expectedFunding)
             .setCurrency(project.currency.name)
             .setActive(project.active)

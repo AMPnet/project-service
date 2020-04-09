@@ -20,12 +20,14 @@ message ProjectResponse {
     string created_by_user = 3;
     uint64 start_date = 4;
     uint64 end_date = 5;
-    uint64 expected_funding = 6;
-    string currency = 7;
-    bool active = 8;
-    string organization_uuid = 9;
-    string image_url = 10;
-    string description = 11;
+    uint64 min_per_user = 6;
+    uint64 max_per_user = 7;
+    uint64 expected_funding = 8;
+    string currency = 9;
+    bool active = 10;
+    string organization_uuid = 11;
+    string image_url = 12;
+    string description = 13;
 }
 
 message OrganizationsResponse {
