@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
+import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
@@ -107,8 +108,6 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.uuid).isNotNull()
             assertThat(projectResponse.name).isEqualTo(testContext.projectRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectRequest.description)
-            assertThat(projectResponse.location).isEqualTo(testContext.projectRequest.location)
-            assertThat(projectResponse.locationText).isEqualTo(testContext.projectRequest.locationText)
             assertThat(projectResponse.returnOnInvestment).isEqualTo(testContext.projectRequest.returnOnInvestment)
             assertThat(projectResponse.startDate).isEqualTo(testContext.projectRequest.startDate)
             assertThat(projectResponse.endDate).isEqualTo(testContext.projectRequest.endDate)
@@ -140,7 +139,8 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("Admin can update project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false, listOf("tag"))
+                    ProjectUpdateRequest("new name", "description",
+                        ProjectLocationRequest(22.1, 0.3), "0.1%", false, listOf("tag"))
             val result = mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
@@ -152,8 +152,8 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectUpdateRequest.description)
-            assertThat(projectResponse.location).isEqualTo(testContext.projectUpdateRequest.location)
-            assertThat(projectResponse.locationText).isEqualTo(testContext.projectUpdateRequest.locationText)
+            assertThat(projectResponse.location.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(projectResponse.location.long).isEqualTo(testContext.projectUpdateRequest.location?.long)
             assertThat(projectResponse.returnOnInvestment)
                     .isEqualTo(testContext.projectUpdateRequest.returnOnInvestment)
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
@@ -165,8 +165,8 @@ class ProjectControllerTest : ControllerTestBase() {
             val updatedProject = optionalProject.get()
             assertThat(updatedProject.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(updatedProject.description).isEqualTo(testContext.projectUpdateRequest.description)
-            assertThat(updatedProject.location).isEqualTo(testContext.projectUpdateRequest.location)
-            assertThat(updatedProject.locationText).isEqualTo(testContext.projectUpdateRequest.locationText)
+            assertThat(updatedProject.location.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(updatedProject.location.long).isEqualTo(testContext.projectUpdateRequest.location?.long)
             assertThat(updatedProject.returnOnInvestment).isEqualTo(testContext.projectUpdateRequest.returnOnInvestment)
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
@@ -219,7 +219,8 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("User cannot update project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description", "newLoc", "New Location", "0.1%", false)
+                    ProjectUpdateRequest("new name", "description",
+                        ProjectLocationRequest(12.234, 23.432), "0.1%", false)
             mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
@@ -233,7 +234,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnErrorForUpdatingNonExistingProject() {
         verify("User cannot update non existing project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description", null, null, null, false)
+                    ProjectUpdateRequest("new name", "description", null, null, false)
             val response = mockMvc.perform(
                 put("$projectPath/${UUID.randomUUID()}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))

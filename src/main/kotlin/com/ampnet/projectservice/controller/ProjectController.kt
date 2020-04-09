@@ -13,7 +13,6 @@ import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
-import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.util.UUID
 import javax.validation.Valid
@@ -141,8 +140,7 @@ class ProjectController(
 
     private fun createProject(request: ProjectRequest, userUuid: UUID): ProjectResponse {
         val organization = getOrganization(request.organizationUuid)
-        val serviceRequest = CreateProjectServiceRequest(request, organization, userUuid)
-        val project = projectService.createProject(serviceRequest)
+        val project = projectService.createProject(userUuid, organization, request)
         return ProjectResponse(project)
     }
 

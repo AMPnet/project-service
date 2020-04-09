@@ -1,6 +1,8 @@
 package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.config.ApplicationProperties
+import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
+import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -8,7 +10,6 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.impl.ProjectServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
-import com.ampnet.projectservice.service.pojo.CreateProjectServiceRequest
 import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -41,7 +42,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Service received a request to create a project") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Test project")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
         }
 
         verify("Project is created") {
@@ -50,8 +51,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
             val request = testContext.createProjectRequest
             assertThat(project.name).isEqualTo(request.name)
             assertThat(project.description).isEqualTo(request.description)
-            assertThat(project.location).isEqualTo(request.location)
-            assertThat(project.locationText).isEqualTo(request.locationText)
+            assertThat(project.location.lat).isEqualTo(request.location.lat)
+            assertThat(project.location.long).isEqualTo(request.location.long)
             assertThat(project.returnOnInvestment).isEqualTo(request.returnOnInvestment)
             assertThat(project.startDate).isEqualTo(request.startDate)
             assertThat(project.endDate).isEqualTo(request.endDate)
@@ -59,7 +60,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.currency).isEqualTo(request.currency)
             assertThat(project.minPerUser).isEqualTo(request.minPerUser)
             assertThat(project.maxPerUser).isEqualTo(request.maxPerUser)
-            assertThat(project.createdByUserUuid).isEqualTo(request.createdByUserUuid)
+            assertThat(project.createdByUserUuid).isEqualTo(userUuid)
             assertThat(project.organization.uuid).isEqualTo(organization.uuid)
             assertThat(project.active).isEqualTo(request.active)
             assertThat(project.mainImage.isNullOrEmpty()).isTrue()
@@ -68,28 +69,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
     }
 
-    // @Test
-    // fun mustNotBeAbleToCreateProjectWithoutOrganizationWallet() {
-    //     verify("Service will throw an exception") {
-    //         databaseCleanerService.deleteAllProjects()
-    //         testContext.createProjectRequest = createProjectRequest("Test project")
-    //
-    //         val exception = assertThrows<InvalidRequestException> {
-    //             projectService.createProject(testContext.createProjectRequest)
-    //         }
-    //         assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
-    //     }
-    // }
-
     @Test
     fun mustNotBeAbleToCreateProjectWithEndDateBeforeStartDate() {
         suppose("Request has end date before start date") {
-            testContext.createProjectRequest = CreateProjectServiceRequest(
-                organization,
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
                 "Invalid date",
                 "Description",
-                "location",
-                "locationText",
+                ProjectLocationRequest(12.34, 3.1324),
                 "1-2%",
                 ZonedDateTime.now(),
                 ZonedDateTime.now().minusDays(1),
@@ -98,14 +85,13 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 100,
                 10000,
                 false,
-                userUuid,
                 emptyList()
             )
         }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(testContext.createProjectRequest)
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_DATE)
         }
@@ -116,7 +102,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
         }
         suppose("Main image is added to project") {
             testContext.imageLink = "link-main-image"
@@ -138,7 +124,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
         }
         suppose("Two images are added to project gallery") {
             testContext.gallery = listOf("link-1", "link-2")
@@ -160,7 +146,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2")
@@ -188,7 +174,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(testContext.createProjectRequest)
+            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2", "link-3")
@@ -211,12 +197,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustNotBeAbleToSetEndDateBeforePresent() {
         suppose("Request has end date before present date") {
             val currentTime = ZonedDateTime.now()
-            testContext.createProjectRequest = CreateProjectServiceRequest(
-                organization,
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
                 "Invalid end date",
                 "Description",
-                "location",
-                "locationText",
+                ProjectLocationRequest(12.34, 3.1324),
                 "1-2%",
                 currentTime.minusDays(60),
                 currentTime.minusDays(30),
@@ -225,14 +210,13 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 100,
                 10000,
                 false,
-                userUuid,
                 emptyList()
             )
         }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(testContext.createProjectRequest)
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_DATE)
         }
@@ -242,12 +226,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustNotBeAbleToSetMinPerUserAboveMaxPerUser() {
         suppose("Request has min per user value above max per user") {
             val currentTime = ZonedDateTime.now()
-            testContext.createProjectRequest = CreateProjectServiceRequest(
-                organization,
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
                 "Invalid end date",
                 "Description",
-                "location",
-                "locationText",
+                ProjectLocationRequest(12.34, 3.1324),
                 "1-2%",
                 currentTime,
                 currentTime.plusDays(30),
@@ -256,14 +239,13 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 1_000,
                 1,
                 false,
-                userUuid,
                 emptyList()
             )
         }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(testContext.createProjectRequest)
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MIN_ABOVE_MAX)
         }
@@ -273,12 +255,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustNotBeAbleToSetMaxPerUserAboveSystemMax() {
         suppose("Request has max per user value above system max") {
             val currentTime = ZonedDateTime.now()
-            testContext.createProjectRequest = CreateProjectServiceRequest(
-                organization,
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
                 "Invalid end date",
                 "Description",
-                "location",
-                "locationText",
+                ProjectLocationRequest(12.34, 3.1324),
                 "1-2%",
                 currentTime,
                 currentTime.plusDays(30),
@@ -287,14 +268,13 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 1,
                 applicationProperties.investment.maxPerUser + 1,
                 false,
-                userUuid,
                 emptyList()
             )
         }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(testContext.createProjectRequest)
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH)
         }
@@ -304,12 +284,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustNotBeAbleToSetExpectedFundingAboveSystemMax() {
         suppose("Request has max per user value above system max") {
             val currentTime = ZonedDateTime.now()
-            testContext.createProjectRequest = CreateProjectServiceRequest(
-                organization,
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
                 "Invalid end date",
                 "Description",
-                "location",
-                "locationText",
+                ProjectLocationRequest(12.34, 3.1324),
                 "1-2%",
                 currentTime,
                 currentTime.plusDays(30),
@@ -318,14 +297,13 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 1,
                 1_000_000_000,
                 false,
-                userUuid,
                 emptyList()
             )
         }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(testContext.createProjectRequest)
+                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH)
         }
@@ -335,13 +313,15 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToGetAllProjectTags() {
         suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
-            val project = projectService.createProject(createProjectRequest("First project"))
+            val project = projectService
+                .createProject(userUuid, organization, createProjectRequest("First project"))
             testContext.tags = listOf("tag 1", "tag 2", "tag 3")
             project.tags = testContext.tags
             projectRepository.save(project)
         }
         suppose("Another project has tags") {
-            val project = projectService.createProject(createProjectRequest("Second project"))
+            val project = projectService
+                .createProject(userUuid, organization, createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 4")
             projectRepository.save(project)
             testContext.tags.toMutableList().add("tag 4")
@@ -357,17 +337,20 @@ class ProjectServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToGetProjectsByTags() {
         suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
-            val project = projectService.createProject(createProjectRequest("First project"))
+            val project = projectService
+                .createProject(userUuid, organization, createProjectRequest("First project"))
             project.tags = listOf("tag 1", "tag 3")
             projectRepository.save(project)
         }
         suppose("Second project has tags") {
-            val project = projectService.createProject(createProjectRequest("Second project"))
+            val project = projectService
+                .createProject(userUuid, organization, createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             projectRepository.save(project)
         }
         suppose("Third project has tags") {
-            val project = projectService.createProject(createProjectRequest("Third project"))
+            val project = projectService
+                .createProject(userUuid, organization, createProjectRequest("Third project"))
             project.tags = listOf("tag 1", "tag 3")
             projectRepository.save(project)
         }
@@ -380,13 +363,12 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
     }
 
-    private fun createProjectRequest(name: String): CreateProjectServiceRequest {
-        return CreateProjectServiceRequest(
-            organization,
+    private fun createProjectRequest(name: String): ProjectRequest {
+        return ProjectRequest(
+            organization.uuid,
             name,
             "Description",
-            "location",
-            "locationText",
+            ProjectLocationRequest(12.34, 3.1324),
             "1-2%",
             ZonedDateTime.now(),
             ZonedDateTime.now().plusDays(30),
@@ -395,13 +377,12 @@ class ProjectServiceTest : JpaServiceTestBase() {
             100,
             10000,
             false,
-            userUuid,
             emptyList()
         )
     }
 
     private class TestContext {
-        lateinit var createProjectRequest: CreateProjectServiceRequest
+        lateinit var createProjectRequest: ProjectRequest
         lateinit var project: Project
         lateinit var imageLink: String
         lateinit var gallery: List<String>

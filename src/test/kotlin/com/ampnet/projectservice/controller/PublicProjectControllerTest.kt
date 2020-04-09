@@ -43,8 +43,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
-            assertThat(projectResponse.location).isEqualTo(testContext.project.location)
-            assertThat(projectResponse.locationText).isEqualTo(testContext.project.locationText)
+            assertThat(projectResponse.location.lat).isEqualTo(testContext.project.location.lat)
+            assertThat(projectResponse.location.long).isEqualTo(testContext.project.location.long)
             assertThat(projectResponse.returnOnInvestment).isEqualTo(testContext.project.returnOnInvestment)
             assertThat(projectResponse.startDate).isEqualTo(testContext.project.startDate)
             assertThat(projectResponse.endDate).isEqualTo(testContext.project.endDate)
@@ -134,7 +134,6 @@ class PublicProjectControllerTest : ControllerTestBase() {
         verify("Controller will return projects containing all tags") {
             val result = mockMvc.perform(
                 get(publicProjectPath)
-                    // TODO: check this in docs
                     .param("tags", "wind", "green")
                     .param("size", "10")
                     .param("page", "0")
@@ -199,8 +198,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
             val projectResponse = filterResponse.first()
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
-            assertThat(projectResponse.location).isEqualTo(testContext.project.location)
-            assertThat(projectResponse.locationText).isEqualTo(testContext.project.locationText)
+            assertThat(projectResponse.location.lat).isEqualTo(testContext.project.location.lat)
+            assertThat(projectResponse.location.long).isEqualTo(testContext.project.location.long)
             assertThat(projectResponse.returnOnInvestment).isEqualTo(testContext.project.returnOnInvestment)
             assertThat(projectResponse.startDate).isEqualTo(testContext.project.startDate)
             assertThat(projectResponse.endDate).isEqualTo(testContext.project.endDate)

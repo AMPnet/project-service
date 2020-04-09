@@ -2,6 +2,7 @@ package com.ampnet.projectservice.controller.pojo.response
 
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.persistence.model.ProjectLocation
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -9,8 +10,7 @@ data class ProjectResponse(
     val uuid: UUID,
     val name: String,
     val description: String,
-    val location: String,
-    val locationText: String,
+    val location: ProjectLocationResponse,
     val returnOnInvestment: String,
     val startDate: ZonedDateTime,
     val endDate: ZonedDateTime,
@@ -26,8 +26,7 @@ data class ProjectResponse(
         project.uuid,
         project.name,
         project.description,
-        project.location,
-        project.locationText,
+        ProjectLocationResponse(project.location),
         project.returnOnInvestment,
         project.startDate,
         project.endDate,
@@ -40,6 +39,9 @@ data class ProjectResponse(
         project.tags.orEmpty()
     )
 }
+data class ProjectLocationResponse(val lat: Double, val long: Double) {
+    constructor(location: ProjectLocation) : this(location.lat, location.long)
+}
 
 data class ProjectListResponse(val projects: List<ProjectResponse>, val page: Int = 0, val totalPages: Int = 1)
 
@@ -47,8 +49,7 @@ data class ProjectFullResponse(
     val uuid: UUID,
     val name: String,
     val description: String,
-    val location: String,
-    val locationText: String,
+    val location: ProjectLocationResponse,
     val returnOnInvestment: String,
     val startDate: ZonedDateTime,
     val endDate: ZonedDateTime,
@@ -67,8 +68,7 @@ data class ProjectFullResponse(
         project.uuid,
         project.name,
         project.description,
-        project.location,
-        project.locationText,
+        ProjectLocationResponse(project.location),
         project.returnOnInvestment,
         project.startDate,
         project.endDate,

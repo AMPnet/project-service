@@ -2,6 +2,7 @@ package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
+import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.enums.OrganizationRoleType
@@ -12,6 +13,7 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.repository.DocumentRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
@@ -135,8 +137,7 @@ abstract class ControllerTestBase : TestBase() {
         project.organization = organization
         project.name = name
         project.description = "description"
-        project.location = "location"
-        project.locationText = "locationText"
+        project.location = ProjectLocation(0.1, 1.0)
         project.returnOnInvestment = "0-1%"
         project.startDate = startDate
         project.endDate = endDate
@@ -188,8 +189,7 @@ abstract class ControllerTestBase : TestBase() {
             organizationUuid,
             name,
             "description",
-            "location",
-            "locationText",
+            ProjectLocationRequest(12.234, 23.432),
             "1%-100%",
             time,
             time.plusDays(30),

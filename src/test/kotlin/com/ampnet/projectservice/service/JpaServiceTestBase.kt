@@ -89,8 +89,6 @@ abstract class JpaServiceTestBase : TestBase() {
         project.organization = organization
         project.name = name
         project.description = "description"
-        project.location = "location"
-        project.locationText = "locationText"
         project.returnOnInvestment = "0-1%"
         project.startDate = startDate
         project.endDate = endDate
