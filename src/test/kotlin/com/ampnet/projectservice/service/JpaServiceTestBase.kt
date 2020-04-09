@@ -8,6 +8,7 @@ import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.repository.DocumentRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
@@ -88,6 +89,7 @@ abstract class JpaServiceTestBase : TestBase() {
         project.uuid = UUID.randomUUID()
         project.organization = organization
         project.name = name
+        project.location = ProjectLocation(1.12, 2.22)
         project.description = "description"
         project.returnOnInvestment = "0-1%"
         project.startDate = startDate
