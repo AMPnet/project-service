@@ -212,6 +212,12 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetActiveProjects/ht
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetActiveProjects/http-response.adoc[]
 
+=== Count all active projects
+.Request
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToCountActiveProjects/http-request.adoc[]
+.Response
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToCountActiveProjects/http-response.adoc[]
+
 === Get projects by tags
 List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
 List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).

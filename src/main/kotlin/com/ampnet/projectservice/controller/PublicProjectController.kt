@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.controller
 
+import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
 import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
@@ -50,6 +51,12 @@ class PublicProjectController(private val projectService: ProjectService) {
         logger.debug { "Received request to get all active projects" }
         val projects = projectService.getActiveProjects(pageable)
         return mapToProjectListResponse(projects)
+    }
+
+    @GetMapping("/public/project/active/count")
+    fun countAllActiveProjects(): ResponseEntity<CountActiveProjectsCount> {
+        val count = projectService.countActiveProjects()
+        return ResponseEntity.ok(CountActiveProjectsCount(count))
     }
 
     @GetMapping("/public/project/tags")

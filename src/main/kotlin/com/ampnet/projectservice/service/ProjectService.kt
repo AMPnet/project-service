@@ -21,6 +21,8 @@ interface ProjectService {
     fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project>
     fun getAllProjectTags(): List<String>
 
+    fun countActiveProjects(): Int
+
     fun addMainImage(project: Project, name: String, content: ByteArray)
     fun addImageToGallery(project: Project, name: String, content: ByteArray)
     fun removeImagesFromGallery(project: Project, images: List<String>)

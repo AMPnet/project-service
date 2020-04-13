@@ -1,11 +1,13 @@
 package com.ampnet.projectservice.controller
 
+import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
 import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.ZonedDateTime
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -97,11 +99,13 @@ class PublicProjectControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToGetActiveProjects() {
         suppose("Active project exists") {
-            testContext.project = createProject("Active project", organization, userUuid)
+            testContext.project = createProject("Active project", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1))
         }
         suppose("Another organization has active project") {
             val secondOrganization = createOrganization("Second organization", userUuid)
-            testContext.secondProject = createProject("Second active project", secondOrganization, userUuid)
+            testContext.secondProject = createProject("Second active project", secondOrganization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1))
         }
         suppose("One project is not active") {
             createProject("Not active", organization, userUuid, active = false)
@@ -120,6 +124,34 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectsResponse.projects).hasSize(2)
             assertThat(projectsResponse.projects.map { it.uuid })
                 .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+        }
+    }
+
+    @Test
+    fun mustBeAbleToCountActiveProjects() {
+        suppose("There is active project") {
+            testContext.project = createProject("Active project", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1))
+        }
+        suppose("There is inactive project") {
+            createProject("Not active", organization, userUuid, active = false)
+        }
+        suppose("There is ended project") {
+            createProject("Ended", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(30), endDate = ZonedDateTime.now().minusDays(1))
+        }
+        suppose("There is project in future") {
+            createProject("Not active", organization, userUuid,
+                startDate = ZonedDateTime.now().plusDays(1), endDate = ZonedDateTime.now().plusDays(30))
+        }
+
+        verify("Controller will count all active projects") {
+            val result = mockMvc.perform(get("$publicProjectPath/active/count"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val countResponse: CountActiveProjectsCount = objectMapper.readValue(result.response.contentAsString)
+            assertThat(countResponse.activeProjects).isEqualTo(1)
         }
     }
 

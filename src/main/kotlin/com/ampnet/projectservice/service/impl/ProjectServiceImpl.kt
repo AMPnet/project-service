@@ -54,19 +54,15 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectsForOrganization(organizationId: UUID): List<Project> {
-        return projectRepository.findAllByOrganizationUuid(organizationId)
-    }
+    override fun getAllProjectsForOrganization(organizationId: UUID): List<Project> =
+        projectRepository.findAllByOrganizationUuid(organizationId)
 
     @Transactional(readOnly = true)
-    override fun getAllProjects(pageable: Pageable): Page<Project> {
-        return projectRepository.findAll(pageable)
-    }
+    override fun getAllProjects(pageable: Pageable): Page<Project> = projectRepository.findAll(pageable)
 
     @Transactional(readOnly = true)
-    override fun getActiveProjects(pageable: Pageable): Page<Project> {
-        return projectRepository.findByActive(true, pageable)
-    }
+    override fun getActiveProjects(pageable: Pageable): Page<Project> =
+        projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
 
     @Transactional
     override fun updateProject(project: Project, request: ProjectUpdateRequest): Project {
@@ -131,14 +127,15 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectTags(): List<String> {
-        return projectTagRepository.getAllTags()
-    }
+    override fun getAllProjectTags(): List<String> = projectTagRepository.getAllTags()
 
     @Transactional(readOnly = true)
-    override fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project> {
-        return projectRepository.findByTags(tags, tags.size.toLong(), pageable)
-    }
+    override fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project> =
+        projectRepository.findByTags(tags, tags.size.toLong(), pageable)
+
+    @Transactional(readOnly = true)
+    override fun countActiveProjects(): Int =
+        projectRepository.countAllActiveByDate(ZonedDateTime.now(), true)
 
     @Suppress("ThrowsCount")
     private fun validateCreateProjectRequest(request: ProjectRequest) {
