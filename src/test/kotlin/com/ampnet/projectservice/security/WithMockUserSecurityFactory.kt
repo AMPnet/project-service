@@ -11,8 +11,11 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 
 class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoundUser> {
 
+    companion object {
+        const val fullName = "First Last"
+    }
+
     private val password = "password"
-    private val fullName = "First Last"
 
     override fun createSecurityContext(annotation: WithMockCrowdfoundUser): SecurityContext {
         val authorities = mapPrivilegesOrRoleToAuthorities(annotation)

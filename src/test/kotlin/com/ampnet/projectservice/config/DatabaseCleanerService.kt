@@ -31,4 +31,9 @@ class DatabaseCleanerService(val em: EntityManager) {
     fun deleteAllProjects() {
         em.createNativeQuery("TRUNCATE project CASCADE").executeUpdate()
     }
+
+    @Transactional
+    fun deleteAllProjectUpdates() {
+        em.createNativeQuery("TRUNCATE project_update CASCADE").executeUpdate()
+    }
 }
