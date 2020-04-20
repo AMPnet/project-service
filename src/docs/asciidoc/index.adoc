@@ -145,7 +145,7 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsFor
 
 === Update
 All values are optional. Only provided values will be updated. For list values: `tags` and `news`,
-old values are overwritten by a new list.
+new list overrides old values.
 
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]
@@ -185,6 +185,20 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToAddGalleryImage/http-respo
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-request.adoc[]
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-response.adoc[]
+
+=== Project Updates
+
+==== Create
+.Request
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToCreateProjectUpdate/http-request.adoc[]
+.Response
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToCreateProjectUpdate/http-response.adoc[]
+
+==== Delete
+.Request
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/http-request.adoc[]
+.Response
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/http-response.adoc[]
 
 == Public API
 
@@ -232,6 +246,12 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToQueryProjectsByTags/
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-request.adoc[]
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-response.adoc[]
+
+=== Get Project Updates
+.Request
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToGetProjectUpdates/http-request.adoc[]
+.Response
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToGetProjectUpdates/http-response.adoc[]
 
 === Search organizations and projects by name
 .Request
