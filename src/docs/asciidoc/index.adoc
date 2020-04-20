@@ -186,7 +186,13 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-re
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-response.adoc[]
 
-=== Project Updates
+=== Updates
+
+==== Get
+.Request
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToGetProjectUpdates/http-request.adoc[]
+.Response
+include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToGetProjectUpdates/http-response.adoc[]
 
 ==== Create
 .Request
