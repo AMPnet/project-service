@@ -448,6 +448,33 @@ class ProjectControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustThrowExceptionForTooLongProjectTags() {
+        suppose("User is admin in the organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("There is a project with tags") {
+            testContext.project = createProject("Project ex", organization, userUuid)
+            testContext.project.tags = listOf("too long")
+            projectRepository.save(testContext.project)
+        }
+
+        verify("User can add new tags to project") {
+            testContext.tags = listOf("wind".repeat(50))
+            testContext.projectUpdateRequest = ProjectUpdateRequest(tags = testContext.tags)
+            val result = mockMvc.perform(
+                put("$projectPath/${testContext.project.uuid}")
+                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.INT_DB)
+        }
+    }
+
     private class TestContext {
         lateinit var project: Project
         lateinit var projectRequest: ProjectRequest
