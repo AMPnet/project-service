@@ -15,7 +15,6 @@ import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.util.UUID
-import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -37,7 +36,7 @@ class ProjectController(
     companion object : KLogging()
 
     @PostMapping("/project")
-    fun createProject(@RequestBody @Valid request: ProjectRequest): ResponseEntity<ProjectResponse> {
+    fun createProject(@RequestBody request: ProjectRequest): ResponseEntity<ProjectResponse> {
         logger.debug { "Received request to create project: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
@@ -49,7 +48,7 @@ class ProjectController(
     @PutMapping("/project/{projectUuid}")
     fun updateProject(
         @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestBody @Valid request: ProjectUpdateRequest
+        @RequestBody request: ProjectUpdateRequest
     ): ResponseEntity<ProjectFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()

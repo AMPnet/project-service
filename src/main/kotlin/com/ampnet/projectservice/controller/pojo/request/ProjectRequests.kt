@@ -3,13 +3,10 @@ package com.ampnet.projectservice.controller.pojo.request
 import com.ampnet.projectservice.enums.Currency
 import java.time.ZonedDateTime
 import java.util.UUID
-import javax.validation.constraints.Size
 
 data class ProjectRequest(
     val organizationUuid: UUID,
-    @Size(max = 255)
     val name: String,
-    @Size(max = 255)
     val description: String,
     val location: ProjectLocationRequest,
     val roi: ProjectRoiRequest,
@@ -25,9 +22,7 @@ data class ProjectRequest(
 data class ProjectLocationRequest(val lat: Double, val long: Double)
 data class ProjectRoiRequest(val from: Double, val to: Double)
 data class ProjectUpdateRequest(
-    @Size(max = 255)
     val name: String? = null,
-    @Size(max = 255)
     val description: String? = null,
     val location: ProjectLocationRequest? = null,
     val roi: ProjectRoiRequest? = null,
