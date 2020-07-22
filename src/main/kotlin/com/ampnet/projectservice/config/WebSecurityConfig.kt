@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
@@ -71,6 +72,9 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         val profileFilter = DisabledProfileFilter()
 
         http.cors().and().csrf().disable()
+            .formLogin().disable()
+            .httpBasic().disable()
+            .logout().disable()
             .authorizeRequests()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/public/**").permitAll()
@@ -81,6 +85,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         http
             .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterAfter(profileFilter, JwtAuthenticationFilter::class.java)
+            .addFilterAfter(profileFilter, FilterSecurityInterceptor::class.java)
     }
 }
