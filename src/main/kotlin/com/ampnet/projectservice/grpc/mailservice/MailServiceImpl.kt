@@ -6,10 +6,10 @@ import com.ampnet.mailservice.proto.OrganizationInvitationRequest
 import com.ampnet.projectservice.config.ApplicationProperties
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
-import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeUnit
 
 @Service
 class MailServiceImpl(

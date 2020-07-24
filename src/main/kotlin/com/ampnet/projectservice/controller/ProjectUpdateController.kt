@@ -5,7 +5,6 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectUpdateResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectUpdatesResponse
 import com.ampnet.projectservice.service.ProjectUpdateService
 import com.ampnet.projectservice.service.pojo.CreateProjectUpdate
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class ProjectUpdateController(private val projectUpdateService: ProjectUpdateService) {
@@ -36,7 +36,8 @@ class ProjectUpdateController(private val projectUpdateService: ProjectUpdateSer
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Project Update: $request by user: ${userPrincipal.uuid}" }
         val serviceRequest = CreateProjectUpdate(
-            userPrincipal.uuid, userPrincipal.name, uuid, request.title, request.content)
+            userPrincipal.uuid, userPrincipal.name, uuid, request.title, request.content
+        )
         val projectUpdate = projectUpdateService.createProjectUpdate(serviceRequest)
         return ResponseEntity.ok(ProjectUpdateResponse(projectUpdate))
     }

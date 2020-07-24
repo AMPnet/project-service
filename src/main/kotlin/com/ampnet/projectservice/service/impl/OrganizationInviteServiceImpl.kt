@@ -16,11 +16,11 @@ import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class OrganizationInviteServiceImpl(
@@ -39,12 +39,16 @@ class OrganizationInviteServiceImpl(
     @Transactional
     override fun sendInvitation(request: OrganizationInviteServiceRequest): OrganizationInvitation {
         val invitedToOrganization = organizationService.findOrganizationById(request.organizationUuid)
-                ?: throw ResourceNotFoundException(ErrorCode.ORG_MISSING,
-                        "Missing organization with id: ${request.organizationUuid}")
+            ?: throw ResourceNotFoundException(
+                ErrorCode.ORG_MISSING,
+                "Missing organization with id: ${request.organizationUuid}"
+            )
 
         inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
-            throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_INVITE,
-                    "User is already invited to join organization")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.ORG_DUPLICATE_INVITE,
+                "User is already invited to join organization"
+            )
         }
 
         val organizationInvite = OrganizationInvitation::class.java.getConstructor().newInstance()
@@ -79,20 +83,25 @@ class OrganizationInviteServiceImpl(
         inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
             if (request.join) {
                 val role = OrganizationRoleType.fromInt(it.role.id)
-                        ?: throw ResourceNotFoundException(ErrorCode.USER_ROLE_MISSING,
-                                "Missing role with id: ${it.role.id}")
+                    ?: throw ResourceNotFoundException(
+                        ErrorCode.USER_ROLE_MISSING,
+                        "Missing role with id: ${it.role.id}"
+                    )
                 organizationService.addUserToOrganization(request.userUuid, it.organizationUuid, role)
             }
             inviteRepository.delete(it)
-            logger.debug { "User: ${request.userUuid} answer = ${request.join} " +
-                "to join organization: ${request.organizationUuid}" }
+            logger.debug {
+                "User: ${request.userUuid} answer = ${request.join} " +
+                    "to join organization: ${request.organizationUuid}"
+            }
         }
     }
 
     @Transactional
     override fun followOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationFollower {
         ServiceUtils.wrapOptional(
-            followerRepository.findByUserUuidAndOrganizationUuid(userUuid, organizationUuid))?.let {
+            followerRepository.findByUserUuidAndOrganizationUuid(userUuid, organizationUuid)
+        )?.let {
             return it
         }
         val follower = OrganizationFollower::class.java.getConstructor().newInstance()
@@ -105,7 +114,8 @@ class OrganizationInviteServiceImpl(
     @Transactional
     override fun unfollowOrganization(userUuid: UUID, organizationUuid: UUID) {
         ServiceUtils.wrapOptional(
-            followerRepository.findByUserUuidAndOrganizationUuid(userUuid, organizationUuid))?.let {
+            followerRepository.findByUserUuidAndOrganizationUuid(userUuid, organizationUuid)
+        )?.let {
             followerRepository.delete(it)
         }
     }

@@ -10,14 +10,14 @@ import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class OrganizationServiceTest : JpaServiceTestBase() {
 
@@ -88,7 +88,8 @@ class OrganizationServiceTest : JpaServiceTestBase() {
 
             organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
             organizationService.addUserToOrganization(
-                    userUuid, testContext.secondOrganization.uuid, OrganizationRoleType.ORG_MEMBER)
+                userUuid, testContext.secondOrganization.uuid, OrganizationRoleType.ORG_MEMBER
+            )
         }
 
         verify("User is a member of two organizations") {
@@ -106,7 +107,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
 
         verify("Service returns organization with document") {
             val organizationWithDocument = organizationService.findOrganizationById(organization.uuid)
-                    ?: fail("Organization must not be null")
+                ?: fail("Organization must not be null")
             assertThat(organizationWithDocument.uuid).isEqualTo(organization.uuid)
             assertThat(organizationWithDocument.documents).hasSize(1)
             val document = organizationWithDocument.documents?.first() ?: fail("Organization must have one document")
@@ -124,11 +125,11 @@ class OrganizationServiceTest : JpaServiceTestBase() {
 
         verify("Service returns organization with documents") {
             val organizationWithDocument = organizationService.findOrganizationById(organization.uuid)
-                    ?: fail("Organization must not be null")
+                ?: fail("Organization must not be null")
             assertThat(organizationWithDocument.uuid).isEqualTo(organization.uuid)
             assertThat(organizationWithDocument.documents).hasSize(3)
             assertThat(organizationWithDocument.documents?.map { it.link })
-                    .containsAll(listOf("link1", "link2", "link3"))
+                .containsAll(listOf("link1", "link2", "link3"))
         }
     }
 
@@ -151,7 +152,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
         suppose("File storage service will successfully store document") {
             testContext.documentSaveRequest =
-                    DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid)
+                DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid)
             Mockito.`when`(
                 cloudStorageService.saveFile(testContext.documentSaveRequest.name, testContext.documentSaveRequest.data)
             ).thenReturn(testContext.documentLink)
@@ -170,7 +171,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
         verify("Organization has 3 documents") {
             val organizationWithDocuments = organizationService.findOrganizationById(organization.uuid)
-                    ?: fail("Organization documents must not be null")
+                ?: fail("Organization documents must not be null")
             assertThat(organizationWithDocuments.documents).hasSize(3)
             assertThat(organizationWithDocuments.documents?.map { it.link }).contains(testContext.documentLink)
         }
@@ -203,12 +204,14 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
             organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
             organizationService.addUserToOrganization(
-                    testContext.member, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+                testContext.member, organization.uuid, OrganizationRoleType.ORG_MEMBER
+            )
         }
         suppose("There is another organization with members") {
             val additionalOrganization = createOrganization("Second organization", userUuid)
             organizationService.addUserToOrganization(
-                    UUID.randomUUID(), additionalOrganization.uuid, OrganizationRoleType.ORG_MEMBER)
+                UUID.randomUUID(), additionalOrganization.uuid, OrganizationRoleType.ORG_MEMBER
+            )
         }
 
         verify("Service will list all members of organization") {

@@ -2,12 +2,12 @@ package com.ampnet.projectservice.security
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.enums.PrivilegeType
-import java.util.UUID
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.test.context.support.WithSecurityContextFactory
+import java.util.UUID
 
 class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoundUser> {
 
@@ -43,8 +43,9 @@ class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoun
     }
 
     private fun getDefaultUserPrivileges() = listOf(
-            PrivilegeType.PRO_PROFILE,
-            PrivilegeType.PWO_PROFILE,
-            PrivilegeType.PRO_ORG_INVITE,
-            PrivilegeType.PWO_ORG_INVITE)
+        PrivilegeType.PRO_PROFILE,
+        PrivilegeType.PWO_PROFILE,
+        PrivilegeType.PRO_ORG_INVITE,
+        PrivilegeType.PWO_ORG_INVITE
+    )
 }

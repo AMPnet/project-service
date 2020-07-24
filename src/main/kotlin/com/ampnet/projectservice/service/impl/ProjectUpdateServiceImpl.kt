@@ -8,11 +8,11 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectUpdateRepository
 import com.ampnet.projectservice.service.ProjectUpdateService
 import com.ampnet.projectservice.service.pojo.CreateProjectUpdate
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class ProjectUpdateServiceImpl(
@@ -46,7 +46,8 @@ class ProjectUpdateServiceImpl(
         }
         if (canUserWriteOrgProject(user, project.organization.uuid).not()) {
             throw InvalidRequestException(
-                ErrorCode.USER_ROLE_MISSING, "User: $user does not have a privilege to edit project: ${project.uuid}")
+                ErrorCode.USER_ROLE_MISSING, "User: $user does not have a privilege to edit project: ${project.uuid}"
+            )
         }
     }
 

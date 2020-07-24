@@ -16,14 +16,14 @@ import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class ProjectServiceImpl(
@@ -146,16 +146,22 @@ class ProjectServiceImpl(
             throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before present date")
         }
         if (request.minPerUser > request.maxPerUser) {
-            throw InvalidRequestException(ErrorCode.PRJ_MIN_ABOVE_MAX,
-                    "Min: ${request.minPerUser} > Max: ${request.maxPerUser}")
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MIN_ABOVE_MAX,
+                "Min: ${request.minPerUser} > Max: ${request.maxPerUser}"
+            )
         }
         if (applicationProperties.investment.maxPerProject <= request.expectedFunding) {
-            throw InvalidRequestException(ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH,
-                    "Max expected funding is: ${applicationProperties.investment.maxPerProject}")
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH,
+                "Max expected funding is: ${applicationProperties.investment.maxPerProject}"
+            )
         }
         if (applicationProperties.investment.maxPerUser <= request.maxPerUser) {
-            throw InvalidRequestException(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
-                    "Max funds per user is: ${applicationProperties.investment.maxPerUser}")
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
+                "Max funds per user is: ${applicationProperties.investment.maxPerUser}"
+            )
         }
         validateRoi(request.roi)
     }

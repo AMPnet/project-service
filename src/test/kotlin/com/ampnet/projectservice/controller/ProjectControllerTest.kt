@@ -15,7 +15,6 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
@@ -28,6 +27,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class ProjectControllerTest : ControllerTestBase() {
 
@@ -50,10 +50,11 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Controller will forbidden for user without membership to create project") {
             val request = createProjectRequest(organization.uuid, "Error project")
             mockMvc.perform(
-                    post(projectPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isForbidden)
+                post(projectPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isForbidden)
         }
     }
 
@@ -68,10 +69,11 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Controller will return forbidden for missing organization membership") {
             val request = createProjectRequest(organization.uuid, "Error project")
             mockMvc.perform(
-                    post(projectPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isForbidden)
+                post(projectPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isForbidden)
         }
     }
 
@@ -83,7 +85,8 @@ class ProjectControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(projectPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isForbidden)
         }
     }
@@ -99,11 +102,12 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Controller will return create project") {
             testContext.projectRequest = createProjectRequest(organization.uuid, "Das project")
             val result = mockMvc.perform(
-                    post(projectPath)
-                            .content(objectMapper.writeValueAsString(testContext.projectRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                post(projectPath)
+                    .content(objectMapper.writeValueAsString(testContext.projectRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
 
             val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isNotNull()
@@ -141,12 +145,15 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("Admin can update project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description",
-                        ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag"))
+                ProjectUpdateRequest(
+                    "new name", "description",
+                    ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag")
+                )
             val result = mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -195,7 +202,8 @@ class ProjectControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -222,12 +230,15 @@ class ProjectControllerTest : ControllerTestBase() {
 
         verify("User cannot update project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description",
-                        ProjectLocationRequest(12.234, 23.432), ProjectRoiRequest(4.44, 8.88), false)
+                ProjectUpdateRequest(
+                    "new name", "description",
+                    ProjectLocationRequest(12.234, 23.432), ProjectRoiRequest(4.44, 8.88), false
+                )
             mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isForbidden)
         }
     }
@@ -237,11 +248,12 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnErrorForUpdatingNonExistingProject() {
         verify("User cannot update non existing project") {
             testContext.projectUpdateRequest =
-                    ProjectUpdateRequest("new name", "description", null, null, false)
+                ProjectUpdateRequest("new name", "description", null, null, false)
             val response = mockMvc.perform(
                 put("$projectPath/${UUID.randomUUID()}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andReturn()
             verifyResponseErrorCode(response, ErrorCode.PRJ_MISSING)
         }
@@ -258,20 +270,25 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store document") {
-            testContext.multipartFile = MockMultipartFile("file", "test.txt",
-                    "text/plain", "Some document data".toByteArray())
+            testContext.multipartFile = MockMultipartFile(
+                "file", "test.txt",
+                "text/plain", "Some document data".toByteArray()
+            )
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                            testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
             ).thenReturn(testContext.documentLink)
         }
 
         verify("User can add document") {
             val result = mockMvc.perform(
-                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/document")
-                            .file(testContext.multipartFile))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/document")
+                    .file(testContext.multipartFile)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
 
             val documentResponse: DocumentResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(documentResponse.id).isNotNull()
@@ -306,14 +323,15 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("Project has some documents") {
             testContext.document =
-                    createProjectDocument(testContext.project, userUuid, "Prj doc", testContext.documentLink)
+                createProjectDocument(testContext.project, userUuid, "Prj doc", testContext.documentLink)
             createProjectDocument(testContext.project, userUuid, "Sec.pdf", "Sec-some-link.pdf")
         }
 
         verify("User admin can delete document") {
             mockMvc.perform(
-                    delete("$projectPath/${testContext.project.uuid}/document/${testContext.document.id}"))
-                    .andExpect(status().isOk)
+                delete("$projectPath/${testContext.project.uuid}/document/${testContext.document.id}")
+            )
+                .andExpect(status().isOk)
         }
         verify("Document is deleted") {
             val project = projectRepository.findByIdWithAllData(testContext.project.uuid)
@@ -334,19 +352,24 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store image") {
-            testContext.multipartFile = MockMultipartFile("image", "image.png",
-                    "image/png", "ImageData".toByteArray())
+            testContext.multipartFile = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                            testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
             ).thenReturn(testContext.imageLink)
         }
 
         verify("User can add main image") {
             mockMvc.perform(
-                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/main")
-                            .file(testContext.multipartFile))
-                    .andExpect(status().isOk)
+                RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/main")
+                    .file(testContext.multipartFile)
+            )
+                .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
             val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
@@ -366,19 +389,24 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store image") {
-            testContext.multipartFile = MockMultipartFile("image", "image.png",
-                    "image/png", "ImageData".toByteArray())
+            testContext.multipartFile = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                            testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
             ).thenReturn(testContext.imageLink)
         }
 
         verify("User can add main image") {
             mockMvc.perform(
-                    RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/gallery")
-                            .file(testContext.multipartFile))
-                    .andExpect(status().isOk)
+                RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/gallery")
+                    .file(testContext.multipartFile)
+            )
+                .andExpect(status().isOk)
         }
         verify("Document is stored in database and connected to project") {
             val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
@@ -405,10 +433,11 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can remove gallery image") {
             val request = ImageLinkListRequest(listOf("image-link-1"))
             mockMvc.perform(
-                    delete("$projectPath/${testContext.project.uuid}/image/gallery")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk)
+                delete("$projectPath/${testContext.project.uuid}/image/gallery")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isOk)
         }
         verify("Gallery image is removed") {
             val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
@@ -434,7 +463,8 @@ class ProjectControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -467,7 +497,8 @@ class ProjectControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 put("$projectPath/${testContext.project.uuid}")
                     .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
 

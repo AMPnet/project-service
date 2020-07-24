@@ -24,7 +24,8 @@ class PublicSearchControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 get(searchPath).param("name", "Empty")
                     .param("size", "10")
-                    .param("page", "0"))
+                    .param("page", "0")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -52,7 +53,8 @@ class PublicSearchControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 get(searchPath).param("name", "Pro")
                     .param("size", "10")
-                    .param("page", "0"))
+                    .param("page", "0")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

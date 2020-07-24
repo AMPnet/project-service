@@ -7,7 +7,6 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.ProjectService
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class PublicProjectController(private val projectService: ProjectService) {

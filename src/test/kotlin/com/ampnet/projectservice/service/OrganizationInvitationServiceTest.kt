@@ -7,11 +7,11 @@ import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
-import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.ZonedDateTime
 
 class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
@@ -21,7 +21,8 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     }
     private val service: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
-                inviteRepository, followerRepository, roleRepository, mailService, organizationService)
+            inviteRepository, followerRepository, roleRepository, mailService, organizationService
+        )
     }
     private val organization: Organization by lazy {
         databaseCleanerService.deleteAllOrganizations()
@@ -76,12 +77,13 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
         verify("The admin can invite user to organization") {
             val request = OrganizationInviteServiceRequest(
-                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid)
+                invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid
+            )
             service.sendInvitation(request)
         }
         verify("Invitation is stored in database") {
             val optionalInvitation =
-                    inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUser)
+                inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUser)
             assertThat(optionalInvitation).isPresent
             val invitation = optionalInvitation.get()
             assertThat(invitation.email).isEqualTo(invitedUser)
@@ -92,7 +94,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         }
         verify("Sending mail invitation is called") {
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendOrganizationInvitationMail(invitedUser, organization.name)
+                .sendOrganizationInvitationMail(invitedUser, organization.name)
         }
     }
 
@@ -101,13 +103,15 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         suppose("User has organization invite") {
             databaseCleanerService.deleteAllOrganizationInvitations()
             val request = OrganizationInviteServiceRequest(
-                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid)
+                invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid
+            )
             service.sendInvitation(request)
         }
 
         verify("Service will throw an error for duplicate user invite to organization") {
             val request = OrganizationInviteServiceRequest(
-                    invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid)
+                invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid
+            )
             assertThrows<ResourceAlreadyExistsException> {
                 service.sendInvitation(request)
             }

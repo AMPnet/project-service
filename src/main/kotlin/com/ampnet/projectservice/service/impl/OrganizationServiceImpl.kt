@@ -15,13 +15,13 @@ import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class OrganizationServiceImpl(
@@ -39,8 +39,10 @@ class OrganizationServiceImpl(
     @Transactional
     override fun createOrganization(serviceRequest: OrganizationServiceRequest): Organization {
         if (organizationRepository.findByName(serviceRequest.name).isPresent) {
-            throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_NAME,
-                    "Organization with name: ${serviceRequest.name} already exists")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.ORG_DUPLICATE_NAME,
+                "Organization with name: ${serviceRequest.name} already exists"
+            )
         }
         val organization = Organization(serviceRequest.name, serviceRequest.legalInfo, serviceRequest.ownerUuid)
         val savedOrganization = organizationRepository.save(organization)
@@ -79,8 +81,10 @@ class OrganizationServiceImpl(
     ): OrganizationMembership {
         // user can have only one membership(role) per one organization
         membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
-            throw ResourceAlreadyExistsException(ErrorCode.ORG_DUPLICATE_USER,
-                    "User ${it.userUuid} is already a member of this organization ${it.organizationUuid}")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.ORG_DUPLICATE_USER,
+                "User ${it.userUuid} is already a member of this organization ${it.organizationUuid}"
+            )
         }
         logger.debug { "Adding user: $userUuid to organization: $organizationUuid" }
 
@@ -120,9 +124,11 @@ class OrganizationServiceImpl(
     }
 
     private fun getOrganization(organizationUuid: UUID): Organization =
-            findOrganizationById(organizationUuid)
-                    ?: throw ResourceNotFoundException(ErrorCode.ORG_MISSING,
-                            "Missing organization with uuid: $organizationUuid")
+        findOrganizationById(organizationUuid)
+            ?: throw ResourceNotFoundException(
+                ErrorCode.ORG_MISSING,
+                "Missing organization with uuid: $organizationUuid"
+            )
 
     private fun addDocumentToOrganization(organization: Organization, document: Document) {
         val documents = organization.documents.orEmpty().toMutableList()

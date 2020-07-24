@@ -12,11 +12,11 @@ data class DocumentResponse(
     val createdAt: ZonedDateTime
 ) {
     constructor(document: Document) : this(
-            document.id,
-            document.link,
-            document.name,
-            document.type,
-            document.size,
-            document.createdAt
+        document.id,
+        document.link,
+        document.name,
+        document.type,
+        document.size,
+        document.createdAt
     )
 }

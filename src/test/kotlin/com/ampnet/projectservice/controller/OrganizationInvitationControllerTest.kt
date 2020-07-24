@@ -8,8 +8,6 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +16,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class OrganizationInvitationControllerTest : ControllerTestBase() {
 
@@ -37,17 +37,19 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
-            createOrganizationInvite(defaultEmail, testContext.organization.uuid, testContext.uuid,
-                    OrganizationRoleType.ORG_MEMBER)
+            createOrganizationInvite(
+                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
         }
 
         verify("User can get a list of his invites") {
             val result = mockMvc.perform(get(pathMe))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andReturn()
 
             val invitesResponse: OrganizationInvitesListResponse =
-                    objectMapper.readValue(result.response.contentAsString)
+                objectMapper.readValue(result.response.contentAsString)
             assertThat(invitesResponse.organizationInvites).hasSize(1)
             val invite = invitesResponse.organizationInvites.first()
             assertThat(invite.role).isEqualTo(OrganizationRoleType.ORG_MEMBER)
@@ -63,13 +65,15 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             databaseCleanerService.deleteAllOrganizationInvitations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
-            createOrganizationInvite(defaultEmail, testContext.organization.uuid, testContext.uuid,
-                    OrganizationRoleType.ORG_MEMBER)
+            createOrganizationInvite(
+                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
         }
 
         verify("User can get a list of his invites") {
             mockMvc.perform(post("$pathMe/${testContext.organization.uuid}/accept"))
-                    .andExpect(status().isOk)
+                .andExpect(status().isOk)
         }
         verify("User is a member of organization") {
             val organizations = organizationRepository.findAllOrganizationsForUserUuid(userUuid)
@@ -82,7 +86,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
         verify("User invitation is deleted") {
             val optionalInvite = organizationInviteRepository
-                    .findByOrganizationUuidAndEmail(testContext.organization.uuid, defaultEmail)
+                .findByOrganizationUuidAndEmail(testContext.organization.uuid, defaultEmail)
             assertThat(optionalInvite).isNotPresent
         }
     }
@@ -94,14 +98,16 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             databaseCleanerService.deleteAllOrganizationInvitations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
-            createOrganizationInvite(defaultEmail, testContext.organization.uuid, testContext.uuid,
-                    OrganizationRoleType.ORG_MEMBER)
+            createOrganizationInvite(
+                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
         }
 
         verify("User can get a list of his invites") {
             mockMvc.perform(post("$pathMe/${testContext.organization.uuid}/reject"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andReturn()
         }
         verify("User is not a member of organization") {
             val organizations = organizationRepository.findAllOrganizationsForUserUuid(userUuid)
@@ -109,7 +115,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
         verify("User invitation is deleted") {
             val optionalInvite = organizationInviteRepository
-                    .findByOrganizationUuidAndEmail(testContext.organization.uuid, defaultEmail)
+                .findByOrganizationUuidAndEmail(testContext.organization.uuid, defaultEmail)
             assertThat(optionalInvite).isNotPresent
         }
     }
@@ -131,10 +137,11 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         verify("Admin user can invite user to his organization") {
             val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
-                    post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk)
+                post("$pathOrganization/${testContext.organization.uuid}/invite")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isOk)
         }
         verify("Organization invite is stored in database") {
             val invites = organizationInviteRepository.findAll()
@@ -161,10 +168,11 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         verify("User cannot invite other user without ORG_ADMIN role") {
             val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
-                    post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isForbidden)
+                post("$pathOrganization/${testContext.organization.uuid}/invite")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isForbidden)
         }
     }
 
@@ -179,10 +187,11 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         verify("User can invite user to organization if he is not a member of organization") {
             val request = OrganizationInviteRequest("some@user.ocm", OrganizationRoleType.ORG_MEMBER)
             mockMvc.perform(
-                    post("$pathOrganization/${testContext.organization.uuid}/invite")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isForbidden)
+                post("$pathOrganization/${testContext.organization.uuid}/invite")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isForbidden)
         }
     }
 
@@ -197,14 +206,17 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Other user has organization invites") {
-            inviteUserToOrganization(testContext.invitedEmail, testContext.organization.uuid, userUuid,
-                    OrganizationRoleType.ORG_MEMBER)
+            inviteUserToOrganization(
+                testContext.invitedEmail, testContext.organization.uuid, userUuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
         }
 
         verify("User can revoke invitation") {
             mockMvc.perform(
-                    post("$pathOrganization/${testContext.organization.uuid}/${testContext.invitedEmail}/revoke"))
-                    .andExpect(status().isOk)
+                post("$pathOrganization/${testContext.organization.uuid}/${testContext.invitedEmail}/revoke")
+            )
+                .andExpect(status().isOk)
         }
     }
 
