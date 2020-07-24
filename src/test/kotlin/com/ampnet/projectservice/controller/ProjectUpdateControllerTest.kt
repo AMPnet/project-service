@@ -51,7 +51,8 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
                 get("/public/project/${project.uuid}/updates")
                     .param("size", "10")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -72,7 +73,8 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
 
         verify("Project admin can delete project update") {
             mockMvc.perform(
-                delete("/project/${project.uuid}/updates/${testContext.projectUpdate.id}"))
+                delete("/project/${project.uuid}/updates/${testContext.projectUpdate.id}")
+            )
                 .andExpect(status().isOk)
         }
         verify("Project update is deleted") {
@@ -92,7 +94,8 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("/project/${project.uuid}/updates")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

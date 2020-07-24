@@ -9,8 +9,8 @@ data class OrganizationServiceRequest(
     val ownerUuid: UUID
 ) {
     constructor(request: OrganizationRequest, userUuid: UUID) : this(
-            request.name,
-            request.legalInfo,
-            userUuid
+        request.name,
+        request.legalInfo,
+        userUuid
     )
 }

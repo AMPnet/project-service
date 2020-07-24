@@ -4,8 +4,6 @@ import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InternalException
 import com.ampnet.projectservice.service.CloudStorageService
-import java.net.URI
-import java.time.ZonedDateTime
 import mu.KLogging
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
@@ -17,6 +15,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.model.S3Exception
+import java.net.URI
+import java.time.ZonedDateTime
 
 @Service
 class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : CloudStorageService {
@@ -33,25 +33,28 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
     // Credentials are provided via Env variables: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
     private val s3client: S3Client by lazy {
         S3Client.builder()
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .region(Region.EU_CENTRAL_1)
-                .endpointOverride(URI(endpoint))
-                .build()
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+            .region(Region.EU_CENTRAL_1)
+            .endpointOverride(URI(endpoint))
+            .build()
     }
 
     override fun saveFile(name: String, content: ByteArray): String {
         val key = getKeyFromName(name)
         try {
             s3client.putObject(
-                    PutObjectRequest.builder().acl(acl).bucket(bucketName).key("$folder/$key").build(),
-                    RequestBody.fromBytes(content)
+                PutObjectRequest.builder().acl(acl).bucket(bucketName).key("$folder/$key").build(),
+                RequestBody.fromBytes(content)
             )
             logger.info { "Saved file: $key" }
             return getFileLink(key)
         } catch (ex: S3Exception) {
             logger.warn { ex.message }
-            throw InternalException(ErrorCode.INT_FILE_STORAGE, "Could not store file with key: $key on cloud\n" +
-                    "Exception message: ${ex.message}")
+            throw InternalException(
+                ErrorCode.INT_FILE_STORAGE,
+                "Could not store file with key: $key on cloud\n" +
+                    "Exception message: ${ex.message}"
+            )
         }
     }
 

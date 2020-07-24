@@ -10,9 +10,9 @@ data class OrganizationInviteResponse(
     val role: OrganizationRoleType?
 ) {
     constructor(invite: OrganizationInvitation) : this(
-            invite.organizationUuid,
-            invite.organization?.name ?: "Missing value",
-            OrganizationRoleType.fromInt(invite.role.id)
+        invite.organizationUuid,
+        invite.organization?.name ?: "Missing value",
+        OrganizationRoleType.fromInt(invite.role.id)
     )
 }
 

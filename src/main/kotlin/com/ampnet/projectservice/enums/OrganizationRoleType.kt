@@ -5,17 +5,18 @@ enum class OrganizationRoleType(val id: Int) {
     ORG_ADMIN(1) {
         override fun getPrivileges(): List<OrganizationPrivilegeType> {
             return listOf(
-                    OrganizationPrivilegeType.PR_USERS,
-                    OrganizationPrivilegeType.PW_USERS,
-                    OrganizationPrivilegeType.PW_ORG,
-                    OrganizationPrivilegeType.PW_PROJECT)
+                OrganizationPrivilegeType.PR_USERS,
+                OrganizationPrivilegeType.PW_USERS,
+                OrganizationPrivilegeType.PW_ORG,
+                OrganizationPrivilegeType.PW_PROJECT
+            )
         }
     },
 
     ORG_MEMBER(2) {
         override fun getPrivileges(): List<OrganizationPrivilegeType> {
             return listOf(
-                    OrganizationPrivilegeType.PR_USERS
+                OrganizationPrivilegeType.PR_USERS
             )
         }
     };

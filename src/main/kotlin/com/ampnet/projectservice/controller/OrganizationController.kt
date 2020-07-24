@@ -11,8 +11,6 @@ import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
-import java.util.UUID
-import javax.validation.Valid
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -26,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class OrganizationController(
@@ -50,8 +50,8 @@ class OrganizationController(
         logger.debug { "Received request for personal organizations" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val organizations = organizationService
-                .findAllOrganizationsForUser(userPrincipal.uuid)
-                .map { OrganizationResponse(it) }
+            .findAllOrganizationsForUser(userPrincipal.uuid)
+            .map { OrganizationResponse(it) }
         return ResponseEntity.ok(OrganizationListResponse(organizations))
     }
 
@@ -142,16 +142,16 @@ class OrganizationController(
         action: () -> (T)
     ): ResponseEntity<T> {
         organizationService.getOrganizationMemberships(organizationUuid)
-                .find { it.userUuid == userUuid }
-                ?.let { orgMembership ->
-                    return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
-                        val response = action()
-                        ResponseEntity.ok(response)
-                    } else {
-                        logger.info { "User does not have organization privilege to write users: PW_USERS" }
-                        ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-                    }
+            .find { it.userUuid == userUuid }
+            ?.let { orgMembership ->
+                return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
+                    val response = action()
+                    ResponseEntity.ok(response)
+                } else {
+                    logger.info { "User does not have organization privilege to write users: PW_USERS" }
+                    ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                 }
+            }
         logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }
@@ -162,16 +162,16 @@ class OrganizationController(
         action: () -> (T)
     ): ResponseEntity<T> {
         organizationService.getOrganizationMemberships(organizationUuid)
-                .find { it.userUuid == userUuid }
-                ?.let { orgMembership ->
-                    return if (orgMembership.hasPrivilegeToWriteOrganization()) {
-                        val response = action()
-                        ResponseEntity.ok(response)
-                    } else {
-                        logger.info { "User does not have organization privilege: PW_ORG" }
-                        ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-                    }
+            .find { it.userUuid == userUuid }
+            ?.let { orgMembership ->
+                return if (orgMembership.hasPrivilegeToWriteOrganization()) {
+                    val response = action()
+                    ResponseEntity.ok(response)
+                } else {
+                    logger.info { "User does not have organization privilege: PW_ORG" }
+                    ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                 }
+            }
         logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }

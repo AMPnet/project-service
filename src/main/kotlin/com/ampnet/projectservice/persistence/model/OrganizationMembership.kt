@@ -34,7 +34,7 @@ data class OrganizationMembership(
     var createdAt: ZonedDateTime
 ) {
     private fun getPrivileges(): List<OrganizationPrivilegeType> =
-            OrganizationRoleType.fromInt(role.id)?.getPrivileges().orEmpty()
+        OrganizationRoleType.fromInt(role.id)?.getPrivileges().orEmpty()
 
     fun hasPrivilegeToSeeOrganizationUsers(): Boolean = getPrivileges().contains(OrganizationPrivilegeType.PR_USERS)
 

@@ -82,9 +82,10 @@ data class Project(
     var active: Boolean,
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "project_document",
-            joinColumns = [JoinColumn(name = "project_uuid")],
-            inverseJoinColumns = [JoinColumn(name = "document_id")]
+    @JoinTable(
+        name = "project_document",
+        joinColumns = [JoinColumn(name = "project_uuid")],
+        inverseJoinColumns = [JoinColumn(name = "document_id")]
     )
     var documents: List<Document>?,
 

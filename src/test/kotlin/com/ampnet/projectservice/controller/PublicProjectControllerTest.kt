@@ -7,13 +7,13 @@ import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class PublicProjectControllerTest : ControllerTestBase() {
 
@@ -85,7 +85,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 get(publicProjectPath)
                     .param("size", "10")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -99,13 +100,17 @@ class PublicProjectControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToGetActiveProjects() {
         suppose("Active project exists") {
-            testContext.project = createProject("Active project", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1))
+            testContext.project = createProject(
+                "Active project", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1)
+            )
         }
         suppose("Another organization has active project") {
             val secondOrganization = createOrganization("Second organization", userUuid)
-            testContext.secondProject = createProject("Second active project", secondOrganization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1))
+            testContext.secondProject = createProject(
+                "Second active project", secondOrganization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1)
+            )
         }
         suppose("One project is not active") {
             createProject("Not active", organization, userUuid, active = false)
@@ -116,7 +121,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 get("$publicProjectPath/active")
                     .param("size", "10")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -130,19 +136,25 @@ class PublicProjectControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToCountActiveProjects() {
         suppose("There is active project") {
-            testContext.project = createProject("Active project", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1))
+            testContext.project = createProject(
+                "Active project", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1)
+            )
         }
         suppose("There is inactive project") {
             createProject("Not active", organization, userUuid, active = false)
         }
         suppose("There is ended project") {
-            createProject("Ended", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(30), endDate = ZonedDateTime.now().minusDays(1))
+            createProject(
+                "Ended", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(30), endDate = ZonedDateTime.now().minusDays(1)
+            )
         }
         suppose("There is project in future") {
-            createProject("Not active", organization, userUuid,
-                startDate = ZonedDateTime.now().plusDays(1), endDate = ZonedDateTime.now().plusDays(30))
+            createProject(
+                "Not active", organization, userUuid,
+                startDate = ZonedDateTime.now().plusDays(1), endDate = ZonedDateTime.now().plusDays(30)
+            )
         }
 
         verify("Controller will count all active projects") {
@@ -170,7 +182,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
                     .param("tags", "wind", "green")
                     .param("size", "10")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -218,7 +231,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 get("$publicProjectPath/organization/${organization.uuid}")
                     .param("size", "10")
                     .param("page", "0")
-                    .param("sort", "name,asc"))
+                    .param("sort", "name,asc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

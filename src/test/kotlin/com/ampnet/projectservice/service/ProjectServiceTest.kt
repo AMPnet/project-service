@@ -11,13 +11,13 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.impl.ProjectServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
-import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.ZonedDateTime
 
 class ProjectServiceTest : JpaServiceTestBase() {
 
@@ -109,7 +109,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Main image is added to project") {
             testContext.imageLink = "link-main-image"
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.imageLink, imageContent)
+                cloudStorageService.saveFile(testContext.imageLink, imageContent)
             ).thenReturn(testContext.imageLink)
             projectService.addMainImage(testContext.project, testContext.imageLink, imageContent)
         }
@@ -158,7 +158,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Additional image is added to gallery") {
             testContext.imageLink = "link-new"
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.imageLink, imageContent)
+                cloudStorageService.saveFile(testContext.imageLink, imageContent)
             ).thenReturn(testContext.imageLink)
             projectService.addImageToGallery(testContext.project, testContext.imageLink, imageContent)
         }

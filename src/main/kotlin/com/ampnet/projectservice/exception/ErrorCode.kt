@@ -14,8 +14,10 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     // Project: 07
     PRJ_MISSING("07", "01", "Non existing project"),
     PRJ_DATE("07", "02", "Invalid date"),
-    PRJ_MIN_ABOVE_MAX("07", "08",
-        "Min investment per user is higher than max investment per user"),
+    PRJ_MIN_ABOVE_MAX(
+        "07", "08",
+        "Min investment per user is higher than max investment per user"
+    ),
     PRJ_MAX_FUNDS_TOO_HIGH("07", "09", "Expected funding is too high"),
     PRJ_MAX_FUNDS_PER_USER_TOO_HIGH("07", "10", "Max funding per user is too high"),
     PRJ_ROI("07", "11", "Invalid project ROI"),

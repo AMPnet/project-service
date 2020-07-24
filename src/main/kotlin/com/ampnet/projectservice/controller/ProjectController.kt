@@ -14,7 +14,6 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
-import java.util.UUID
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.util.UUID
 
 @RestController
 class ProjectController(
@@ -135,7 +135,7 @@ class ProjectController(
     }
 
     private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
-            multipartFile.originalFilename ?: multipartFile.name
+        multipartFile.originalFilename ?: multipartFile.name
 
     private fun createProject(request: ProjectRequest, userUuid: UUID): ProjectResponse {
         val organization = getOrganization(request.organizationUuid)
@@ -144,16 +144,17 @@ class ProjectController(
     }
 
     private fun getOrganization(organizationUuid: UUID): Organization =
-            organizationService.findOrganizationById(organizationUuid)
-                    ?: throw ResourceNotFoundException(
-                            ErrorCode.ORG_MISSING, "Missing organization with id: $organizationUuid")
+        organizationService.findOrganizationById(organizationUuid)
+            ?: throw ResourceNotFoundException(
+                ErrorCode.ORG_MISSING, "Missing organization with id: $organizationUuid"
+            )
 
     private fun getUserMembershipInOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationMembership? =
-            organizationService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
+        organizationService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
 
     private fun getProjectByIdWithAllData(projectUuid: UUID): Project =
-            projectService.getProjectByIdWithAllData(projectUuid)
-                    ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectUuid")
+        projectService.getProjectByIdWithAllData(projectUuid)
+            ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectUuid")
 
     private fun <T> ifUserHasPrivilegeToWriteInProjectThenReturn(
         userUuid: UUID,

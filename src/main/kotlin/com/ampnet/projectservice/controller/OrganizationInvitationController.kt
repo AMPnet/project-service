@@ -7,8 +7,6 @@ import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
-import java.util.UUID
-import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -18,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class OrganizationInvitationController(
@@ -92,16 +92,16 @@ class OrganizationInvitationController(
         action: () -> (T)
     ): ResponseEntity<T> {
         organizationService.getOrganizationMemberships(organizationUuid)
-                .find { it.userUuid == userUuid }
-                ?.let { orgMembership ->
-                    return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
-                        val response = action()
-                        ResponseEntity.ok(response)
-                    } else {
-                        logger.info { "User does not have organization privilege to write users: PW_USERS" }
-                        ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-                    }
+            .find { it.userUuid == userUuid }
+            ?.let { orgMembership ->
+                return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
+                    val response = action()
+                    ResponseEntity.ok(response)
+                } else {
+                    logger.info { "User does not have organization privilege to write users: PW_USERS" }
+                    ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                 }
+            }
         logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
     }

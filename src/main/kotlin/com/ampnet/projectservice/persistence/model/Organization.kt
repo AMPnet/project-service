@@ -39,9 +39,10 @@ data class Organization(
     var approvedByUserUuid: UUID?,
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "organization_document",
-            joinColumns = [JoinColumn(name = "organization_uuid")],
-            inverseJoinColumns = [JoinColumn(name = "document_id")]
+    @JoinTable(
+        name = "organization_document",
+        joinColumns = [JoinColumn(name = "organization_uuid")],
+        inverseJoinColumns = [JoinColumn(name = "document_id")]
     )
     var documents: List<Document>?,
 
@@ -50,5 +51,6 @@ data class Organization(
     var memberships: List<OrganizationMembership>?
 ) {
     constructor(name: String, legalInfo: String?, createdByUserUuid: UUID) : this(
-        UUID.randomUUID(), name, legalInfo, createdByUserUuid, ZonedDateTime.now(), null, false, null, null, null)
+        UUID.randomUUID(), name, legalInfo, createdByUserUuid, ZonedDateTime.now(), null, false, null, null, null
+    )
 }
