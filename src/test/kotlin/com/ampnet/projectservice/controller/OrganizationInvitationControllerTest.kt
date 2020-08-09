@@ -3,7 +3,6 @@ package com.ampnet.projectservice.controller
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
-import com.ampnet.projectservice.enums.PrivilegeType
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfoundUser
@@ -32,7 +31,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRO_ORG_INVITE])
+    @WithMockCrowdfoundUser
     fun mustBeAbleToGetOrganizationInvitations() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
@@ -59,8 +58,8 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWO_ORG_INVITE])
-    fun mustBeAbleToAcceptOrganizationInvitions() {
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToAcceptOrganizationInvitation() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             databaseCleanerService.deleteAllOrganizationInvitations()
@@ -92,8 +91,8 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWO_ORG_INVITE])
-    fun mustBeAbleToRejectOrganizationInvition() {
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToRejectOrganizationInvitation() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             databaseCleanerService.deleteAllOrganizationInvitations()

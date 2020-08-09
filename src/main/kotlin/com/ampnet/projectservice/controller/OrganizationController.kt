@@ -15,7 +15,6 @@ import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,7 +35,6 @@ class OrganizationController(
     companion object : KLogging()
 
     @GetMapping("/organization")
-    @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PRA_ORG)")
     fun getOrganizations(pageable: Pageable): ResponseEntity<OrganizationListResponse> {
         logger.debug { "Received request for all organizations" }
         val organizations = organizationService.getAllOrganizations(pageable).map { OrganizationResponse(it) }
