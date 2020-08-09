@@ -6,7 +6,6 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationListRespon
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
-import com.ampnet.projectservice.enums.PrivilegeType
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.security.WithMockCrowdfoundUser
@@ -115,7 +114,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_ORG])
+    @WithMockCrowdfoundUser
     fun mustReturnListOfOrganizations() {
         suppose("Multiple organizations exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -137,15 +136,6 @@ class OrganizationControllerTest : ControllerTestBase() {
             val organizationResponse: OrganizationListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationResponse.organizations).hasSize(3)
             assertThat(organizationResponse.organizations.map { it.name }).contains(testContext.organization.name)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustNotGetListOfAllOrganizationsWithoutPrivilege() {
-        verify("User cannot get a list of all organizations with privilege PRA_ORG") {
-            mockMvc.perform(get(organizationPath))
-                .andExpect(status().isForbidden)
         }
     }
 

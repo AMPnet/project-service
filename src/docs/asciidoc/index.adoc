@@ -89,15 +89,15 @@ include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRevokeUserI
 
 ==== Accept invitation
 .Request
-include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToAcceptOrganizationInvitions/http-request.adoc[]
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToAcceptOrganizationInvitation/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToAcceptOrganizationInvitions/http-response.adoc[]
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToAcceptOrganizationInvitation/http-response.adoc[]
 
 ==== Reject invitation
 .Request
-include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvition/http-request.adoc[]
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvitation/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvition/http-response.adoc[]
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvitation/http-response.adoc[]
 
 === Members
 

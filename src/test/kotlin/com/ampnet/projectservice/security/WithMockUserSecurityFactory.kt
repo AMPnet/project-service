@@ -1,7 +1,6 @@
 package com.ampnet.projectservice.security
 
 import com.ampnet.core.jwt.UserPrincipal
-import com.ampnet.projectservice.enums.PrivilegeType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContext
@@ -38,14 +37,7 @@ class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoun
         return if (annotation.privileges.isNotEmpty()) {
             annotation.privileges.map { SimpleGrantedAuthority(it.name) }
         } else {
-            getDefaultUserPrivileges().map { SimpleGrantedAuthority(it.name) }
+            emptyList()
         }
     }
-
-    private fun getDefaultUserPrivileges() = listOf(
-        PrivilegeType.PRO_PROFILE,
-        PrivilegeType.PWO_PROFILE,
-        PrivilegeType.PRO_ORG_INVITE,
-        PrivilegeType.PWO_ORG_INVITE
-    )
 }

@@ -10,7 +10,6 @@ import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,7 +27,6 @@ class OrganizationInvitationController(
     companion object : KLogging()
 
     @GetMapping("/invites/me")
-    @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PRO_ORG_INVITE)")
     fun getMyInvitations(): ResponseEntity<OrganizationInvitesListResponse> {
         logger.debug { "Received request to list my invites" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -38,7 +36,6 @@ class OrganizationInvitationController(
     }
 
     @PostMapping("/invites/me/{organizationUuid}/accept")
-    @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PWO_ORG_INVITE)")
     fun acceptOrganizationInvitation(@PathVariable("organizationUuid") organizationUuid: UUID): ResponseEntity<Unit> {
         logger.debug { "Received request accept organization invite for organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -48,7 +45,6 @@ class OrganizationInvitationController(
     }
 
     @PostMapping("/invites/me/{organizationUuid}/reject")
-    @PreAuthorize("hasAuthority(T(com.ampnet.projectservice.enums.PrivilegeType).PWO_ORG_INVITE)")
     fun rejectOrganizationInvitation(@PathVariable("organizationUuid") organizationUuid: UUID): ResponseEntity<Unit> {
         logger.debug { "Received request reject organization invite for organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
