@@ -4,8 +4,9 @@
 
 Project service is a part of the AMPnet crowdfunding project. Service contains organization and project data. 
 Using gRPC, service is connected to other crowdfunding services:
-  * [user service](https://github.com/AMPnet/user-service)
-  * [mail service](https://github.com/AMPnet/mail-service)
+
+* [user service](https://github.com/AMPnet/user-service)
+* [mail service](https://github.com/AMPnet/mail-service)
 
 ## Requirements
 
@@ -35,6 +36,7 @@ Application is running on port: `8123`. To change default port set configuration
 
 After starting the application, API documentation is available at: `localhost:8123/docs/index.html`.
 If documentation is missing generate it by running gradle task:
+
 ```sh
 ./gradlew copyDocs
 ```
@@ -44,3 +46,25 @@ If documentation is missing generate it by running gradle task:
 ```sh
 ./gradlew test
 ```
+
+## Application Properties
+
+### Online Storage
+
+Online storage is used for storing project data like documents and images. It is implemented using AWS SDK S3 library which relies on following environment variables:
+
+* `AWS_ACCESS_KEY_ID`
+* `AWS_SECRET_ACCESS_KEY`
+
+Set online storage URL: `com.ampnet.projectservice.file-storage.url`
+
+### JWT
+
+Set singing key property to verify JWT: `com.ampnet.projectservice.jwt.signing-key`
+
+### Limit Investments
+
+Project service can set maximum investment for a project and maximum investment by a single user:
+
+* `com.ampnet.projectservice.max-per-project`
+* `com.ampnet.projectservice.max-per-user`
