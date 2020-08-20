@@ -48,9 +48,16 @@ data class Organization(
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationUuid")
-    var memberships: List<OrganizationMembership>?
+    var memberships: List<OrganizationMembership>?,
+
+    @Column
+    var headerImage: String?,
+
+    @Column
+    var description: String?
+
 ) {
     constructor(name: String, legalInfo: String?, createdByUserUuid: UUID) : this(
-        UUID.randomUUID(), name, legalInfo, createdByUserUuid, ZonedDateTime.now(), null, false, null, null, null
+        UUID.randomUUID(), name, legalInfo, createdByUserUuid, ZonedDateTime.now(), null, false, null, null, null, null, null
     )
 }
