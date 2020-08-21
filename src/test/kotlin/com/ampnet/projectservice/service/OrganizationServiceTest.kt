@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.springframework.mock.web.MockMultipartFile
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -190,8 +192,15 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToCreateOrganizationWithSameName() {
         verify("Service will throw an exception for same name exception") {
+            val multipartFile = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                val request = OrganizationServiceRequest(organization.name, "legal", userUuid)
+                val request = OrganizationServiceRequest(
+                    OrganizationRequest(organization.name, "description"),
+                    userUuid, multipartFile
+                )
                 organizationService.createOrganization(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_DUPLICATE_NAME)

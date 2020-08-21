@@ -57,7 +57,9 @@ data class Organization(
     var description: String?
 
 ) {
-    constructor(name: String, legalInfo: String?, createdByUserUuid: UUID) : this(
-        UUID.randomUUID(), name, legalInfo, createdByUserUuid, ZonedDateTime.now(), null, false, null, null, null, null, null
+    constructor(name: String, createdByUserUuid: UUID, headerImage: String?, description: String?) : this(
+        UUID.randomUUID(), name, null, createdByUserUuid, ZonedDateTime.now(),
+        null, true, null, null,
+        null, headerImage, description
     )
 }

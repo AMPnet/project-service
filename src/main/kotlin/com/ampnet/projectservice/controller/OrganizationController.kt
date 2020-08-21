@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
@@ -62,14 +62,14 @@ class OrganizationController(
         return ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/organization")
+    @PostMapping("/organization", consumes = ["multipart/form-data"])
     fun createOrganization(
-        @RequestBody @Valid request: OrganizationRequest
+        @RequestPart @Valid request: OrganizationRequest,
+        @RequestParam("image") image: MultipartFile
     ): ResponseEntity<OrganizationWithDocumentResponse> {
         logger.debug { "Received request to create organization: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-
-        val serviceRequest = OrganizationServiceRequest(request, userPrincipal.uuid)
+        val serviceRequest = OrganizationServiceRequest(request, userPrincipal.uuid, image)
         val organization = organizationService.createOrganization(serviceRequest)
         return ResponseEntity.ok(OrganizationWithDocumentResponse(organization))
     }

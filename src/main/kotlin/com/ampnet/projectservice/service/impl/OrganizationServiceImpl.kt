@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -44,7 +45,9 @@ class OrganizationServiceImpl(
                 "Organization with name: ${serviceRequest.name} already exists"
             )
         }
-        val organization = Organization(serviceRequest.name, serviceRequest.legalInfo, serviceRequest.ownerUuid)
+        val imageName = getImageNameFromMultipartFile(serviceRequest.headerImage)
+        storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
+        val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, imageName, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
         addUserToOrganization(serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
 
@@ -144,4 +147,7 @@ class OrganizationServiceImpl(
             OrganizationRoleType.ORG_MEMBER -> memberRole
         }
     }
+
+    private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
+        multipartFile.originalFilename ?: multipartFile.name
 }
