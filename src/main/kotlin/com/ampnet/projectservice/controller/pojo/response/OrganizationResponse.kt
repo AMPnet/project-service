@@ -9,14 +9,14 @@ data class OrganizationResponse(
     val name: String,
     val createdAt: ZonedDateTime,
     val approved: Boolean,
-    val legalInfo: String
+    val description: String
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
         organization.name,
         organization.createdAt,
         organization.approved,
-        organization.legalInfo.orEmpty()
+        organization.description.orEmpty()
     )
 }
 
@@ -31,7 +31,7 @@ data class OrganizationWithDocumentResponse(
     val name: String,
     val createdAt: ZonedDateTime,
     val approved: Boolean,
-    val legalInfo: String,
+    val description: String,
     val documents: List<DocumentResponse>
 ) {
     constructor(organization: Organization) : this(
@@ -39,7 +39,7 @@ data class OrganizationWithDocumentResponse(
         organization.name,
         organization.createdAt,
         organization.approved,
-        organization.legalInfo.orEmpty(),
+        organization.description.orEmpty(),
         organization.documents?.map { DocumentResponse(it) }.orEmpty()
     )
 }

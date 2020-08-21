@@ -80,6 +80,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             val organizationWithDocumentResponse: OrganizationWithDocumentResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organizationRequest.name)
+            assertThat(organizationWithDocumentResponse.description).isEqualTo(testContext.organizationRequest.description)
             assertThat(organizationWithDocumentResponse.uuid).isNotNull()
             assertThat(organizationWithDocumentResponse.approved).isTrue()
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
@@ -119,7 +120,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             val organizationWithDocumentResponse: OrganizationWithDocumentResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organization.name)
-            assertThat(organizationWithDocumentResponse.legalInfo).isEqualTo(testContext.organization.legalInfo)
+            assertThat(organizationWithDocumentResponse.description).isEqualTo(testContext.organization.description)
             assertThat(organizationWithDocumentResponse.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(organizationWithDocumentResponse.approved).isEqualTo(testContext.organization.approved)
             assertThat(organizationWithDocumentResponse.documents.size)
