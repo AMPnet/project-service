@@ -118,6 +118,20 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustGetOrganizationWithHeaderImage() {
+        suppose("Organization has an image") {
+            createOrganizationImage(organization)
+        }
+
+        verify("Service returns organization with document") {
+            val organizationWithImage = organizationService.findOrganizationById(organization.uuid)
+                ?: fail("Organization must not be null")
+            assertThat(organizationWithImage.uuid).isEqualTo(organization.uuid)
+            assertThat(organizationWithImage.headerImage).isNotNull()
+        }
+    }
+
+    @Test
     fun mustGetOrganizationWithMultipleDocuments() {
         suppose("Organization has 3 documents") {
             createOrganizationDocument(organization, userUuid, "Doc 1", "link1")
@@ -280,6 +294,17 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         organization.documents = documents
         organizationRepository.save(organization)
         return document
+    }
+
+    private fun createOrganizationImage(
+        organization: Organization,
+        imageName: String = "Image name",
+        imageContent: ByteArray = "Image content".toByteArray()
+
+    ) {
+        cloudStorageService.saveFile(imageName, imageContent)
+        organization.headerImage = imageName
+        organizationRepository.save(organization)
     }
 
     private class TestContext {

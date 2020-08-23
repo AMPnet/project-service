@@ -72,6 +72,7 @@ abstract class JpaServiceTestBase : TestBase() {
         organization.approved = true
         organization.createdByUserUuid = createdByUuid
         organization.documents = emptyList()
+        organization.headerImage = null
         return organizationRepository.save(organization)
     }
 
