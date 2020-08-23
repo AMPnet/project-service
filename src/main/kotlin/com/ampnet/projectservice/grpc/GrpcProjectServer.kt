@@ -70,6 +70,8 @@ class GrpcProjectServer(
             .setCreatedByUser(organization.createdByUserUuid.toString())
             .setCreatedAt(organization.createdAt.toInstant().toEpochMilli())
             .setApproved(organization.approved)
+            .setDescription(organization.description)
+            .setHeaderImage(organization.headerImage)
             .build()
 
     private fun projectToGrpcResponse(project: Project): ProjectResponse =
