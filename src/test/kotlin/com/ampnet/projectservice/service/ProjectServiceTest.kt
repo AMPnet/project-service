@@ -337,23 +337,33 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToGetProjectsByTags() {
-        suppose("Project has tags") {
+        suppose("Project has tags and is active") {
             databaseCleanerService.deleteAllProjects()
             val project = projectService
                 .createProject(userUuid, organization, createProjectRequest("First project"))
             project.tags = listOf("tag 1", "tag 3")
+            project.active = true
             projectRepository.save(project)
         }
-        suppose("Second project has tags") {
+        suppose("Second project has tags and is active") {
             val project = projectService
                 .createProject(userUuid, organization, createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.active = true
             projectRepository.save(project)
         }
-        suppose("Third project has tags") {
+        suppose("Third project has tags and is active") {
             val project = projectService
                 .createProject(userUuid, organization, createProjectRequest("Third project"))
             project.tags = listOf("tag 1", "tag 3")
+            project.active = true
+            projectRepository.save(project)
+        }
+        suppose("Fourth project has tags and is not active") {
+            val project = projectService
+                .createProject(userUuid, organization, createProjectRequest("Third project"))
+            project.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.active = false
             projectRepository.save(project)
         }
 

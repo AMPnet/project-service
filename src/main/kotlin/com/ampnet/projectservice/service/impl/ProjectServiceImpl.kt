@@ -130,7 +130,7 @@ class ProjectServiceImpl(
     override fun getAllProjectTags(): List<String> = projectTagRepository.getAllTags()
 
     @Transactional(readOnly = true)
-    override fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project> =
+    override fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean): Page<Project> =
         projectRepository.findByTags(tags, tags.size.toLong(), pageable)
 
     @Transactional(readOnly = true)

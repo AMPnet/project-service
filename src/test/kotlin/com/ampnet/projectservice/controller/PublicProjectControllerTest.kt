@@ -175,8 +175,12 @@ class PublicProjectControllerTest : ControllerTestBase() {
             val project2 = createProject("Project 2", organization, userUuid)
             addTagsToProject(project2, listOf("wind", "green"))
         }
+        suppose("There is a deactivated project") {
+            val project3 = createProject("Project 3", organization, userUuid, active = false)
+            addTagsToProject(project3, listOf("wind", "green"))
+        }
 
-        verify("Controller will return projects containing all tags") {
+        verify("Controller will return projects containing all tags and are active") {
             val result = mockMvc.perform(
                 get(publicProjectPath)
                     .param("tags", "wind", "green")

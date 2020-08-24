@@ -30,9 +30,11 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
 
     @Query(
         "SELECT project FROM Project project JOIN project.tags t " +
-            "WHERE t IN (:tags) GROUP BY project.uuid HAVING COUNT (project.uuid) = :size"
+            "WHERE t IN (:tags) AND project.active = :active " +
+            "GROUP BY project.uuid HAVING COUNT (project.uuid) = :size"
+
     )
-    fun findByTags(tags: Collection<String>, size: Long, pageable: Pageable): Page<Project>
+    fun findByTags(tags: Collection<String>, size: Long, pageable: Pageable, active: Boolean = true): Page<Project>
 
     @Query(
         "SELECT project FROM Project project " +

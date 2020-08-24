@@ -18,7 +18,7 @@ interface ProjectService {
     fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
     fun getAllProjects(pageable: Pageable): Page<Project>
     fun getActiveProjects(pageable: Pageable): Page<Project>
-    fun getProjectsByTags(tags: List<String>, pageable: Pageable): Page<Project>
+    fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean = true): Page<Project>
     fun getAllProjectTags(): List<String>
 
     fun countActiveProjects(): Int
