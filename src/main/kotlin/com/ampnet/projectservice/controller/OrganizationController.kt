@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
+import com.ampnet.projectservice.controller.pojo.request.OrganizationUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipResponse
@@ -11,6 +12,7 @@ import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
+import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -131,6 +133,23 @@ class OrganizationController(
 
         return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
             organizationService.removeDocument(organizationUuid, documentId)
+        }
+    }
+
+    @PostMapping(value = ["/organization/{organizationId}/updates"], consumes = ["multipart/form-data"])
+    fun updateOrganization(
+        @PathVariable("organizationId") organizationUuid: UUID,
+        @RequestPart request: OrganizationUpdateRequest,
+        @RequestParam("image") image: MultipartFile?
+    ): ResponseEntity<OrganizationResponse> {
+        logger.debug { "Received request to update organization with uuid: $organizationUuid" }
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+
+        return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
+            val organization = organizationService.updateOrganization(
+                OrganizationUpdateServiceRequest(organizationUuid, image, request)
+            )
+            OrganizationResponse(organization)
         }
     }
 

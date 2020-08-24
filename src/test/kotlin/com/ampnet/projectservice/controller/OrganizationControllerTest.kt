@@ -1,9 +1,11 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
+import com.ampnet.projectservice.controller.pojo.request.OrganizationUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.Document
@@ -20,9 +22,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockMultipartFile
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.fileUpload
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
@@ -31,6 +33,7 @@ import java.util.UUID
 class OrganizationControllerTest : ControllerTestBase() {
 
     private val organizationPath = "/organization"
+    private val updates = "/updates"
 
     @Autowired
     private lateinit var organizationService: OrganizationService
@@ -81,7 +84,7 @@ class OrganizationControllerTest : ControllerTestBase() {
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organizationWithDocumentResponse.description).isEqualTo(testContext.organizationRequest.description)
-            assertThat(organizationWithDocumentResponse.headerImage).isEqualTo(testContext.multipartFile.originalFilename)
+            assertThat(organizationWithDocumentResponse.headerImage).isEqualTo(testContext.imageLink)
             assertThat(organizationWithDocumentResponse.uuid).isNotNull()
             assertThat(organizationWithDocumentResponse.approved).isTrue()
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
@@ -94,7 +97,7 @@ class OrganizationControllerTest : ControllerTestBase() {
                 ?: fail("Organization must no be null")
             assertThat(organization.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organization.description).isEqualTo(testContext.organizationRequest.description)
-            assertThat(organization.headerImage).isEqualTo(testContext.multipartFile.originalFilename)
+            assertThat(organization.headerImage).isEqualTo(testContext.imageLink)
             assertThat(organization.uuid).isNotNull()
             assertThat(organization.approved).isTrue()
             assertThat(organization.documents).isEmpty()
@@ -341,6 +344,68 @@ class OrganizationControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToUpdateOrganization() {
+        suppose("Organization exists") {
+            databaseCleanerService.deleteAllOrganizations()
+            testContext.organization = createOrganization("test organization", userUuid)
+        }
+        suppose("User is an admin of organization") {
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("File service will store image") {
+            testContext.multipartFile = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
+            ).thenReturn(testContext.imageLink)
+        }
+
+        verify("User can update organization") {
+            val description = "Organization description"
+            testContext.organizationUpdateRequest = OrganizationUpdateRequest(description)
+            val organizationRequestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.organizationUpdateRequest)
+            )
+            val result = mockMvc.perform(
+                multipart("$organizationPath/${testContext.organization.uuid}$updates")
+                    .file(organizationRequestJson)
+                    .file(testContext.multipartFile)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val organizationResponse: OrganizationResponse =
+                objectMapper.readValue(result.response.contentAsString)
+            assertThat(organizationResponse.name).isEqualTo(testContext.organization.name)
+            assertThat(organizationResponse.description).isEqualTo(testContext.organizationUpdateRequest.description)
+            assertThat(organizationResponse.headerImage).isEqualTo(testContext.imageLink)
+            assertThat(organizationResponse.uuid).isNotNull()
+            assertThat(organizationResponse.approved).isTrue()
+            assertThat(organizationResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+
+            testContext.createdOrganizationUuid = organizationResponse.uuid
+        }
+        verify("Organization is stored in database") {
+            val organization = organizationService.findOrganizationById(testContext.createdOrganizationUuid)
+                ?: fail("Organization must no be null")
+            assertThat(organization.name).isEqualTo(testContext.organization.name)
+            assertThat(organization.description).isEqualTo(testContext.organizationUpdateRequest.description)
+            assertThat(organization.headerImage).isEqualTo(testContext.imageLink)
+            assertThat(organization.uuid).isNotNull()
+            assertThat(organization.approved).isTrue()
+            assertThat(organization.documents).isEmpty()
+            assertThat(organization.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+        }
+    }
+
     private fun createOrganizationDocument(
         organization: Organization,
         createdByUserUuid: UUID,
@@ -368,5 +433,6 @@ class OrganizationControllerTest : ControllerTestBase() {
         lateinit var memberSecond: UUID
         var userResponses: List<UserResponse> = emptyList()
         val imageLink = "image link"
+        lateinit var organizationUpdateRequest: OrganizationUpdateRequest
     }
 }
