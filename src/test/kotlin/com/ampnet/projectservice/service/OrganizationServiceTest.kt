@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.springframework.mock.web.MockMultipartFile
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -116,6 +118,20 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustGetOrganizationWithHeaderImage() {
+        suppose("Organization has an image") {
+            createOrganizationImage(organization)
+        }
+
+        verify("Service returns organization with document") {
+            val organizationWithImage = organizationService.findOrganizationById(organization.uuid)
+                ?: fail("Organization must not be null")
+            assertThat(organizationWithImage.uuid).isEqualTo(organization.uuid)
+            assertThat(organizationWithImage.headerImage).isNotNull()
+        }
+    }
+
+    @Test
     fun mustGetOrganizationWithMultipleDocuments() {
         suppose("Organization has 3 documents") {
             createOrganizationDocument(organization, userUuid, "Doc 1", "link1")
@@ -190,8 +206,15 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToCreateOrganizationWithSameName() {
         verify("Service will throw an exception for same name exception") {
+            val multipartFile = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                val request = OrganizationServiceRequest(organization.name, "legal", userUuid)
+                val request = OrganizationServiceRequest(
+                    OrganizationRequest(organization.name, "description"),
+                    userUuid, multipartFile
+                )
                 organizationService.createOrganization(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_DUPLICATE_NAME)
@@ -271,6 +294,17 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         organization.documents = documents
         organizationRepository.save(organization)
         return document
+    }
+
+    private fun createOrganizationImage(
+        organization: Organization,
+        imageName: String = "Image name",
+        imageContent: ByteArray = "Image content".toByteArray()
+
+    ) {
+        cloudStorageService.saveFile(imageName, imageContent)
+        organization.headerImage = imageName
+        organizationRepository.save(organization)
     }
 
     private class TestContext {

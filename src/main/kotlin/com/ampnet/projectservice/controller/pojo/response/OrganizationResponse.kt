@@ -9,14 +9,16 @@ data class OrganizationResponse(
     val name: String,
     val createdAt: ZonedDateTime,
     val approved: Boolean,
-    val legalInfo: String
+    val description: String,
+    val headerImage: String
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
         organization.name,
         organization.createdAt,
         organization.approved,
-        organization.legalInfo.orEmpty()
+        organization.description.orEmpty(),
+        organization.headerImage.orEmpty()
     )
 }
 
@@ -31,15 +33,17 @@ data class OrganizationWithDocumentResponse(
     val name: String,
     val createdAt: ZonedDateTime,
     val approved: Boolean,
-    val legalInfo: String,
-    val documents: List<DocumentResponse>
+    val documents: List<DocumentResponse>,
+    val description: String,
+    val headerImage: String
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
         organization.name,
         organization.createdAt,
         organization.approved,
-        organization.legalInfo.orEmpty(),
-        organization.documents?.map { DocumentResponse(it) }.orEmpty()
+        organization.documents?.map { DocumentResponse(it) }.orEmpty(),
+        organization.description.orEmpty(),
+        organization.headerImage.orEmpty()
     )
 }

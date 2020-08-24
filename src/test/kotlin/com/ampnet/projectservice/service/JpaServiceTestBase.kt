@@ -67,11 +67,12 @@ abstract class JpaServiceTestBase : TestBase() {
         val organization = Organization::class.java.getConstructor().newInstance()
         organization.uuid = UUID.randomUUID()
         organization.name = name
-        organization.legalInfo = "some legal info"
+        organization.description = "Organization description"
         organization.createdAt = ZonedDateTime.now()
         organization.approved = true
         organization.createdByUserUuid = createdByUuid
         organization.documents = emptyList()
+        organization.headerImage = null
         return organizationRepository.save(organization)
     }
 
