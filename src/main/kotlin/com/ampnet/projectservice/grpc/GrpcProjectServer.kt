@@ -33,9 +33,8 @@ class GrpcProjectServer(
                 null
             }
         }
-        val organizationResponses =
-            organizationRepository.findAllById(uuids).mapNotNull { organizationToGprcResponse(it) }
-
+        val organizationResponses = organizationRepository.findAllById(uuids)
+                .mapNotNull { organizationToGprcResponse(it) }
         val response = OrganizationsResponse.newBuilder()
             .addAllOrganizations(organizationResponses)
             .build()
@@ -53,9 +52,8 @@ class GrpcProjectServer(
                 null
             }
         }
-        val projectResponses =
-            projectRepository.findAllById(uuids).mapNotNull { projectToGrpcResponse(it) }
-
+        val projectResponses = projectRepository.findAllById(uuids)
+            .mapNotNull { projectToGrpcResponse(it) }
         val response = ProjectsResponse.newBuilder()
             .addAllProjects(projectResponses)
             .build()
@@ -63,19 +61,20 @@ class GrpcProjectServer(
         responseObserver.onCompleted()
     }
 
-    private fun organizationToGprcResponse(organization: Organization): OrganizationResponse =
-        OrganizationResponse.newBuilder()
+    private fun organizationToGprcResponse(organization: Organization): OrganizationResponse {
+        val builder = OrganizationResponse.newBuilder()
             .setUuid(organization.uuid.toString())
             .setName(organization.name)
             .setCreatedByUser(organization.createdByUserUuid.toString())
             .setCreatedAt(organization.createdAt.toInstant().toEpochMilli())
             .setApproved(organization.approved)
-            .setDescription(organization.description)
-            .setHeaderImage(organization.headerImage)
-            .build()
+        organization.description?.let { builder.setDescription(it) }
+        organization.headerImage?.let { builder.setHeaderImage(it) }
+        return builder.build()
+    }
 
-    private fun projectToGrpcResponse(project: Project): ProjectResponse =
-        ProjectResponse.newBuilder()
+    private fun projectToGrpcResponse(project: Project): ProjectResponse {
+        val builder = ProjectResponse.newBuilder()
             .setUuid(project.uuid.toString())
             .setName(project.name)
             .setCreatedByUser(project.createdByUserUuid.toString())
@@ -87,7 +86,8 @@ class GrpcProjectServer(
             .setCurrency(project.currency.name)
             .setActive(project.active)
             .setOrganizationUuid(project.organization.uuid.toString())
-            .setImageUrl(project.mainImage ?: "missing")
             .setDescription(project.description)
-            .build()
+        project.mainImage?.let { builder.setImageUrl(it) }
+        return builder.build()
+    }
 }
