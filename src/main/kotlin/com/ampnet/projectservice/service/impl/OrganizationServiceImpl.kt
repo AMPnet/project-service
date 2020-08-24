@@ -47,8 +47,8 @@ class OrganizationServiceImpl(
             )
         }
         val imageName = getImageNameFromMultipartFile(serviceRequest.headerImage)
-        storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
-        val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, imageName, serviceRequest.description)
+        val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
+        val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
         addUserToOrganization(serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
 
