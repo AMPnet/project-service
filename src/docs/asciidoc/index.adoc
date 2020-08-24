@@ -43,6 +43,12 @@ include::{snippets}/OrganizationControllerTest/mustBeAbleToGetPersonalOrganizati
 .Response
 include::{snippets}/OrganizationControllerTest/mustBeAbleToGetPersonalOrganizations/http-response.adoc[]
 
+=== Update organization
+.Request
+include::{snippets}/OrganizationControllerTest/mustBeAbleToUpdateOrganization/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationControllerTest/mustBeAbleToUpdateOrganization/http-response.adoc[]
+
 === Documents
 
 ==== Add document for organization
