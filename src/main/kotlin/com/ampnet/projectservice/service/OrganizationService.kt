@@ -6,6 +6,7 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
+import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.util.UUID
@@ -26,4 +27,5 @@ interface OrganizationService {
 
     fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document
     fun removeDocument(organizationUuid: UUID, documentId: Int)
+    fun updateOrganization(request: OrganizationUpdateServiceRequest): Organization
 }

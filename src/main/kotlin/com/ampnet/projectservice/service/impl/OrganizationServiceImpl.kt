@@ -15,6 +15,7 @@ import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
+import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -46,8 +47,8 @@ class OrganizationServiceImpl(
             )
         }
         val imageName = getImageNameFromMultipartFile(serviceRequest.headerImage)
-        storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
-        val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, imageName, serviceRequest.description)
+        val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
+        val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
         addUserToOrganization(serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
 
@@ -124,6 +125,23 @@ class OrganizationServiceImpl(
             organization.documents = storedDocuments
             organizationRepository.save(organization)
         }
+    }
+
+    @Transactional
+    override fun updateOrganization(request: OrganizationUpdateServiceRequest): Organization {
+        val organization = getOrganization(request.organizationUuid)
+        request.headerImage?.let {
+            val imageName = getImageNameFromMultipartFile(it)
+            val link = storageService.saveImage(
+                imageName,
+                it.bytes
+            )
+            organization.headerImage = link
+        }
+        request.description?.let {
+            organization.description = it
+        }
+        return organization
     }
 
     private fun getOrganization(organizationUuid: UUID): Organization =

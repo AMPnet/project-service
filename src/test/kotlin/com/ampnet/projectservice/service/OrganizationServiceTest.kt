@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
+import com.ampnet.projectservice.controller.pojo.request.OrganizationUpdateRequest
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
@@ -11,6 +12,7 @@ import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
+import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
@@ -123,7 +125,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             createOrganizationImage(organization)
         }
 
-        verify("Service returns organization with document") {
+        verify("Service returns organization with image") {
             val organizationWithImage = organizationService.findOrganizationById(organization.uuid)
                 ?: fail("Organization must not be null")
             assertThat(organizationWithImage.uuid).isEqualTo(organization.uuid)
@@ -257,6 +259,33 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         verify("User is no longer member of organization") {
             val memberships = membershipRepository.findByOrganizationUuid(organization.uuid)
             assertThat(memberships).hasSize(0)
+        }
+    }
+
+    @Test
+    fun mustNotBeAbleToUpdateOrganizationWithNullFields() {
+        suppose("User exists without any memberships") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+        }
+        suppose("User is added to organization as member") {
+            organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+        }
+
+        verify("Description and header image cannot be updated with null values") {
+            val request = OrganizationUpdateServiceRequest(
+                organization.uuid,
+                null,
+                OrganizationUpdateRequest(null)
+            )
+            val updatedOrganization = organizationService.updateOrganization(request)
+            assertThat(updatedOrganization.description).isEqualTo(organization.description)
+            assertThat(updatedOrganization.headerImage).isEqualTo(organization.headerImage)
+        }
+        verify("Organization is not updated in in database") {
+            val storedOrganization = organizationService.findOrganizationById(organization.uuid)
+                ?: fail("Organization must no be null")
+            assertThat(storedOrganization.description).isEqualTo(organization.description)
+            assertThat(storedOrganization.headerImage).isEqualTo(organization.headerImage)
         }
     }
 
