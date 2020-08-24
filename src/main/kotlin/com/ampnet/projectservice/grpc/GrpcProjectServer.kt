@@ -34,7 +34,7 @@ class GrpcProjectServer(
             }
         }
         val organizationResponses = organizationRepository.findAllById(uuids)
-                .mapNotNull { organizationToGprcResponse(it) }
+            .mapNotNull { organizationToGprcResponse(it) }
         val response = OrganizationsResponse.newBuilder()
             .addAllOrganizations(organizationResponses)
             .build()
