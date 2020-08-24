@@ -378,7 +378,6 @@ class OrganizationControllerTest : ControllerTestBase() {
                 multipart("$organizationPath/${testContext.organization.uuid}$updates")
                     .file(organizationRequestJson)
                     .file(testContext.multipartFile)
-
             )
                 .andExpect(status().isOk)
                 .andReturn()

@@ -270,6 +270,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         suppose("User is added to organization as member") {
             organizationService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
+
         verify("Description and header image cannot be updated with null values") {
             val request = OrganizationUpdateServiceRequest(
                 organization.uuid,
