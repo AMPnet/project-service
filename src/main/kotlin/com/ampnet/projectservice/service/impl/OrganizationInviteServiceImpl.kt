@@ -122,7 +122,7 @@ class OrganizationInviteServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPendingInvitations(organizationUuid: UUID): List<OrganizationInvitation> {
-        return inviteRepository.findAllByOrganizationUuid(organizationUuid)
+        return inviteRepository.findByOrganizationUuid(organizationUuid)
     }
 
     private fun sendMailInvitationToJoinOrganization(email: String, invitedTo: Organization) {
