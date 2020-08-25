@@ -2,6 +2,7 @@ package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
+import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
@@ -225,31 +226,26 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("test organization", userUuid)
-            createOrganizationInvite(
+            testContext.organizationInvitation = createOrganizationInvite(
                 defaultEmail, testContext.organization.uuid, testContext.uuid,
                 OrganizationRoleType.ORG_MEMBER
             )
         }
-        suppose("Other user has organization invites") {
-            inviteUserToOrganization(
-                testContext.invitedEmail, testContext.organization.uuid, userUuid,
-                OrganizationRoleType.ORG_MEMBER
-            )
-        }
 
-        verify("We can get list of pending invitations") {
+        verify("We can get a list of pending invitations") {
             val result = mockMvc.perform(
                 get("$pathOrganization${testContext.organization.uuid}")
             )
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val pendingInvitations: OrganizationInvitesListResponse =
+            val pendingInvitations: PendingInvitationsListResponse =
                 objectMapper.readValue(result.response.contentAsString)
-            assertThat(pendingInvitations.organizationInvites).hasSize(2)
-            val invite = pendingInvitations.organizationInvites.first()
-            assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
-            assertThat(invite.organizationName).isEqualTo(testContext.organization.name)
+            assertThat(pendingInvitations.pendingInvites).hasSize(1)
+            val invite = pendingInvitations.pendingInvites.first()
+            assertThat(invite.userEmail).isEqualTo(testContext.organizationInvitation.email)
+            assertThat(invite.createdAt).isEqualTo(testContext.organizationInvitation.createdAt)
+            assertThat(invite.role).isEqualTo(OrganizationRoleType.fromInt(testContext.organizationInvitation.role.id))
         }
     }
 
@@ -285,6 +281,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
     private class TestContext {
         lateinit var organization: Organization
+        lateinit var organizationInvitation: OrganizationInvitation
         val uuid: UUID = UUID.randomUUID()
         val invitedEmail = "invited@email.com"
     }

@@ -3,6 +3,8 @@ package com.ampnet.projectservice.controller
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInviteResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
+import com.ampnet.projectservice.controller.pojo.response.PendingInvitationResponse
+import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
@@ -85,10 +87,10 @@ class OrganizationInvitationController(
     @GetMapping("/invites/organization/{organizationUuid}")
     fun getPendingInvitations(
         @PathVariable("organizationUuid") organizationUuid: UUID
-    ): ResponseEntity<OrganizationInvitesListResponse> {
+    ): ResponseEntity<PendingInvitationsListResponse> {
         val invites = organizationInviteService.getPendingInvitations(organizationUuid)
-            .map { OrganizationInviteResponse(it) }
-        return ResponseEntity.ok(OrganizationInvitesListResponse(invites))
+            .map { PendingInvitationResponse(it) }
+        return ResponseEntity.ok(PendingInvitationsListResponse(invites))
     }
 
     private fun <T> ifUserHasPrivilegeWriteUserInOrganizationThenReturn(
