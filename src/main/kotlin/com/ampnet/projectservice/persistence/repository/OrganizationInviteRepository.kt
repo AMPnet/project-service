@@ -8,4 +8,5 @@ import java.util.UUID
 interface OrganizationInviteRepository : JpaRepository<OrganizationInvitation, Int> {
     fun findByOrganizationUuidAndEmail(organizationUuid: UUID, email: String): Optional<OrganizationInvitation>
     fun findByEmail(email: String): List<OrganizationInvitation>
+    fun findByOrganizationUuid(organizationUuid: UUID): List<OrganizationInvitation>
 }

@@ -15,4 +15,5 @@ data class ProjectUpdateResponse(
     constructor(update: ProjectUpdate) :
         this(update.id, update.projectUuid, update.title, update.content, update.author, update.createdAt)
 }
+
 data class ProjectUpdatesResponse(val updates: List<ProjectUpdateResponse>)
