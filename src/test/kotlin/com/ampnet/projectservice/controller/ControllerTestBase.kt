@@ -231,4 +231,20 @@ abstract class ControllerTestBase : TestBase() {
         projectRepository.save(project)
         return savedDocument
     }
+
+    protected fun createOrganizationDocument(
+        organization: Organization,
+        createdByUserUuid: UUID,
+        name: String,
+        link: String,
+        type: String = "document/type",
+        size: Int = 100
+    ): Document {
+        val savedDocument = saveDocument(name, link, type, size, createdByUserUuid)
+        val documents = organization.documents.orEmpty().toMutableList()
+        documents.add(savedDocument)
+        organization.documents = documents
+        organizationRepository.save(organization)
+        return savedDocument
+    }
 }

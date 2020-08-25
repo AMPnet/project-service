@@ -111,19 +111,19 @@ include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetPendingI
 .Response
 include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetPendingInvitations/http-response.adoc[]
 
-=== Members
+=== Organization Members
 
 ==== List all members
 .Request
-include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
+include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
+include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
 
 ==== Delete a member
 .Request
-include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMember/http-request.adoc[]
+include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToDeleteOrganizationMember/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
+include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
 
 == Project API
 All requests need header: `Authorization: Bearer JWT`.

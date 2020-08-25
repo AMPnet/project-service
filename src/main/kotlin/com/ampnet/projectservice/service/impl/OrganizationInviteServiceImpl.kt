@@ -13,6 +13,7 @@ import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepo
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationInviteService
+import com.ampnet.projectservice.service.OrganizationMemberService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
@@ -28,7 +29,8 @@ class OrganizationInviteServiceImpl(
     private val followerRepository: OrganizationFollowerRepository,
     private val roleRepository: RoleRepository,
     private val mailService: MailService,
-    private val organizationService: OrganizationService
+    private val organizationService: OrganizationService,
+    private val organizationMemberService: OrganizationMemberService
 ) : OrganizationInviteService {
 
     companion object : KLogging()
@@ -87,7 +89,7 @@ class OrganizationInviteServiceImpl(
                         ErrorCode.USER_ROLE_MISSING,
                         "Missing role with id: ${it.role.id}"
                     )
-                organizationService.addUserToOrganization(request.userUuid, it.organizationUuid, role)
+                organizationMemberService.addUserToOrganization(request.userUuid, it.organizationUuid, role)
             }
             inviteRepository.delete(it)
             logger.debug {

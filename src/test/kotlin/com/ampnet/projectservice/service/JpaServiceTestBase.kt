@@ -68,6 +68,7 @@ abstract class JpaServiceTestBase : TestBase() {
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
+    protected val organizationMemberService: OrganizationMemberService = Mockito.mock(OrganizationMemberService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val defaultPageable: Pageable = PageRequest.of(0, 20)
 
