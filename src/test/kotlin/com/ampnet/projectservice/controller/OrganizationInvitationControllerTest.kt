@@ -219,6 +219,40 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetPendingInvitations() {
+        suppose("User has organization invites") {
+            databaseCleanerService.deleteAllOrganizations()
+            testContext.organization = createOrganization("test organization", userUuid)
+            createOrganizationInvite(
+                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
+        }
+        suppose("Other user has organization invites") {
+            inviteUserToOrganization(
+                testContext.invitedEmail, testContext.organization.uuid, userUuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
+        }
+
+        verify("We can get list of pending invitations") {
+            val result = mockMvc.perform(
+                get("$pathOrganization${testContext.organization.uuid}")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val pendingInvitations: OrganizationInvitesListResponse =
+                objectMapper.readValue(result.response.contentAsString)
+            assertThat(pendingInvitations.organizationInvites).hasSize(2)
+            val invite = pendingInvitations.organizationInvites.first()
+            assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
+            assertThat(invite.organizationName).isEqualTo(testContext.organization.name)
+        }
+    }
+
     private fun inviteUserToOrganization(
         email: String,
         organizationUuid: UUID,

@@ -56,24 +56,34 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
+
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
+
     @Autowired
     protected lateinit var roleRepository: RoleRepository
+
     @Autowired
     protected lateinit var projectRepository: ProjectRepository
+
     @Autowired
     protected lateinit var organizationRepository: OrganizationRepository
+
     @Autowired
     protected lateinit var membershipRepository: OrganizationMembershipRepository
+
     @Autowired
     protected lateinit var cloudStorageService: CloudStorageService
+
     @Autowired
     protected lateinit var organizationInviteRepository: OrganizationInviteRepository
+
     @Autowired
     protected lateinit var userService: UserService
+
     @Autowired
     protected lateinit var projectService: ProjectService
+
     @Autowired
     private lateinit var documentRepository: DocumentRepository
 

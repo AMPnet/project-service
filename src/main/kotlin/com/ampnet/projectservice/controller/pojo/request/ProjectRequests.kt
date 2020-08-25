@@ -19,6 +19,7 @@ data class ProjectRequest(
     val active: Boolean,
     val tags: List<String>? = null
 )
+
 data class ProjectLocationRequest(val lat: Double, val long: Double)
 data class ProjectRoiRequest(val from: Double, val to: Double)
 data class ProjectUpdateRequest(

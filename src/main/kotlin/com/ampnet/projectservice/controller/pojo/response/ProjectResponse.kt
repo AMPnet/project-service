@@ -40,9 +40,11 @@ data class ProjectResponse(
         project.tags.orEmpty()
     )
 }
+
 data class ProjectLocationResponse(val lat: Double, val long: Double) {
     constructor(location: ProjectLocation) : this(location.lat, location.long)
 }
+
 data class ProjectRoiResponse(val from: Double, val to: Double) {
     constructor(roi: ProjectRoi) : this(roi.from, roi.to)
 }

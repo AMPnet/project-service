@@ -23,6 +23,7 @@ interface OrganizationService {
         organizationUuid: UUID,
         role: OrganizationRoleType
     ): OrganizationMembership
+
     fun removeUserFromOrganization(userUuid: UUID, organizationUuid: UUID)
 
     fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document

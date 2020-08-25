@@ -105,6 +105,12 @@ include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrgan
 .Response
 include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToRejectOrganizationInvitation/http-response.adoc[]
 
+==== Get a list of pending invitations
+.Request
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetPendingInvitations/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetPendingInvitations/http-response.adoc[]
+
 === Members
 
 ==== List all members

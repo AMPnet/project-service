@@ -82,6 +82,15 @@ class OrganizationInvitationController(
         }
     }
 
+    @GetMapping("/invites/organization/{organizationUuid}")
+    fun getPendingInvitations(
+        @PathVariable("organizationUuid") organizationUuid: UUID
+    ): ResponseEntity<OrganizationInvitesListResponse> {
+        val invites = organizationInviteService.getPendingInvitations(organizationUuid)
+            .map { OrganizationInviteResponse(it) }
+        return ResponseEntity.ok(OrganizationInvitesListResponse(invites))
+    }
+
     private fun <T> ifUserHasPrivilegeWriteUserInOrganizationThenReturn(
         userUuid: UUID,
         organizationUuid: UUID,

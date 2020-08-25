@@ -13,4 +13,5 @@ interface OrganizationInviteService {
     fun answerToInvitation(request: OrganizationInviteAnswerRequest)
     fun followOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationFollower
     fun unfollowOrganization(userUuid: UUID, organizationUuid: UUID)
+    fun getPendingInvitations(organizationUuid: UUID): List<OrganizationInvitation>
 }

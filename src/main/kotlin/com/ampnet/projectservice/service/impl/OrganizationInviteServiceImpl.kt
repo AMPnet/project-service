@@ -120,6 +120,11 @@ class OrganizationInviteServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
+    override fun getPendingInvitations(organizationUuid: UUID): List<OrganizationInvitation> {
+        return inviteRepository.findAllByOrganizationUuid(organizationUuid)
+    }
+
     private fun sendMailInvitationToJoinOrganization(email: String, invitedTo: Organization) {
         logger.debug { "Sending invitation mail to user: $email for organization: ${invitedTo.name}" }
         mailService.sendOrganizationInvitationMail(email, invitedTo.name)
