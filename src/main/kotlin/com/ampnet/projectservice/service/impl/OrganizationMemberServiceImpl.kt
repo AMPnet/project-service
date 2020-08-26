@@ -68,7 +68,7 @@ class OrganizationMemberServiceImpl(
         logger.debug { "Updating organization role for user: ${request.memberUuid} from organization: $request.organizationUuid" }
         membershipRepository.findByOrganizationUuidAndUserUuid(request.organizationUuid, request.memberUuid)
             .ifPresentOrElse(
-                { membership -> membership.role = getRole(request.roleType) },
+                { membership : OrganizationMembership -> membership.role = getRole(request.roleType) },
                 {
                     throw ResourceNotFoundException(
                         ErrorCode.ORG_MEM_MISSING,
