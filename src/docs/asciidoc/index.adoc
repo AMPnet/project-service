@@ -115,21 +115,21 @@ include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetPendingI
 
 ==== List all members
 .Request
-include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
 
 ==== Delete a member
 .Request
-include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToDeleteOrganizationMember/http-request.adoc[]
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToDeleteOrganizationMember/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
 
 ==== Update organization role
 .Request
-include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToChangeUserOrganizationRole/http-request.adoc[]
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToChangeUserOrganizationRole/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToChangeUserOrganizationRole/http-response.adoc[]
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToChangeUserOrganizationRole/http-response.adoc[]
 
 == Project API
 All requests need header: `Authorization: Bearer JWT`.

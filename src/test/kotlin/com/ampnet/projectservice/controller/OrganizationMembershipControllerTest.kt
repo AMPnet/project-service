@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class OrganizationMemberControllerTest : ControllerTestBase() {
+class OrganizationMembershipControllerTest : ControllerTestBase() {
 
     private val organizationPath = "/organization"
 

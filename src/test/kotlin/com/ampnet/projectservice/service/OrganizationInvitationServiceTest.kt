@@ -4,7 +4,7 @@ import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
-import com.ampnet.projectservice.service.impl.OrganizationMemberServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
@@ -17,14 +17,14 @@ import java.time.ZonedDateTime
 class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
     private val organizationService: OrganizationService by lazy {
-        val organizationMemberServiceImpl = OrganizationMemberServiceImpl(membershipRepository, roleRepository)
+        val organizationMemberServiceImpl = OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl)
     }
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
             inviteRepository, followerRepository, roleRepository,
-            mailService, organizationService, organizationMemberService
+            mailService, organizationService, organizationMembershipService
         )
     }
 
@@ -76,7 +76,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     fun adminUserCanInviteOtherUserToOrganization() {
         suppose("User is admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("The admin can invite user to organization") {

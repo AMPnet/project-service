@@ -5,7 +5,7 @@ import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
 import java.util.UUID
 
-interface OrganizationMemberService {
+interface OrganizationMembershipService {
     fun addUserToOrganization(
         userUuid: UUID,
         organizationUuid: UUID,

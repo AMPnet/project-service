@@ -7,7 +7,7 @@ import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
-import com.ampnet.projectservice.service.OrganizationMemberService
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -24,7 +24,7 @@ import java.util.UUID
 @Service
 class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository,
-    private val organizationMemberService: OrganizationMemberService,
+    private val organizationMembershipService: OrganizationMembershipService,
     private val storageService: StorageService
 ) : OrganizationService {
 
@@ -42,7 +42,7 @@ class OrganizationServiceImpl(
         val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
         val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
-        organizationMemberService.addUserToOrganization(
+        organizationMembershipService.addUserToOrganization(
             serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN
         )
 

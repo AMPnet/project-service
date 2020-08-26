@@ -3,8 +3,9 @@ package com.ampnet.projectservice.service
 import com.ampnet.projectservice.controller.pojo.request.UpdateOrganizationRoleRequest
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
+import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.service.impl.OrganizationMemberServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
@@ -15,15 +16,15 @@ import org.junit.jupiter.api.assertThrows
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class OrganizationMemberServiceTest : JpaServiceTestBase() {
+class OrganizationMembershipServiceTest : JpaServiceTestBase() {
 
     private val organizationService: OrganizationService by lazy {
-        val organizationMemberServiceImpl = OrganizationMemberServiceImpl(membershipRepository, roleRepository)
+        val organizationMemberServiceImpl = OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl)
     }
-    override val organizationMemberService: OrganizationMemberService by lazy {
-        OrganizationMemberServiceImpl(membershipRepository, roleRepository)
+    override val organizationMembershipService: OrganizationMembershipService by lazy {
+        OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
     }
     private lateinit var organization: Organization
 
@@ -42,7 +43,7 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added as admin") {
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
 
         verify("User has admin role") {
@@ -56,7 +57,7 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added to organization as member") {
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User has member role") {
@@ -68,11 +69,11 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToRemoveUserFromOrganization() {
         suppose("There are users in organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User can be removed from organization") {
-            organizationMemberService.removeUserFromOrganization(userUuid, organization.uuid)
+            organizationMembershipService.removeUserFromOrganization(userUuid, organization.uuid)
         }
         verify("User is no longer member of organization") {
             val memberships = membershipRepository.findByOrganizationUuid(organization.uuid)
@@ -86,8 +87,8 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
             testContext.secondOrganization = createOrganization("Second org", userUuid)
 
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
-            organizationMemberService.addUserToOrganization(
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            organizationMembershipService.addUserToOrganization(
                 userUuid, testContext.secondOrganization.uuid, OrganizationRoleType.ORG_MEMBER
             )
         }
@@ -105,12 +106,12 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added to organization as member") {
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("Service will throw an exception for adding second role to the user in the same organization") {
             assertThrows<ResourceAlreadyExistsException> {
-                organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+                organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
             }
         }
     }
@@ -119,20 +120,20 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToGetMembersOfOrganization() {
         suppose("There are users in organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
-            organizationMemberService.addUserToOrganization(
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            organizationMembershipService.addUserToOrganization(
                 testContext.member, organization.uuid, OrganizationRoleType.ORG_MEMBER
             )
         }
         suppose("There is another organization with members") {
             val additionalOrganization = createOrganization("Second organization", userUuid)
-            organizationMemberService.addUserToOrganization(
+            organizationMembershipService.addUserToOrganization(
                 UUID.randomUUID(), additionalOrganization.uuid, OrganizationRoleType.ORG_MEMBER
             )
         }
 
         verify("Service will list all members of organization") {
-            val memberships = organizationMemberService.getOrganizationMemberships(organization.uuid)
+            val memberships = organizationMembershipService.getOrganizationMemberships(organization.uuid)
             assertThat(memberships).hasSize(2)
             assertThat(memberships.map { it.userUuid }).containsAll(listOf(userUuid, testContext.member))
         }
@@ -143,18 +144,33 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added to organization as member") {
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
         suppose("Admin has changed user's organization role") {
             val request = UpdateOrganizationRoleRequest(
                 userUuid,
                 OrganizationRoleType.ORG_ADMIN
             )
-            organizationMemberService.updateOrganizationRole(OrganizationMemberServiceRequest(organization.uuid, request))
+            organizationMembershipService.updateOrganizationRole(OrganizationMemberServiceRequest(organization.uuid, request))
         }
 
         verify("User has admin role") {
             verifyUserMembership(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+    }
+    @Test
+    fun mustThrowExceptionIfOrganizationMembershipNotFound() {
+        suppose("User exists without any memberships") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+        }
+
+        verify("Service will throw an error for duplicate user invite to organization") {
+            val request = UpdateOrganizationRoleRequest(
+                testContext.member, OrganizationRoleType.ORG_ADMIN
+            )
+            assertThrows<ResourceNotFoundException> {
+                organizationMembershipService.updateOrganizationRole(OrganizationMemberServiceRequest(organization.uuid, request))
+            }
         }
     }
 

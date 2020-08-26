@@ -4,7 +4,7 @@ import com.ampnet.projectservice.controller.pojo.request.UpdateOrganizationRoleR
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
 import com.ampnet.projectservice.grpc.userservice.UserService
-import com.ampnet.projectservice.service.OrganizationMemberService
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
 import mu.KLogging
 import org.springframework.http.HttpStatus
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class OrganizationMemberController(
-    private val organizationMemberService: OrganizationMemberService,
+class OrganizationMembershipController(
+    private val organizationMembershipService: OrganizationMembershipService,
     private val userService: UserService
 ) {
 
@@ -33,7 +33,7 @@ class OrganizationMemberController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
         return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
-            val members = organizationMemberService.getOrganizationMemberships(uuid)
+            val members = organizationMembershipService.getOrganizationMemberships(uuid)
             val membersWithoutMe = members.filter { userPrincipal.uuid != it.userUuid }
             val users = userService.getUsers(membersWithoutMe.map { it.userUuid })
 
@@ -53,7 +53,7 @@ class OrganizationMemberController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
         return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
-            organizationMemberService.removeUserFromOrganization(memberUuid, organizationUuid)
+            organizationMembershipService.removeUserFromOrganization(memberUuid, organizationUuid)
         }
     }
     @PostMapping("organization/{organizationUuid}/members")
@@ -64,7 +64,7 @@ class OrganizationMemberController(
         logger.debug { "Received request to change role for member: ${request.memberUuid} from organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
-            organizationMemberService.updateOrganizationRole(
+            organizationMembershipService.updateOrganizationRole(
                 OrganizationMemberServiceRequest(organizationUuid, request)
             )
         }
@@ -75,7 +75,7 @@ class OrganizationMemberController(
         organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationMemberService.getOrganizationMemberships(organizationUuid)
+        organizationMembershipService.getOrganizationMemberships(organizationUuid)
             .find { it.userUuid == userUuid }
             ?.let { orgMembership ->
                 return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
@@ -95,7 +95,7 @@ class OrganizationMemberController(
         organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationMemberService.getOrganizationMemberships(organizationUuid)
+        organizationMembershipService.getOrganizationMemberships(organizationUuid)
             .find { it.userUuid == userUuid }
             ?.let { orgMembership ->
                 return if (orgMembership.hasPrivilegeToWriteOrganization()) {

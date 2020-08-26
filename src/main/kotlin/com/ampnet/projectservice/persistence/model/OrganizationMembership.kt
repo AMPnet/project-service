@@ -33,6 +33,10 @@ data class OrganizationMembership(
     @Column(nullable = false)
     var createdAt: ZonedDateTime
 ) {
+    constructor(organizationUuid: UUID, userUuid: UUID, role: Role, createdAt: ZonedDateTime) : this(
+        0, organizationUuid, userUuid, role, createdAt
+    )
+
     private fun getPrivileges(): List<OrganizationPrivilegeType> =
         OrganizationRoleType.fromInt(role.id)?.getPrivileges().orEmpty()
 

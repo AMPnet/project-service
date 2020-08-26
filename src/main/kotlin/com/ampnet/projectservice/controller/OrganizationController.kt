@@ -6,7 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
-import com.ampnet.projectservice.service.OrganizationMemberService
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
@@ -28,7 +28,7 @@ import javax.validation.Valid
 
 @RestController
 class OrganizationController(
-    private val organizationMemberService: OrganizationMemberService,
+    private val organizationMembershipService: OrganizationMembershipService,
     private val organizationService: OrganizationService
 ) {
 
@@ -124,7 +124,7 @@ class OrganizationController(
         organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationMemberService.getOrganizationMemberships(organizationUuid)
+        organizationMembershipService.getOrganizationMemberships(organizationUuid)
             .find { it.userUuid == userUuid }
             ?.let { orgMembership ->
                 return if (orgMembership.hasPrivilegeToWriteOrganization()) {

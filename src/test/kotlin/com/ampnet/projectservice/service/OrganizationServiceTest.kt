@@ -8,7 +8,7 @@ import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.service.impl.OrganizationMemberServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -27,7 +27,7 @@ import java.util.UUID
 class OrganizationServiceTest : JpaServiceTestBase() {
 
     private val organizationService: OrganizationService by lazy {
-        val organizationMemberServiceImpl = OrganizationMemberServiceImpl(membershipRepository, roleRepository)
+        val organizationMemberServiceImpl = OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl)
     }
@@ -168,7 +168,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllOrganizationMemberships()
         }
         suppose("User is added to organization as member") {
-            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("Description and header image cannot be updated with null values") {

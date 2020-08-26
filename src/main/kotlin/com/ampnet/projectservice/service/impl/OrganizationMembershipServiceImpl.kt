@@ -8,7 +8,7 @@ import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
-import com.ampnet.projectservice.service.OrganizationMemberService
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
 import mu.KLogging
 import org.springframework.stereotype.Service
@@ -17,10 +17,10 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
-class OrganizationMemberServiceImpl(
+class OrganizationMembershipServiceImpl(
     private val membershipRepository: OrganizationMembershipRepository,
     private val roleRepository: RoleRepository
-) : OrganizationMemberService {
+) : OrganizationMembershipService {
 
     companion object : KLogging()
 
@@ -41,12 +41,12 @@ class OrganizationMemberServiceImpl(
             )
         }
         logger.debug { "Adding user: $userUuid to organization: $organizationUuid" }
-
-        val membership = OrganizationMembership::class.java.getConstructor().newInstance()
-        membership.organizationUuid = organizationUuid
-        membership.userUuid = userUuid
-        membership.role = getRole(role)
-        membership.createdAt = ZonedDateTime.now()
+        val membership = OrganizationMembership(
+            organizationUuid,
+            userUuid,
+            getRole(role),
+            ZonedDateTime.now()
+        )
         return membershipRepository.save(membership)
     }
 
