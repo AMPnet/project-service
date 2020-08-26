@@ -10,6 +10,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     ORG_DUPLICATE_USER("06", "04", "User is already a member of this organization"),
     ORG_DUPLICATE_INVITE("06", "05", "User is already invited"),
     ORG_DUPLICATE_NAME("06", "06", "Organization with this name already exists"),
+    ORG_MEM_MISSING("06", "08", "Organization membership missing"),
 
     // Project: 07
     PRJ_MISSING("07", "01", "Non existing project"),

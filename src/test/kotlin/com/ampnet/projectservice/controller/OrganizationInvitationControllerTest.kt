@@ -6,7 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsList
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
-import com.ampnet.projectservice.security.WithMockCrowdfoundUser
+import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -32,7 +32,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToGetOrganizationInvitations() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
@@ -59,7 +59,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToAcceptOrganizationInvitation() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
@@ -92,7 +92,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToRejectOrganizationInvitation() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
@@ -121,7 +121,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToInviteUserToOrganizationWithOrgAdminRole() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -155,7 +155,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustNotBeAbleToInviteUserToOrganizationWithoutOrgAdminRole() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -177,7 +177,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustNotBeAbleToInviteUserToOrganizationIfNotMemberOfOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -196,7 +196,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToRevokeUserInvitation() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -221,7 +221,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToGetPendingInvitations() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()

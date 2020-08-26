@@ -3,11 +3,13 @@ package com.ampnet.projectservice.service.impl
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
+import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationMemberService
+import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -38,7 +40,7 @@ class OrganizationMemberServiceImpl(
                 "User ${it.userUuid} is already a member of this organization ${it.organizationUuid}"
             )
         }
-        OrganizationServiceImpl.logger.debug { "Adding user: $userUuid to organization: $organizationUuid" }
+        logger.debug { "Adding user: $userUuid to organization: $organizationUuid" }
 
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.organizationUuid = organizationUuid
@@ -51,7 +53,7 @@ class OrganizationMemberServiceImpl(
     @Transactional
     override fun removeUserFromOrganization(userUuid: UUID, organizationUuid: UUID) {
         membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
-            OrganizationServiceImpl.logger.debug { "Removing user: $userUuid from organization: $organizationUuid" }
+            logger.debug { "Removing user: $userUuid from organization: $organizationUuid" }
             membershipRepository.delete(it)
         }
     }
@@ -59,6 +61,21 @@ class OrganizationMemberServiceImpl(
     @Transactional(readOnly = true)
     override fun getOrganizationMemberships(organizationUuid: UUID): List<OrganizationMembership> {
         return membershipRepository.findByOrganizationUuid(organizationUuid)
+    }
+
+    @Transactional
+    override fun updateOrganizationRole(request: OrganizationMemberServiceRequest) {
+        logger.debug { "Updating organization role for user: ${request.memberUuid} from organization: $request.organizationUuid" }
+        membershipRepository.findByOrganizationUuidAndUserUuid(request.organizationUuid, request.memberUuid)
+            .ifPresentOrElse(
+                { membership -> membership.role = getRole(request.roleType) },
+                {
+                    throw ResourceNotFoundException(
+                        ErrorCode.ORG_MEM_MISSING,
+                        "User ${request.memberUuid} is not a member of this organization ${request.organizationUuid}"
+                    )
+                }
+            )
     }
 
     private fun getRole(role: OrganizationRoleType): Role {

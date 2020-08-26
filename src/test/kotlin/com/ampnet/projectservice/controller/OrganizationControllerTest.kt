@@ -9,7 +9,7 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocume
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.security.WithMockCrowdfoundUser
+import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -47,7 +47,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToCreateOrganization() {
         suppose("Organization does not exist") {
             databaseCleanerService.deleteAllOrganizations()
@@ -107,7 +107,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnListOfOrganizations() {
         suppose("Multiple organizations exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -133,7 +133,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnNotFoundForNonExistingOrganization() {
         verify("Response not found for non existing organization") {
             mockMvc.perform(get("$organizationPath/${UUID.randomUUID()}"))
@@ -142,7 +142,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToGetPersonalOrganizations() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -167,7 +167,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToGetOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -196,7 +196,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToStoreDocumentForOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -247,7 +247,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToDeleteOrganizationDocument() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -275,7 +275,7 @@ class OrganizationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToUpdateOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()

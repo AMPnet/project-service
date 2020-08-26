@@ -125,6 +125,12 @@ include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToDeleteOrganizat
 .Response
 include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToDeleteOrganizationMember/http-response.adoc[]
 
+==== Update organization role
+.Request
+include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToChangeUserOrganizationRole/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationMemberControllerTest/mustBeAbleToChangeUserOrganizationRole/http-response.adoc[]
+
 == Project API
 All requests need header: `Authorization: Bearer JWT`.
 

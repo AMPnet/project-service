@@ -1,12 +1,14 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.pojo.request.UpdateOrganizationRoleRequest
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationMemberServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
-import org.assertj.core.api.Assertions
+import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -74,7 +76,7 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
         }
         verify("User is no longer member of organization") {
             val memberships = membershipRepository.findByOrganizationUuid(organization.uuid)
-            Assertions.assertThat(memberships).hasSize(0)
+            assertThat(memberships).hasSize(0)
         }
     }
 
@@ -92,8 +94,8 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
 
         verify("User is a member of two organizations") {
             val organizations = organizationService.findAllOrganizationsForUser(userUuid)
-            Assertions.assertThat(organizations).hasSize(2)
-            Assertions.assertThat(organizations.map { it.uuid }).contains(organization.uuid, testContext.secondOrganization.uuid)
+            assertThat(organizations).hasSize(2)
+            assertThat(organizations.map { it.uuid }).contains(organization.uuid, testContext.secondOrganization.uuid)
         }
     }
 
@@ -131,19 +133,39 @@ class OrganizationMemberServiceTest : JpaServiceTestBase() {
 
         verify("Service will list all members of organization") {
             val memberships = organizationMemberService.getOrganizationMemberships(organization.uuid)
-            Assertions.assertThat(memberships).hasSize(2)
-            Assertions.assertThat(memberships.map { it.userUuid }).containsAll(listOf(userUuid, testContext.member))
+            assertThat(memberships).hasSize(2)
+            assertThat(memberships.map { it.userUuid }).containsAll(listOf(userUuid, testContext.member))
+        }
+    }
+    @Test
+    fun mustBeAbleToChangeUserOrganizationRole() {
+        suppose("User exists without any memberships") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+        }
+        suppose("User is added to organization as member") {
+            organizationMemberService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+        }
+        suppose("Admin has changed user's organization role") {
+            val request = UpdateOrganizationRoleRequest(
+                userUuid,
+                OrganizationRoleType.ORG_ADMIN
+            )
+            organizationMemberService.updateOrganizationRole(OrganizationMemberServiceRequest(organization.uuid, request))
+        }
+
+        verify("User has admin role") {
+            verifyUserMembership(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
     }
 
     private fun verifyUserMembership(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
         val memberships = membershipRepository.findByUserUuid(userUuid)
-        Assertions.assertThat(memberships).hasSize(1)
+        assertThat(memberships).hasSize(1)
         val membership = memberships[0]
-        Assertions.assertThat(membership.userUuid).isEqualTo(userUuid)
-        Assertions.assertThat(membership.organizationUuid).isEqualTo(organizationUuid)
-        Assertions.assertThat(OrganizationRoleType.fromInt(membership.role.id)).isEqualTo(role)
-        Assertions.assertThat(membership.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+        assertThat(membership.userUuid).isEqualTo(userUuid)
+        assertThat(membership.organizationUuid).isEqualTo(organizationUuid)
+        assertThat(OrganizationRoleType.fromInt(membership.role.id)).isEqualTo(role)
+        assertThat(membership.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
     }
 
     private class TestContext {
