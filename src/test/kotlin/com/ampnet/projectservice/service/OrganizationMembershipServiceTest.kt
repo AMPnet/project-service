@@ -23,7 +23,7 @@ class OrganizationMembershipServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl)
     }
-    override val organizationMembershipService: OrganizationMembershipService by lazy {
+    private val organizationMembershipService: OrganizationMembershipService by lazy {
         OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
     }
     private lateinit var organization: Organization
@@ -138,6 +138,7 @@ class OrganizationMembershipServiceTest : JpaServiceTestBase() {
             assertThat(memberships.map { it.userUuid }).containsAll(listOf(userUuid, testContext.member))
         }
     }
+
     @Test
     fun mustBeAbleToChangeUserOrganizationRole() {
         suppose("User exists without any memberships") {
@@ -158,6 +159,7 @@ class OrganizationMembershipServiceTest : JpaServiceTestBase() {
             verifyUserMembership(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
     }
+
     @Test
     fun mustThrowExceptionIfOrganizationMembershipNotFound() {
         suppose("User exists without any memberships") {

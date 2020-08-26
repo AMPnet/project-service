@@ -16,10 +16,12 @@ import java.time.ZonedDateTime
 
 class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
+    private val organizationMembershipService by lazy {
+        OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
+    }
     private val organizationService: OrganizationService by lazy {
-        val organizationMemberServiceImpl = OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl)
+        OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl)
     }
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(

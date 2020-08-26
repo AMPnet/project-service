@@ -56,6 +56,7 @@ class OrganizationMembershipController(
             organizationMembershipService.removeUserFromOrganization(memberUuid, organizationUuid)
         }
     }
+
     @PostMapping("organization/{organizationUuid}/members")
     fun changeOrganizationRole(
         @PathVariable("organizationUuid") organizationUuid: UUID,
