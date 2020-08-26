@@ -6,7 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesLis
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
 import com.ampnet.projectservice.service.OrganizationInviteService
-import com.ampnet.projectservice.service.OrganizationService
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import mu.KLogging
@@ -23,7 +23,7 @@ import javax.validation.Valid
 @RestController
 class OrganizationInvitationController(
     private val organizationInviteService: OrganizationInviteService,
-    private val organizationService: OrganizationService
+    private val organizationMembershipService: OrganizationMembershipService
 ) {
 
     companion object : KLogging()
@@ -98,7 +98,7 @@ class OrganizationInvitationController(
         organizationUuid: UUID,
         action: () -> (T)
     ): ResponseEntity<T> {
-        organizationService.getOrganizationMemberships(organizationUuid)
+        organizationMembershipService.getOrganizationMemberships(organizationUuid)
             .find { it.userUuid == userUuid }
             ?.let { orgMembership ->
                 return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {

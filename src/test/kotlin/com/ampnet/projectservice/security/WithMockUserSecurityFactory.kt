@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.test.context.support.WithSecurityContextFactory
 import java.util.UUID
 
-class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoundUser> {
+class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfundUser> {
 
     companion object {
         const val fullName = "First Last"
@@ -16,7 +16,7 @@ class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoun
 
     private val password = "password"
 
-    override fun createSecurityContext(annotation: WithMockCrowdfoundUser): SecurityContext {
+    override fun createSecurityContext(annotation: WithMockCrowdfundUser): SecurityContext {
         val authorities = mapPrivilegesOrRoleToAuthorities(annotation)
         val userPrincipal = UserPrincipal(
             UUID.fromString(annotation.uuid),
@@ -33,7 +33,7 @@ class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoun
         return context
     }
 
-    private fun mapPrivilegesOrRoleToAuthorities(annotation: WithMockCrowdfoundUser): List<SimpleGrantedAuthority> {
+    private fun mapPrivilegesOrRoleToAuthorities(annotation: WithMockCrowdfundUser): List<SimpleGrantedAuthority> {
         return if (annotation.privileges.isNotEmpty()) {
             annotation.privileges.map { SimpleGrantedAuthority(it.name) }
         } else {

@@ -6,11 +6,8 @@ import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.persistence.model.OrganizationMembership
-import com.ampnet.projectservice.persistence.model.Role
-import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -22,21 +19,16 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
 class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository,
-    private val membershipRepository: OrganizationMembershipRepository,
-    private val roleRepository: RoleRepository,
+    private val organizationMembershipService: OrganizationMembershipService,
     private val storageService: StorageService
 ) : OrganizationService {
 
     companion object : KLogging()
-
-    private val adminRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_ADMIN.id) }
-    private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
 
     @Transactional
     override fun createOrganization(serviceRequest: OrganizationServiceRequest): Organization {
@@ -50,7 +42,9 @@ class OrganizationServiceImpl(
         val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
         val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
-        addUserToOrganization(serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        organizationMembershipService.addUserToOrganization(
+            serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN
+        )
 
         logger.info { "Created organization: ${organization.name}" }
 
@@ -70,42 +64,6 @@ class OrganizationServiceImpl(
     @Transactional(readOnly = true)
     override fun findAllOrganizationsForUser(userUuid: UUID): List<Organization> {
         return organizationRepository.findAllOrganizationsForUserUuid(userUuid)
-    }
-
-    @Transactional(readOnly = true)
-    override fun getOrganizationMemberships(organizationUuid: UUID): List<OrganizationMembership> {
-        return membershipRepository.findByOrganizationUuid(organizationUuid)
-    }
-
-    @Transactional
-    override fun addUserToOrganization(
-        userUuid: UUID,
-        organizationUuid: UUID,
-        role: OrganizationRoleType
-    ): OrganizationMembership {
-        // user can have only one membership(role) per one organization
-        membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
-            throw ResourceAlreadyExistsException(
-                ErrorCode.ORG_DUPLICATE_USER,
-                "User ${it.userUuid} is already a member of this organization ${it.organizationUuid}"
-            )
-        }
-        logger.debug { "Adding user: $userUuid to organization: $organizationUuid" }
-
-        val membership = OrganizationMembership::class.java.getConstructor().newInstance()
-        membership.organizationUuid = organizationUuid
-        membership.userUuid = userUuid
-        membership.role = getRole(role)
-        membership.createdAt = ZonedDateTime.now()
-        return membershipRepository.save(membership)
-    }
-
-    @Transactional
-    override fun removeUserFromOrganization(userUuid: UUID, organizationUuid: UUID) {
-        membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
-            logger.debug { "Removing user: $userUuid from organization: $organizationUuid" }
-            membershipRepository.delete(it)
-        }
     }
 
     @Transactional
@@ -157,13 +115,6 @@ class OrganizationServiceImpl(
         organization.documents = documents
         organizationRepository.save(organization)
         logger.debug { "Add document: ${document.name} to organization: ${organization.uuid}" }
-    }
-
-    private fun getRole(role: OrganizationRoleType): Role {
-        return when (role) {
-            OrganizationRoleType.ORG_ADMIN -> adminRole
-            OrganizationRoleType.ORG_MEMBER -> memberRole
-        }
     }
 
     private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =

@@ -11,6 +11,7 @@ import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -30,7 +31,8 @@ import java.util.UUID
 @RestController
 class ProjectController(
     private val projectService: ProjectService,
-    private val organizationService: OrganizationService
+    private val organizationService: OrganizationService,
+    private val organizationMembershipService: OrganizationMembershipService
 ) {
 
     companion object : KLogging()
@@ -150,7 +152,7 @@ class ProjectController(
             )
 
     private fun getUserMembershipInOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationMembership? =
-        organizationService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
+        organizationMembershipService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
 
     private fun getProjectByIdWithAllData(projectUuid: UUID): Project =
         projectService.getProjectByIdWithAllData(projectUuid)

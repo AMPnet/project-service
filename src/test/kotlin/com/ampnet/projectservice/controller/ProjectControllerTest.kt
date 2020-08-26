@@ -13,7 +13,7 @@ import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
-import com.ampnet.projectservice.security.WithMockCrowdfoundUser
+import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -45,7 +45,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnErrorForUserWithoutOrganizationMembership() {
         verify("Controller will forbidden for user without membership to create project") {
             val request = createProjectRequest(organization.uuid, "Error project")
@@ -59,7 +59,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnErrorForUserOrganizationMembership() {
         suppose("User is a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -78,7 +78,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnErrorIfCreatingProjectForMissingOrganization() {
         verify("Controller will return forbidden for missing organization membership") {
             val request = createProjectRequest(UUID.randomUUID(), "Error project")
@@ -92,7 +92,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToCreateProject() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -133,7 +133,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToUpdateProject() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -184,7 +184,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToAddProjectTags() {
         suppose("User is admin in the organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -218,7 +218,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnForbiddenIfUserIsMissingOrgPrivileges() {
         suppose("User is a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -244,7 +244,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustReturnErrorForUpdatingNonExistingProject() {
         verify("User cannot update non existing project") {
             testContext.projectUpdateRequest =
@@ -260,7 +260,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToAddDocumentForProject() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -312,7 +312,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToRemoveProjectDocument() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -342,7 +342,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToAddMainImage() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -379,7 +379,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToAddGalleryImage() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -416,7 +416,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToRemoveGalleryImage() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -448,7 +448,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToAddNews() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -479,7 +479,7 @@ class ProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustThrowExceptionForTooLongProjectTags() {
         suppose("User is admin in the organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()

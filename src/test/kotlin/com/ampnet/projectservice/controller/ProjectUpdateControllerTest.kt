@@ -7,7 +7,7 @@ import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectUpdate
 import com.ampnet.projectservice.persistence.repository.ProjectUpdateRepository
-import com.ampnet.projectservice.security.WithMockCrowdfoundUser
+import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.projectservice.security.WithMockUserSecurityFactory
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -62,7 +62,7 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToDeleteProjectUpdate() {
         suppose("User is project admin") {
             addUserToOrganization(userUuid, project.organization.uuid, OrganizationRoleType.ORG_ADMIN)
@@ -83,7 +83,7 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfundUser
     fun mustBeAbleToCreateProjectUpdate() {
         suppose("User is project admin") {
             addUserToOrganization(userUuid, project.organization.uuid, OrganizationRoleType.ORG_ADMIN)
