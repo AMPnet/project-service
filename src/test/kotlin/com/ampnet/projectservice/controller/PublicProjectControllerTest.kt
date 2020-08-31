@@ -3,13 +3,18 @@ package com.ampnet.projectservice.controller
 import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
 import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectLocationResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.walletservice.proto.WalletResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
@@ -99,15 +104,23 @@ class PublicProjectControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToGetActiveProjects() {
-        suppose("Active project exists") {
+        suppose("Active project has active wallet") {
             testContext.project = createProject(
                 "Active project", organization, userUuid,
                 startDate = ZonedDateTime.now().minusDays(1)
             )
+            testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
+        }
+        suppose("Another active project has inactive wallet") {
+            testContext.secondProject = createProject(
+                "Second active project", organization, userUuid,
+                startDate = ZonedDateTime.now().minusDays(1)
+            )
+            testContext.inactiveWallet = createWalletResponse(userUuid, testContext.secondProject.uuid)
         }
         suppose("Another organization has active project") {
             val secondOrganization = createOrganization("Second organization", userUuid)
-            testContext.secondProject = createProject(
+            testContext.thirdProject = createProject(
                 "Second active project", secondOrganization, userUuid,
                 startDate = ZonedDateTime.now().minusDays(1)
             )
@@ -115,8 +128,18 @@ class PublicProjectControllerTest : ControllerTestBase() {
         suppose("One project is not active") {
             createProject("Not active", organization, userUuid, active = false)
         }
+        suppose("Wallet service returns a list of wallets") {
+            Mockito.`when`(
+                walletService.getWallets(
+                    listOf(
+                        testContext.thirdProject.uuid, testContext.secondProject.uuid, testContext.project.uuid
+                    )
+                )
+            )
+                .thenReturn(listOf(testContext.activeWallet))
+        }
 
-        verify("Controller will return active projects") {
+        verify("Controller will return active projects with active wallets") {
             val result = mockMvc.perform(
                 get("$publicProjectPath/active")
                     .param("size", "10")
@@ -126,10 +149,29 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectsResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectsResponse.projects).hasSize(2)
-            assertThat(projectsResponse.projects.map { it.uuid })
-                .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+            val response: ProjectWithWalletListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.projectWithWallet).hasSize(1)
+            val projectWithWallet = response.projectWithWallet.first()
+            assertThat(projectWithWallet.projectUuid).isEqualTo(testContext.project.uuid)
+            assertThat(projectWithWallet.projectName).isEqualTo(testContext.project.name)
+            assertThat(projectWithWallet.projectDescription).isEqualTo(testContext.project.description)
+            assertThat(projectWithWallet.projectLocation).isEqualTo(ProjectLocationResponse(testContext.project.location))
+            assertThat(projectWithWallet.projectRoi).isEqualTo(ProjectRoiResponse(testContext.project.roi))
+            assertThat(projectWithWallet.projectStartDate).isEqualTo(testContext.project.startDate)
+            assertThat(projectWithWallet.projectEndDate).isEqualTo(testContext.project.endDate)
+            assertThat(projectWithWallet.projectExpectedFunding).isEqualTo(testContext.project.expectedFunding)
+            assertThat(projectWithWallet.projectCurrency).isEqualTo(testContext.project.currency)
+            assertThat(projectWithWallet.projectMinPerUser).isEqualTo(testContext.project.minPerUser)
+            assertThat(projectWithWallet.projectMaxPerUser).isEqualTo(testContext.project.maxPerUser)
+            assertThat(projectWithWallet.projectMainImage).isIn(testContext.project.mainImage, "")
+            assertThat(projectWithWallet.projectActive).isEqualTo(testContext.project.active)
+            assertThat(projectWithWallet.projectTags).isIn(testContext.project.tags, arrayListOf<String>())
+            assertThat(projectWithWallet.walletUuid).isEqualTo(UUID.fromString(testContext.activeWallet.uuid))
+            assertThat(projectWithWallet.walletOwner).isEqualTo(testContext.project.uuid.toString())
+            assertThat(projectWithWallet.walletActivationData).isEqualTo(testContext.activeWallet.activationData)
+            assertThat(projectWithWallet.walletType).isEqualTo(testContext.activeWallet.type.name)
+            assertThat(projectWithWallet.walletCurrency).isEqualTo(testContext.activeWallet.currency)
+            assertThat(projectWithWallet.walletHash).isEqualTo(testContext.activeWallet.hash)
         }
     }
 
@@ -272,5 +314,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
     private class TestContext {
         lateinit var project: Project
         lateinit var secondProject: Project
+        lateinit var thirdProject: Project
+        lateinit var activeWallet: WalletResponse
+        lateinit var inactiveWallet: WalletResponse
     }
 }

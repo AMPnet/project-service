@@ -26,5 +26,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     // Internal: 08
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),
     INT_GRPC_USER("08", "04", "Failed gRPC call to user service"),
-    INT_DB("08", "07", "Database exception")
+    INT_DB("08", "07", "Database exception"),
+    INT_GRPC_WALLET("08", "09", "Failed gRPC call to wallet service")
 }

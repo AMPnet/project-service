@@ -6,6 +6,7 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.util.UUID
@@ -17,7 +18,7 @@ interface ProjectService {
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
     fun getAllProjects(pageable: Pageable): Page<Project>
-    fun getActiveProjects(pageable: Pageable): Page<Project>
+    fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet>
     fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean = true): Page<Project>
     fun getAllProjectTags(): List<String>
 
