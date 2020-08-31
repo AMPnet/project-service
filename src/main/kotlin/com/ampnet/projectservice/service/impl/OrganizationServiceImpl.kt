@@ -81,7 +81,6 @@ class OrganizationServiceImpl(
         storedDocuments.firstOrNull { it.id == documentId }.let {
             storedDocuments.remove(it)
             organization.documents = storedDocuments
-            organizationRepository.save(organization)
         }
     }
 
