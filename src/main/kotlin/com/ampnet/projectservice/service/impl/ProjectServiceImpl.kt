@@ -69,11 +69,13 @@ class ProjectServiceImpl(
     override fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet> {
         val activeProjects = projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
         val activeWallets = walletService.getWallets(activeProjects.toList().map { it.uuid })
-            .filter { isActivated(it) }.associateBy { it.owner }
-        val projectsWithWallets = activeProjects.toList().mapNotNull {
-            getProjectWithActiveWallet(it, activeWallets)
+            .filter { isWalletActivate(it) }.associateBy { it.owner }
+        val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
+            activeWallets[project.uuid.toString()]?.let { wallet ->
+                ProjectWithWallet(project, wallet)
+            }
         }
-        return PageImpl(projectsWithWallets, pageable, projectsWithWallets.size.toLong())
+        return PageImpl(projectsWithWallets, pageable, activeProjects.totalElements)
     }
 
     @Transactional
@@ -222,13 +224,7 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
-    private fun isActivated(walletResponse: WalletResponse): Boolean {
+    private fun isWalletActivate(walletResponse: WalletResponse): Boolean {
         return walletResponse.hash.isNotEmpty()
-    }
-
-    private fun getProjectWithActiveWallet(project: Project, wallets: Map<String, WalletResponse>): ProjectWithWallet? {
-        return wallets[project.uuid.toString()]?.let {
-            ProjectWithWallet(project, it)
-        }
     }
 }

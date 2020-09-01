@@ -5,8 +5,9 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletsResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
+import com.ampnet.projectservice.controller.pojo.response.WalletResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
@@ -52,8 +53,8 @@ class PublicProjectController(private val projectService: ProjectService) {
     @GetMapping("/public/project/active")
     fun getAllActiveProjects(pageable: Pageable): ResponseEntity<ProjectWithWalletListResponse> {
         logger.debug { "Received request to get all active projects" }
-        val projectsWithWallets = projectService.getActiveProjects(pageable)
-        return mapToProjectWithWalletListResponse(projectsWithWallets)
+        val projectsWithWallet = projectService.getActiveProjects(pageable)
+        return mapToProjectWithWalletListResponse(projectsWithWallet)
     }
 
     @GetMapping("/public/project/active/count")
@@ -91,11 +92,13 @@ class PublicProjectController(private val projectService: ProjectService) {
     private fun mapToProjectWithWalletListResponse(
         page: Page<ProjectWithWallet>
     ): ResponseEntity<ProjectWithWalletListResponse> {
-        val projectWithWalletsResponse = page.map { ProjectWithWalletsResponse(it) }
+        val projectWithWalletResponse = page.map {
+            ProjectWithWalletResponse(ProjectResponse(it.project), WalletResponse(it.wallet))
+        }
         val response = ProjectWithWalletListResponse(
-            projectWithWalletsResponse.toList(),
-            projectWithWalletsResponse.number,
-            projectWithWalletsResponse.totalPages
+            projectWithWalletResponse.toList(),
+            projectWithWalletResponse.number,
+            projectWithWalletResponse.totalPages
         )
         return ResponseEntity.ok(response)
     }
