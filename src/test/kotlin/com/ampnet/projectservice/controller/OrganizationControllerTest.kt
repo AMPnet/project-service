@@ -220,7 +220,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
         verify("User can add document to organization") {
             val result = mockMvc.perform(
-                fileUpload("$organizationPath/${testContext.organization.uuid}/document")
+                multipart("$organizationPath/${testContext.organization.uuid}/document")
                     .file(testContext.multipartFile)
             )
                 .andExpect(status().isOk)
