@@ -32,4 +32,5 @@ class InvestmentProperties {
 class GrpcProperties {
     var mailServiceTimeout: Long = 1000
     var userServiceTimeout: Long = 1000
+    var walletServiceTimeout: Long = 1000
 }

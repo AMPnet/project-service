@@ -24,7 +24,10 @@ class ProjectServiceTest : JpaServiceTestBase() {
     private val applicationProperties = ApplicationProperties()
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        ProjectServiceImpl(projectRepository, projectTagRepository, storageServiceImpl, applicationProperties)
+        ProjectServiceImpl(
+            projectRepository, projectTagRepository,
+            storageServiceImpl, applicationProperties, walletService
+        )
     }
     private val imageContent = "data".toByteArray()
 

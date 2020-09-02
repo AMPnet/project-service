@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -220,7 +219,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
         verify("User can add document to organization") {
             val result = mockMvc.perform(
-                fileUpload("$organizationPath/${testContext.organization.uuid}/document")
+                multipart("$organizationPath/${testContext.organization.uuid}/document")
                     .file(testContext.multipartFile)
             )
                 .andExpect(status().isOk)

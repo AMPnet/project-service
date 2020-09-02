@@ -90,3 +90,14 @@ data class ProjectFullResponse(
         project.documents.orEmpty().map { DocumentResponse(it) }
     )
 }
+
+data class ProjectWithWalletResponse(
+    val project: ProjectResponse,
+    val wallet: WalletResponse
+)
+
+data class ProjectWithWalletListResponse(
+    val projectsWithWallet: List<ProjectWithWalletResponse>,
+    val page: Int = 0,
+    val totalPages: Int = 1
+)
