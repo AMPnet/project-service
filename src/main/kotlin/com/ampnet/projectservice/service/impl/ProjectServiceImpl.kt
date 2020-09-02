@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
+import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -16,9 +17,12 @@ import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.ProjectWithWallet
+import com.ampnet.walletservice.proto.WalletResponse
 import mu.KLogging
 import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,7 +34,8 @@ class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
     private val projectTagRepository: ProjectTagRepository,
     private val storageService: StorageService,
-    private val applicationProperties: ApplicationProperties
+    private val applicationProperties: ApplicationProperties,
+    private val walletService: WalletService
 ) : ProjectService {
 
     companion object : KLogging()
@@ -61,8 +66,17 @@ class ProjectServiceImpl(
     override fun getAllProjects(pageable: Pageable): Page<Project> = projectRepository.findAll(pageable)
 
     @Transactional(readOnly = true)
-    override fun getActiveProjects(pageable: Pageable): Page<Project> =
-        projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
+    override fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet> {
+        val activeProjects = projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
+        val activeWallets = walletService.getWallets(activeProjects.toList().map { it.uuid })
+            .filter { isWalletActivate(it) }.associateBy { it.owner }
+        val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
+            activeWallets[project.uuid.toString()]?.let { wallet ->
+                ProjectWithWallet(project, wallet)
+            }
+        }
+        return PageImpl(projectsWithWallets, pageable, activeProjects.totalElements)
+    }
 
     @Transactional
     override fun updateProject(project: Project, request: ProjectUpdateRequest): Project {
@@ -208,5 +222,9 @@ class ProjectServiceImpl(
     private fun setProjectGallery(project: Project, gallery: List<String>) {
         project.gallery = gallery
         projectRepository.save(project)
+    }
+
+    private fun isWalletActivate(walletResponse: WalletResponse): Boolean {
+        return walletResponse.hash.isNotEmpty()
     }
 }

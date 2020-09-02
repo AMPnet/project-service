@@ -10,6 +10,7 @@ import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.grpc.userservice.UserService
+import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
@@ -25,6 +26,7 @@ import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.userservice.proto.UserResponse
+import com.ampnet.walletservice.proto.WalletResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.BeforeEach
@@ -48,7 +50,7 @@ import java.util.UUID
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
-@ActiveProfiles("MailMockConfig, GrpcServiceMockConfig, CloudStorageMockConfig")
+@ActiveProfiles("GrpcServiceMockConfig, CloudStorageMockConfig")
 abstract class ControllerTestBase : TestBase() {
 
     protected val defaultEmail = "user@email.com"
@@ -83,6 +85,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var projectService: ProjectService
+
+    @Autowired
+    protected lateinit var walletService: WalletService
 
     @Autowired
     private lateinit var documentRepository: DocumentRepository
@@ -246,5 +251,23 @@ abstract class ControllerTestBase : TestBase() {
         organization.documents = documents
         organizationRepository.save(organization)
         return savedDocument
+    }
+
+    protected fun createWalletResponse(
+        uuid: UUID,
+        owner: UUID,
+        activationData: String = "activation data",
+        type: WalletResponse.Type = WalletResponse.Type.PROJECT,
+        currency: String = "EUR",
+        hash: String = "walllet hash"
+    ): WalletResponse {
+        return WalletResponse.newBuilder()
+            .setUuid(uuid.toString())
+            .setOwner(owner.toString())
+            .setActivationData(activationData)
+            .setType(type)
+            .setCurrency(currency)
+            .setHash(hash)
+            .build()
     }
 }

@@ -5,6 +5,7 @@ import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
+import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -68,6 +69,7 @@ abstract class JpaServiceTestBase : TestBase() {
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
+    protected val walletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val defaultPageable: Pageable = PageRequest.of(0, 20)
 
