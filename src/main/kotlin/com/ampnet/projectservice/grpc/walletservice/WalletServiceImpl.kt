@@ -27,14 +27,14 @@ class WalletServiceImpl(
         WalletServiceGrpc.newBlockingStub(channel)
     }
 
-    override fun getWallets(uuids: List<UUID>): List<WalletResponse> {
-        logger.debug { "Fetching wallets: $uuids" }
+    override fun getWalletsByOwner(uuids: List<UUID>): List<WalletResponse> {
+        logger.debug { "Fetching wallets for owners: $uuids" }
         try {
             val request = GetWalletsByOwnerRequest.newBuilder()
                 .addAllOwnersUuids(uuids.map { it.toString() })
                 .build()
             val response = serviceWithTimeout()
-                .getWallets(request).walletsList
+                .getWalletsByOwner(request).walletsList
             logger.debug { "Fetched wallets: $response" }
             return response
         } catch (ex: StatusRuntimeException) {

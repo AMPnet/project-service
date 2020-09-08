@@ -4,5 +4,5 @@ import com.ampnet.walletservice.proto.WalletResponse
 import java.util.UUID
 
 interface WalletService {
-    fun getWallets(uuids: List<UUID>): List<WalletResponse>
+    fun getWalletsByOwner(uuids: List<UUID>): List<WalletResponse>
 }

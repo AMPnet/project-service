@@ -130,7 +130,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         }
         suppose("Wallet service returns a list of wallets") {
             Mockito.`when`(
-                walletService.getWallets(
+                walletService.getWalletsByOwner(
                     listOf(
                         testContext.thirdProject.uuid, testContext.secondProject.uuid, testContext.project.uuid
                     )

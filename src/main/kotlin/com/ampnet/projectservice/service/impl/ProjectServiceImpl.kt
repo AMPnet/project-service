@@ -68,7 +68,7 @@ class ProjectServiceImpl(
     @Transactional(readOnly = true)
     override fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet> {
         val activeProjects = projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
-        val activeWallets = walletService.getWallets(activeProjects.toList().map { it.uuid })
+        val activeWallets = walletService.getWalletsByOwner(activeProjects.toList().map { it.uuid })
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
             activeWallets[project.uuid.toString()]?.let { wallet ->
