@@ -92,6 +92,8 @@ data class Project(
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "tag")
-    var tags: List<String>?
+    var tags: List<String>?,
 
+    @Column(nullable = false)
+    var coop: String
 )

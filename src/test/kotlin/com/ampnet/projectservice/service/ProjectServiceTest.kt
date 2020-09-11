@@ -46,7 +46,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Service received a request to create a project") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Test project")
-            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            testContext.project = projectService.createProject(
+                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+            )
         }
 
         verify("Project is created") {
@@ -71,6 +73,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.mainImage.isNullOrEmpty()).isTrue()
             assertThat(project.gallery.isNullOrEmpty()).isTrue()
             assertThat(project.documents.isNullOrEmpty()).isTrue()
+            assertThat(project.createdByUserUuid).isEqualTo(userUuid)
+            assertThat(project.coop).isEqualTo(COOP)
         }
     }
 
@@ -96,7 +100,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_DATE)
         }
@@ -107,7 +111,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            testContext.project = projectService.createProject(
+                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+            )
         }
         suppose("Main image is added to project") {
             testContext.imageLink = "link-main-image"
@@ -129,7 +135,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            testContext.project = projectService.createProject(
+                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+            )
         }
         suppose("Two images are added to project gallery") {
             testContext.gallery = listOf("link-1", "link-2")
@@ -151,7 +159,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            testContext.project = projectService.createProject(
+                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+            )
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2")
@@ -179,7 +189,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+            testContext.project = projectService.createProject(
+                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+            )
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2", "link-3")
@@ -221,7 +233,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_DATE)
         }
@@ -250,7 +262,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MIN_ABOVE_MAX)
         }
@@ -279,7 +291,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH)
         }
@@ -308,7 +320,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH)
         }
@@ -319,14 +331,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
             val project = projectService
-                .createProject(userUuid, organization, createProjectRequest("First project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("First project"))
             testContext.tags = listOf("tag 1", "tag 2", "tag 3")
             project.tags = testContext.tags
             projectRepository.save(project)
         }
         suppose("Another project has tags") {
             val project = projectService
-                .createProject(userUuid, organization, createProjectRequest("Second project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 4")
             projectRepository.save(project)
             testContext.tags.toMutableList().add("tag 4")
@@ -343,28 +355,28 @@ class ProjectServiceTest : JpaServiceTestBase() {
         suppose("Project has tags and is active") {
             databaseCleanerService.deleteAllProjects()
             val project = projectService
-                .createProject(userUuid, organization, createProjectRequest("First project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("First project"))
             project.tags = listOf("tag 1", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Second project has tags and is active") {
             val project = projectService
-                .createProject(userUuid, organization, createProjectRequest("Second project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Third project has tags and is active") {
             val project = projectService
-                .createProject(userUuid, organization, createProjectRequest("Third project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Third project"))
             project.tags = listOf("tag 1", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Fourth project has tags and is not active") {
             val project = projectService
-                .createProject(userUuid, organization, createProjectRequest("Third project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Third project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             project.active = false
             projectRepository.save(project)
@@ -401,7 +413,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_ROI)
         }
@@ -430,7 +442,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(userUuid, organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_ROI)
         }

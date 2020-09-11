@@ -51,12 +51,15 @@ data class Organization(
     var headerImage: String?,
 
     @Column
-    var description: String?
+    var description: String?,
+
+    @Column(nullable = false)
+    var coop: String
 
 ) {
-    constructor(name: String, createdByUserUuid: UUID, headerImage: String?, description: String?) : this(
+    constructor(name: String, createdByUserUuid: UUID, headerImage: String?, description: String?, coop: String) : this(
         UUID.randomUUID(), name, createdByUserUuid, ZonedDateTime.now(),
         null, true, null, null,
-        null, headerImage, description
+        null, headerImage, description, coop
     )
 }

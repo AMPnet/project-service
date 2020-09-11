@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
@@ -33,6 +34,8 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
+
+const val COOP = "ampnet"
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
@@ -83,6 +86,7 @@ abstract class JpaServiceTestBase : TestBase() {
         organization.createdByUserUuid = createdByUuid
         organization.documents = emptyList()
         organization.headerImage = null
+        organization.coop = COOP
         return organizationRepository.save(organization)
     }
 
@@ -113,6 +117,7 @@ abstract class JpaServiceTestBase : TestBase() {
         project.createdByUserUuid = createdByUserUuid
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
+        project.coop = COOP
         return projectRepository.save(project)
     }
 
@@ -125,5 +130,20 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Document {
         val document = Document(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
         return documentRepository.save(document)
+    }
+
+    protected fun createUserPrincipal(
+        userUuid: UUID,
+        email: String = "email@email",
+        name: String = "Username",
+        authorities: Set<String> = mutableSetOf(),
+        enabled: Boolean = true,
+        verified: Boolean = true,
+        coop: String = COOP
+    ): UserPrincipal {
+        return UserPrincipal(
+            userUuid, email, name, authorities,
+            enabled, verified, coop
+        )
     }
 }

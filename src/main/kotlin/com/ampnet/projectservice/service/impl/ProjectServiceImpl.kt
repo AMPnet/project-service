@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
@@ -41,7 +42,7 @@ class ProjectServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    override fun createProject(user: UUID, organization: Organization, request: ProjectRequest): Project {
+    override fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project {
         validateCreateProjectRequest(request)
         logger.debug { "Creating project: ${request.name}" }
         val project = createProjectFromRequest(user, organization, request)
@@ -195,7 +196,7 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
-    private fun createProjectFromRequest(user: UUID, organization: Organization, request: ProjectRequest) =
+    private fun createProjectFromRequest(user: UserPrincipal, organization: Organization, request: ProjectRequest) =
         Project(
             UUID.randomUUID(),
             organization,
@@ -212,11 +213,12 @@ class ProjectServiceImpl(
             null,
             null,
             null,
-            user,
+            user.uuid,
             ZonedDateTime.now(),
             request.active,
             null,
-            request.tags?.toSet()?.map { it.toLowerCase() }
+            request.tags?.toSet()?.map { it.toLowerCase() },
+            user.coop
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

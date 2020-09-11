@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.persistence.model.Document
@@ -12,7 +13,7 @@ import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 interface ProjectService {
-    fun createProject(user: UUID, organization: Organization, request: ProjectRequest): Project
+    fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project
     fun updateProject(project: Project, request: ProjectUpdateRequest): Project
 
     fun getProjectByIdWithAllData(id: UUID): Project?

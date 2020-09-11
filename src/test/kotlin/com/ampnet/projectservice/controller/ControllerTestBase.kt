@@ -48,6 +48,8 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
 
+const val COOP = "ampnet"
+
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 @ActiveProfiles("GrpcServiceMockConfig, CloudStorageMockConfig")
@@ -129,6 +131,7 @@ abstract class ControllerTestBase : TestBase() {
         organization.createdByUserUuid = userUuid
         organization.documents = emptyList()
         organization.headerImage = "Organization header image"
+        organization.coop = COOP
         return organizationRepository.save(organization)
     }
 
@@ -168,6 +171,7 @@ abstract class ControllerTestBase : TestBase() {
         project.createdByUserUuid = createdByUserUuid
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
+        project.coop = COOP
         return projectRepository.save(project)
     }
 

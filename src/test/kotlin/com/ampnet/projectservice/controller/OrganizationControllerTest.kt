@@ -11,7 +11,6 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.projectservice.service.OrganizationService
-import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -102,6 +101,8 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organization.approved).isTrue()
             assertThat(organization.documents).isEmpty()
             assertThat(organization.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(organization.createdByUserUuid).isEqualTo(userUuid)
+            assertThat(organization.coop).isEqualTo(COOP)
         }
     }
 
@@ -342,9 +343,6 @@ class OrganizationControllerTest : ControllerTestBase() {
         val documentLink = "link"
         lateinit var document: Document
         lateinit var multipartFile: MockMultipartFile
-        lateinit var member: UUID
-        lateinit var memberSecond: UUID
-        var userResponses: List<UserResponse> = emptyList()
         val imageLink = "image link"
         lateinit var organizationUpdateRequest: OrganizationUpdateRequest
     }
