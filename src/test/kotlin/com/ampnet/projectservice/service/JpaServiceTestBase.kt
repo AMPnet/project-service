@@ -3,6 +3,7 @@ package com.ampnet.projectservice.service
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
@@ -34,8 +35,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
-
-const val COOP = "ampnet"
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest

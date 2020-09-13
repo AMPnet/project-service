@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.config.ApplicationProperties
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest

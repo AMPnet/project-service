@@ -12,5 +12,5 @@ annotation class WithMockCrowdfundUser(
     val privileges: Array<PrivilegeType> = [],
     val enabled: Boolean = true,
     val verified: Boolean = true,
-    val coop: String = "ampnet"
+    val coop: String = "ampnet-test"
 )
