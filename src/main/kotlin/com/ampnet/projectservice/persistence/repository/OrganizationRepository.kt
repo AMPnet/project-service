@@ -19,5 +19,5 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
     fun findByName(name: String): Optional<Organization>
 
-    fun findByNameContainingIgnoreCase(name: String, pageable: Pageable): Page<Organization>
+    fun findByNameContainingIgnoreCaseAndCoop(name: String, coop: String, pageable: Pageable): Page<Organization>
 }

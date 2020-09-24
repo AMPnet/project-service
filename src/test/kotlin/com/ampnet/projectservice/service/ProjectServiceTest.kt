@@ -1,6 +1,5 @@
 package com.ampnet.projectservice.service
 
-import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
@@ -22,12 +21,10 @@ import java.time.ZonedDateTime
 
 class ProjectServiceTest : JpaServiceTestBase() {
 
-    private val applicationProperties = ApplicationProperties()
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         ProjectServiceImpl(
-            projectRepository, projectTagRepository,
-            storageServiceImpl, applicationProperties, walletService
+            projectRepository, storageServiceImpl, applicationProperties, walletService
         )
     }
     private val imageContent = "data".toByteArray()
@@ -346,7 +343,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can get all project tags") {
-            val allTags = projectTagRepository.getAllTags()
+            val allTags = projectService.getAllProjectTags(COOP)
             assertThat(allTags).hasSize(4).containsAll(testContext.tags)
         }
     }
@@ -385,7 +382,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
         verify("Service will return project for tags") {
             val tags = listOf("tag 1", "tag 2")
-            val projects = projectService.getProjectsByTags(tags, defaultPageable)
+            val projects = projectService.getProjectsByTags(tags, COOP, defaultPageable)
             val project = projects.first()
             assertThat(project.tags).containsAll(tags)
         }

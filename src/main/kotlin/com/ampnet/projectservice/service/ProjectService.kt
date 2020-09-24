@@ -17,13 +17,13 @@ interface ProjectService {
     fun updateProject(project: Project, request: ProjectUpdateRequest): Project
 
     fun getProjectByIdWithAllData(id: UUID): Project?
-    fun getAllProjectsForOrganization(organizationId: UUID): List<Project>
+    fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<Project>
     fun getAllProjects(pageable: Pageable): Page<Project>
-    fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet>
-    fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean = true): Page<Project>
-    fun getAllProjectTags(): List<String>
+    fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet>
+    fun getProjectsByTags(tags: List<String>, coop: String?, pageable: Pageable, active: Boolean = true): Page<Project>
+    fun getAllProjectTags(coop: String?): List<String>
 
-    fun countActiveProjects(): Int
+    fun countActiveProjects(coop: String?): Int
 
     fun addMainImage(project: Project, name: String, content: ByteArray)
     fun addImageToGallery(project: Project, name: String, content: ByteArray)

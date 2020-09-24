@@ -22,29 +22,42 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     @Query(
         "SELECT project FROM Project project " +
             "INNER JOIN FETCH project.organization organization " +
-            "WHERE organization.uuid = ?1"
+            "WHERE organization.uuid = ?1 AND organization.coop = ?2"
     )
-    fun findAllByOrganizationUuid(organizationUuid: UUID): List<Project>
+    fun findAllByOrganizationUuid(organizationUuid: UUID, coop: String): List<Project>
 
-    fun findByNameContainingIgnoreCase(name: String, pageable: Pageable): Page<Project>
+    fun findByNameContainingIgnoreCaseAndCoop(name: String, coop: String, pageable: Pageable): Page<Project>
 
     @Query(
         "SELECT project FROM Project project JOIN project.tags t " +
-            "WHERE t IN (:tags) AND project.active = :active " +
+            "WHERE t IN (:tags) AND project.coop = :coop AND project.active = :active " +
             "GROUP BY project.uuid HAVING COUNT (project.uuid) = :size"
 
     )
-    fun findByTags(tags: Collection<String>, size: Long, pageable: Pageable, active: Boolean = true): Page<Project>
+    fun findByTags(
+        tags: Collection<String>,
+        size: Long,
+        coop: String,
+        pageable: Pageable,
+        active: Boolean = true
+    ): Page<Project>
 
     @Query(
         "SELECT project FROM Project project " +
-            "WHERE project.startDate < :time AND project.endDate > :time AND project.active = :active"
+            "WHERE project.startDate < :time AND project.endDate > :time " +
+            "AND project.active = :active AND project.coop = :coop"
     )
-    fun findByActive(time: ZonedDateTime, active: Boolean, pageable: Pageable): Page<Project>
+    fun findByActive(time: ZonedDateTime, active: Boolean, coop: String, pageable: Pageable): Page<Project>
 
     @Query(
         "SELECT COUNT(project.uuid) FROM Project project " +
-            "WHERE project.startDate < :time AND project.endDate > :time AND project.active = :active"
+            "WHERE project.startDate < :time AND project.endDate > :time AND project.active = :active " +
+            "AND project.coop = :coop"
     )
-    fun countAllActiveByDate(time: ZonedDateTime, active: Boolean): Int
+    fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
+
+    @Query(
+        "SELECT project From Project project WHERE project.coop = :coop"
+    )
+    fun getAllTagsByCoop(coop: String): List<Project>
 }

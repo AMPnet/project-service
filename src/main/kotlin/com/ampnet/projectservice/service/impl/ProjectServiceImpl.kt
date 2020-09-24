@@ -14,7 +14,6 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
-import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -33,7 +32,6 @@ import java.util.UUID
 @Service
 class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
-    private val projectTagRepository: ProjectTagRepository,
     private val storageService: StorageService,
     private val applicationProperties: ApplicationProperties,
     private val walletService: WalletService
@@ -60,15 +58,17 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectsForOrganization(organizationId: UUID): List<Project> =
-        projectRepository.findAllByOrganizationUuid(organizationId)
+    override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<Project> =
+        projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
 
     @Transactional(readOnly = true)
     override fun getAllProjects(pageable: Pageable): Page<Project> = projectRepository.findAll(pageable)
 
     @Transactional(readOnly = true)
-    override fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet> {
-        val activeProjects = projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
+    override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
+        val activeProjects = projectRepository.findByActive(
+            ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default, pageable
+        )
         val activeWallets = walletService.getWalletsByOwner(activeProjects.toList().map { it.uuid })
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
@@ -142,15 +142,27 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectTags(): List<String> = projectTagRepository.getAllTags()
+    override fun getAllProjectTags(coop: String?): List<String> {
+        return projectRepository.getAllTagsByCoop(coop ?: applicationProperties.coop.default)
+            .mapNotNull { it.tags }.flatten().distinct()
+    }
 
     @Transactional(readOnly = true)
-    override fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean): Page<Project> =
-        projectRepository.findByTags(tags, tags.size.toLong(), pageable)
+    override fun getProjectsByTags(
+        tags: List<String>,
+        coop: String?,
+        pageable: Pageable,
+        active: Boolean
+    ): Page<Project> =
+        projectRepository.findByTags(
+            tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, pageable
+        )
 
     @Transactional(readOnly = true)
-    override fun countActiveProjects(): Int =
-        projectRepository.countAllActiveByDate(ZonedDateTime.now(), true)
+    override fun countActiveProjects(coop: String?): Int =
+        projectRepository.countAllActiveByDate(
+            ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default
+        )
 
     @Suppress("ThrowsCount")
     private fun validateCreateProjectRequest(request: ProjectRequest) {
