@@ -91,6 +91,11 @@ data class ProjectFullResponse(
     )
 }
 
+data class ProjectWithWalletFullResponse(
+    val project: ProjectFullResponse,
+    val wallet: WalletResponse?
+)
+
 data class ProjectWithWalletResponse(
     val project: ProjectResponse,
     val wallet: WalletResponse

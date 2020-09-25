@@ -17,6 +17,7 @@ import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import com.ampnet.walletservice.proto.WalletResponse
 import mu.KLogging
@@ -142,6 +143,16 @@ class ProjectServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getAllProjectTags(): List<String> = projectTagRepository.getAllTags()
+
+    @Transactional(readOnly = true)
+    override fun getProjectWithWallet(id: UUID): FullProjectWithWallet? {
+        val project = ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
+            ?: return null
+        Hibernate.initialize(project.gallery)
+        Hibernate.initialize(project.newsLinks)
+        val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
+        return FullProjectWithWallet(project, wallet.firstOrNull())
+    }
 
     @Transactional(readOnly = true)
     override fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean): Page<Project> =
