@@ -222,8 +222,12 @@ class PublicProjectControllerTest : ControllerTestBase() {
             val project3 = createProject("Project 3", organization, userUuid, active = false)
             addTagsToProject(project3, listOf("wind", "green"))
         }
+        suppose("There is project from another cooperative") {
+            val project4 = createProject("Project 3", organization, userUuid, coop = "another_coop")
+            addTagsToProject(project4, listOf("wind", "green"))
+        }
 
-        verify("Controller will return projects containing all tags and are active") {
+        verify("Controller will return projects containing all tags which are active and from the cooperative") {
             val result = mockMvc.perform(
                 get(publicProjectPath)
                     .param("coop", COOP)
@@ -250,6 +254,10 @@ class PublicProjectControllerTest : ControllerTestBase() {
             addTagsToProject(project2, listOf("wind", "green"))
             val project3 = createProject("Project 3", organization, userUuid)
             addTagsToProject(project3, listOf())
+        }
+        suppose("There is project from another cooperative") {
+            val project4 = createProject("Project 1", organization, userUuid, coop = "another_coop")
+            addTagsToProject(project4, listOf("wind", "solar", "blue"))
         }
 
         verify("Controller will return all tags") {

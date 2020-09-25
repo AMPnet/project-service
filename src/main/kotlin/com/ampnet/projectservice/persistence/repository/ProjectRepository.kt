@@ -32,7 +32,6 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
         "SELECT project FROM Project project JOIN project.tags t " +
             "WHERE t IN (:tags) AND project.coop = :coop AND project.active = :active " +
             "GROUP BY project.uuid HAVING COUNT (project.uuid) = :size"
-
     )
     fun findByTags(
         tags: Collection<String>,
@@ -55,9 +54,4 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
             "AND project.coop = :coop"
     )
     fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
-
-    @Query(
-        "SELECT project From Project project WHERE project.coop = :coop"
-    )
-    fun getAllTagsByCoop(coop: String): List<Project>
 }

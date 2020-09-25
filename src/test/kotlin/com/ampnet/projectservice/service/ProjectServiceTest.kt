@@ -24,7 +24,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         ProjectServiceImpl(
-            projectRepository, storageServiceImpl, applicationProperties, walletService
+            projectRepository, storageServiceImpl,
+            applicationProperties, walletService, projectTagRepository
         )
     }
     private val imageContent = "data".toByteArray()
@@ -341,6 +342,12 @@ class ProjectServiceTest : JpaServiceTestBase() {
             projectRepository.save(project)
             testContext.tags.toMutableList().add("tag 4")
         }
+        suppose("Project from another cooperative has tags") {
+            val project = projectService
+                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), organization, createProjectRequest("Third project"))
+            project.tags = listOf("tag 1", "tag 4", "tag 5")
+            projectRepository.save(project)
+        }
 
         verify("Service can get all project tags") {
             val allTags = projectService.getAllProjectTags(COOP)
@@ -374,9 +381,16 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
         suppose("Fourth project has tags and is not active") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Third project"))
+                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Fourth project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             project.active = false
+            projectRepository.save(project)
+        }
+        suppose("Fifth project has tags and is active but from another cooperative") {
+            val project = projectService
+                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), organization, createProjectRequest("Fifth project"))
+            project.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.active = true
             projectRepository.save(project)
         }
 

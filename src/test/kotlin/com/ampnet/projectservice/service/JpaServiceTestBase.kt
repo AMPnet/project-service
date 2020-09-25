@@ -20,7 +20,9 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
+import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
@@ -38,7 +40,7 @@ import java.util.UUID
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
-@Import(DatabaseCleanerService::class, ApplicationProperties::class)
+@Import(DatabaseCleanerService::class, ApplicationProperties::class, ProjectTagRepositoryImpl::class)
 abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
@@ -61,6 +63,9 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var projectRepository: ProjectRepository
+
+    @Autowired
+    protected lateinit var projectTagRepository: ProjectTagRepository
 
     @Autowired
     protected lateinit var documentRepository: DocumentRepository

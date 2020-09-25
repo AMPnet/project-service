@@ -153,7 +153,8 @@ abstract class ControllerTestBase : TestBase() {
         endDate: ZonedDateTime = ZonedDateTime.now().plusDays(30),
         expectedFunding: Long = 10_000_000,
         minPerUser: Long = 10,
-        maxPerUser: Long = 10_000
+        maxPerUser: Long = 10_000,
+        coop: String = COOP
     ): Project {
         val project = Project::class.java.getDeclaredConstructor().newInstance()
         project.uuid = UUID.randomUUID()
@@ -171,7 +172,7 @@ abstract class ControllerTestBase : TestBase() {
         project.createdByUserUuid = createdByUserUuid
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
-        project.coop = COOP
+        project.coop = coop
         return projectRepository.save(project)
     }
 

@@ -14,6 +14,7 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -34,7 +35,8 @@ class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
     private val storageService: StorageService,
     private val applicationProperties: ApplicationProperties,
-    private val walletService: WalletService
+    private val walletService: WalletService,
+    private val projectTagRepository: ProjectTagRepository
 ) : ProjectService {
 
     companion object : KLogging()
@@ -143,8 +145,7 @@ class ProjectServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getAllProjectTags(coop: String?): List<String> {
-        return projectRepository.getAllTagsByCoop(coop ?: applicationProperties.coop.default)
-            .mapNotNull { it.tags }.flatten().distinct()
+        return projectTagRepository.getAllTagsByCoop(coop ?: applicationProperties.coop.default)
     }
 
     @Transactional(readOnly = true)
