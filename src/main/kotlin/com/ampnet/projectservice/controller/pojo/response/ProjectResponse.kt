@@ -91,6 +91,48 @@ data class ProjectFullResponse(
     )
 }
 
+data class ProjectWithWalletFullResponse(
+    val uuid: UUID,
+    val name: String,
+    val description: String,
+    val location: ProjectLocationResponse,
+    val roi: ProjectRoiResponse,
+    val startDate: ZonedDateTime,
+    val endDate: ZonedDateTime,
+    val expectedFunding: Long,
+    val currency: Currency,
+    val minPerUser: Long,
+    val maxPerUser: Long,
+    val mainImage: String?,
+    val active: Boolean,
+    val tags: List<String>,
+    val gallery: List<String>,
+    val news: List<String>,
+    val documents: List<DocumentResponse>,
+    val wallet: WalletResponse?
+) {
+    constructor(project: Project, wallet: com.ampnet.walletservice.proto.WalletResponse?) : this(
+        project.uuid,
+        project.name,
+        project.description,
+        ProjectLocationResponse(project.location),
+        ProjectRoiResponse(project.roi),
+        project.startDate,
+        project.endDate,
+        project.expectedFunding,
+        project.currency,
+        project.minPerUser,
+        project.maxPerUser,
+        project.mainImage,
+        project.active,
+        project.tags.orEmpty(),
+        project.gallery.orEmpty(),
+        project.newsLinks.orEmpty(),
+        project.documents.orEmpty().map { DocumentResponse(it) },
+        wallet?.let { WalletResponse(it) }
+    )
+}
+
 data class ProjectWithWalletResponse(
     val project: ProjectResponse,
     val wallet: WalletResponse

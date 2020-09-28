@@ -1,9 +1,9 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
-import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
@@ -27,10 +27,15 @@ class PublicProjectController(private val projectService: ProjectService) {
     companion object : KLogging()
 
     @GetMapping("/public/project/{uuid}")
-    fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectFullResponse> {
-        logger.debug { "Received request to get project with uuid: $uuid" }
-        projectService.getProjectByIdWithAllData(uuid)?.let { project ->
-            return ResponseEntity.ok(ProjectFullResponse(project))
+    fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectWithWalletFullResponse> {
+        logger.debug { "Received request to get project with wallet with uuid: $uuid" }
+        projectService.getProjectWithWallet(uuid)?.let { projectWithWallet ->
+            return ResponseEntity.ok(
+                ProjectWithWalletFullResponse(
+                    projectWithWallet.project,
+                    projectWithWallet.walletResponse
+                )
+            )
         }
         return ResponseEntity.notFound().build()
     }

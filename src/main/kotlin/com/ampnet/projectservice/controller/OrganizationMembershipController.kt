@@ -62,7 +62,10 @@ class OrganizationMembershipController(
         @PathVariable("organizationUuid") organizationUuid: UUID,
         @RequestBody request: UpdateOrganizationRoleRequest
     ): ResponseEntity<Unit> {
-        logger.debug { "Received request to change role for member: ${request.memberUuid} from organization: $organizationUuid" }
+        logger.debug {
+            "Received request to change role for member: ${request.memberUuid} " +
+                "from organization: $organizationUuid"
+        }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
             organizationMembershipService.updateOrganizationRole(
