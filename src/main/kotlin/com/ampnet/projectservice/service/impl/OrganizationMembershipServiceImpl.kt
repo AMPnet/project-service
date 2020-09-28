@@ -65,7 +65,10 @@ class OrganizationMembershipServiceImpl(
 
     @Transactional
     override fun updateOrganizationRole(request: OrganizationMemberServiceRequest) {
-        logger.debug { "Updating organization role for user: ${request.memberUuid} from organization: $request.organizationUuid" }
+        logger.debug {
+            "Updating organization role for user: ${request.memberUuid} " +
+                "from organization: $request.organizationUuid"
+        }
         val membership = ServiceUtils.wrapOptional(
             membershipRepository.findByOrganizationUuidAndUserUuid(request.organizationUuid, request.memberUuid)
         ) ?: throw ResourceNotFoundException(

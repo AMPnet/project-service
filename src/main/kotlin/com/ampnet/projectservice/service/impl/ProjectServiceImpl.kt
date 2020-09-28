@@ -146,10 +146,7 @@ class ProjectServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getProjectWithWallet(id: UUID): FullProjectWithWallet? {
-        val project = ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
-            ?: return null
-        Hibernate.initialize(project.gallery)
-        Hibernate.initialize(project.newsLinks)
+        val project = getProjectByIdWithAllData(id) ?: return null
         val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
         return FullProjectWithWallet(project, wallet.firstOrNull())
     }

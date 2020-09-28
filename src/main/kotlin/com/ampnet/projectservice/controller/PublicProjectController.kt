@@ -1,7 +1,6 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
-import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
@@ -33,8 +32,8 @@ class PublicProjectController(private val projectService: ProjectService) {
         projectService.getProjectWithWallet(uuid)?.let { projectWithWallet ->
             return ResponseEntity.ok(
                 ProjectWithWalletFullResponse(
-                    ProjectFullResponse(projectWithWallet.project),
-                    projectWithWallet.walletResponse?.let { WalletResponse(it) }
+                    projectWithWallet.project,
+                    projectWithWallet.walletResponse
                 )
             )
         }
