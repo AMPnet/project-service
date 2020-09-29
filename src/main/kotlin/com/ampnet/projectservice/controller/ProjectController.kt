@@ -15,6 +15,7 @@ import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
@@ -47,17 +49,21 @@ class ProjectController(
         }
     }
 
-    @PutMapping("/project/{projectUuid}")
+    @PutMapping("/project/{projectUuid}", consumes = ["multipart/form-data"])
     fun updateProject(
         @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestBody request: ProjectUpdateRequest
+        @RequestPart("request") request: ProjectUpdateRequest,
+        @RequestParam("image", required = false) image: MultipartFile?,
+        @RequestParam("documents", required = false) documents: List<MultipartFile>?
     ): ResponseEntity<ProjectFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val project = getProjectByIdWithAllData(projectUuid)
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val updatedProject = projectService.updateProject(project, request)
+            val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
+            val serviceRequest = ProjectUpdateServiceRequest(project, request, image, documentSaveRequests)
+            val updatedProject = projectService.updateProject(serviceRequest)
             ProjectFullResponse(updatedProject)
         }
     }
