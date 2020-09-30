@@ -159,11 +159,11 @@ class ProjectControllerTest : ControllerTestBase() {
         suppose("File service will store documents") {
             testContext.documentMock1 = MockMultipartFile(
                 "documents", "test.txt",
-                "text/plain", "Some document data".toByteArray()
+                "text/plain", "Document with bigger size".toByteArray()
             )
             testContext.documentMock2 = MockMultipartFile(
                 "documents", "test2.pdf",
-                "application/pdf", "Some document data2".toByteArray()
+                "application/pdf", "Smaller document".toByteArray()
             )
             Mockito.`when`(
                 cloudStorageService.saveFile(
@@ -210,12 +210,13 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.mainImage).contains(testContext.imageLink)
             assertThat(projectResponse.documents).hasSize(2)
-            val document = projectResponse.documents.first()
+            val documents = projectResponse.documents.sortedByDescending { it.size }
+            val document = documents.first()
             assertThat(document.id).isNotNull()
+            assertThat(document.link).isEqualTo(testContext.documentLink1)
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink1)
         }
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
@@ -229,14 +230,14 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(updatedProject.mainImage).contains(testContext.imageLink)
-            val documents = updatedProject.documents ?: fail("Missing documents")
+            val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
             assertThat(documents).hasSize(2)
-            val document = documents.first()
+            val document = documents.last()
             assertThat(document.id).isNotNull()
-            assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
-            assertThat(document.size).isEqualTo(testContext.documentMock1.size)
-            assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink1)
+            assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock2.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
+            assertThat(document.link).isEqualTo(testContext.documentLink2)
         }
     }
 
@@ -319,11 +320,11 @@ class ProjectControllerTest : ControllerTestBase() {
         suppose("File service will store documents") {
             testContext.documentMock1 = MockMultipartFile(
                 "documents", "test.txt",
-                "text/plain", "Some document data".toByteArray()
+                "text/plain", "Document with bigger size".toByteArray()
             )
             testContext.documentMock2 = MockMultipartFile(
                 "documents", "test2.pdf",
-                "application/pdf", "Some document data2".toByteArray()
+                "application/pdf", "Smaller document".toByteArray()
             )
             Mockito.`when`(
                 cloudStorageService.saveFile(
@@ -356,7 +357,8 @@ class ProjectControllerTest : ControllerTestBase() {
 
             val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.documents).hasSize(2)
-            val document = projectResponse.documents.first()
+            val documents = projectResponse.documents.sortedByDescending { it.size }
+            val document = documents.first()
             assertThat(document.id).isNotNull()
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
@@ -366,14 +368,15 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
                 ?: fail("Missing project")
-            val documents = updatedProject.documents ?: fail("Missing documents")
+            val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
             assertThat(documents).hasSize(2)
-            val document = documents.first()
+            documents.sortedBy { it.size }
+            val document = documents.last()
             assertThat(document.id).isNotNull()
-            assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
-            assertThat(document.size).isEqualTo(testContext.documentMock1.size)
-            assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink1)
+            assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock2.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
+            assertThat(document.link).isEqualTo(testContext.documentLink2)
         }
     }
 

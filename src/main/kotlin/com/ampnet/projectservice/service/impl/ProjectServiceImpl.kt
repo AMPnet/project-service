@@ -95,14 +95,13 @@ class ProjectServiceImpl(
         }
         serviceRequest.request.active?.let { serviceRequest.project.active = it }
         serviceRequest.request.tags?.let {
-            it ->
             serviceRequest.project.tags = it.toSet().map { tag -> tag.toLowerCase() }
         }
         serviceRequest.request.news?.let { serviceRequest.project.newsLinks = it }
         serviceRequest.image?.let {
             addMainImageToProject(it, serviceRequest.project)
         }
-        serviceRequest.documentSaveRequests?.forEach {
+        serviceRequest.documentSaveRequests?.parallelStream()?.forEach {
             val document = storageService.saveDocument(it)
             addDocumentToProject(serviceRequest.project, document)
         }
@@ -217,7 +216,7 @@ class ProjectServiceImpl(
 
     private fun addMainImageToProject(image: MultipartFile, project: Project) {
         val link = storageService.saveImage(
-            getImageNameFromMultipartFile(image), image.bytes
+            ServiceUtils.getImageNameFromMultipartFile(image), image.bytes
         )
         project.mainImage = link
     }
@@ -254,7 +253,4 @@ class ProjectServiceImpl(
     private fun isWalletActivate(walletResponse: WalletResponse): Boolean {
         return walletResponse.hash.isNotEmpty()
     }
-
-    private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
-        multipartFile.originalFilename ?: multipartFile.name
 }
