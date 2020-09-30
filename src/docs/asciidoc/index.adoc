@@ -228,9 +228,9 @@ include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/
 
 === Get project
 .Request
-include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProject/http-request.adoc[]
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProjectWithWallet/http-request.adoc[]
 .Response
-include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProject/http-response.adoc[]
+include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProjectWithWallet/http-response.adoc[]
 
 === Get all projects
 List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.

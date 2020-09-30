@@ -1,10 +1,10 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
-import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectLocationResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Organization
@@ -36,9 +36,14 @@ class PublicProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToGetSpecificProject() {
-        suppose("Project exists") {
+    fun mustBeAbleToGetSpecificProjectWithWallet() {
+        suppose("Project will wallet exists") {
             testContext.project = createProject("My project", organization, userUuid)
+            testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
+        }
+        suppose("Wallet service will return project wallet") {
+            Mockito.`when`(walletService.getWalletsByOwner(listOf(testContext.project.uuid)))
+                .thenReturn(listOf(testContext.activeWallet))
         }
 
         verify("Project response is valid") {
@@ -46,7 +51,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
@@ -63,7 +68,12 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.gallery).isEqualTo(testContext.project.gallery.orEmpty())
             assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
-            assertThat(projectResponse.active).isEqualTo(testContext.project.active)
+            assertThat(projectResponse.wallet?.uuid).isEqualTo(UUID.fromString(testContext.activeWallet.uuid))
+            assertThat(projectResponse.wallet?.owner).isEqualTo(testContext.activeWallet.owner)
+            assertThat(projectResponse.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)
+            assertThat(projectResponse.wallet?.type).isEqualTo(testContext.activeWallet.type.name)
+            assertThat(projectResponse.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
+            assertThat(projectResponse.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
         }
     }
 
@@ -72,6 +82,26 @@ class PublicProjectControllerTest : ControllerTestBase() {
         verify("Controller will return not found for missing project") {
             mockMvc.perform(get("$publicProjectPath/${UUID.randomUUID()}"))
                 .andExpect(status().isNotFound)
+        }
+    }
+
+    @Test
+    fun mustReturnNullForMissingWallet() {
+        suppose("Project without wallet exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+        suppose("Wallet service will not return project wallet") {
+            Mockito.`when`(walletService.getWalletsByOwner(listOf(testContext.project.uuid)))
+                .thenReturn(listOf())
+        }
+
+        verify("Project response is valid") {
+            val result = mockMvc.perform(get("$publicProjectPath/${testContext.project.uuid}"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectResponse.wallet).isNull()
         }
     }
 

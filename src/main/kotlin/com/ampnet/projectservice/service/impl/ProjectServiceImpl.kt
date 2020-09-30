@@ -18,6 +18,7 @@ import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import com.ampnet.walletservice.proto.WalletResponse
 import mu.KLogging
@@ -158,6 +159,12 @@ class ProjectServiceImpl(
         projectRepository.findByTags(
             tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, pageable
         )
+
+    override fun getProjectWithWallet(id: UUID): FullProjectWithWallet? {
+        val project = getProjectByIdWithAllData(id) ?: return null
+        val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
+        return FullProjectWithWallet(project, wallet.firstOrNull())
+    }
 
     @Transactional(readOnly = true)
     override fun countActiveProjects(coop: String?): Int =

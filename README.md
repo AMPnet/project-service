@@ -60,7 +60,7 @@ Set online storage URL: `com.ampnet.projectservice.file-storage.url`
 
 ### JWT
 
-Set singing key property to verify JWT: `com.ampnet.projectservice.jwt.signing-key`
+Set public key property to verify JWT: `com.ampnet.projectservice.jwt.public-key`
 
 ### Limit Investments
 
