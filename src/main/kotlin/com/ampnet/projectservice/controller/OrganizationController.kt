@@ -105,7 +105,7 @@ class OrganizationController(
     @PostMapping(value = ["/organization/{organizationId}/updates"], consumes = ["multipart/form-data"])
     fun updateOrganization(
         @PathVariable("organizationId") organizationUuid: UUID,
-        @RequestPart @Valid request: OrganizationUpdateRequest,
+        @RequestPart request: OrganizationUpdateRequest,
         @RequestParam("image") image: MultipartFile?
     ): ResponseEntity<OrganizationResponse> {
         logger.debug { "Received request to update organization with uuid: $organizationUuid" }
