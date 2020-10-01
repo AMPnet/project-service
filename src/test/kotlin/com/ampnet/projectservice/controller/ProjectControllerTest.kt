@@ -10,6 +10,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
+import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -129,6 +130,32 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Project is stored in database") {
             val optionalProject = projectRepository.findById(testContext.projectUuid)
             assertThat(optionalProject).isPresent
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustRejectRequestWithNegativeProjectValues() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+
+        verify("Controller will reject project") {
+            testContext.projectRequest = createProjectRequest(
+                organization.uuid, "Das project",
+                expectedFunding = -100000, minPerUser = -100, maxPerUser = -10000
+            )
+            val result = mockMvc.perform(
+                post(projectPath)
+                    .content(objectMapper.writeValueAsString(testContext.projectRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            val errorResponse: ErrorResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(errorResponse.errCode).isEqualTo(getResponseErrorCode(ErrorCode.INT_REQUEST))
+            assertThat(errorResponse.errors).hasSize(3)
         }
     }
 

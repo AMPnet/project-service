@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class ProjectUpdateController(private val projectUpdateService: ProjectUpdateService) {
@@ -31,7 +32,7 @@ class ProjectUpdateController(private val projectUpdateService: ProjectUpdateSer
     @PostMapping("/project/{uuid}/updates")
     fun createProjectUpdate(
         @PathVariable uuid: UUID,
-        @RequestBody request: ProjectUpdatesRequest
+        @RequestBody @Valid request: ProjectUpdatesRequest
     ): ResponseEntity<ProjectUpdateResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Project Update: $request by user: ${userPrincipal.uuid}" }
