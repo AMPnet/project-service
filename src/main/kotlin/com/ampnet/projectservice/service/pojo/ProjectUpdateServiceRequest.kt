@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile
 
 data class ProjectUpdateServiceRequest(
     val project: Project,
-    val request: ProjectUpdateRequest,
+    val request: ProjectUpdateRequest?,
     val image: MultipartFile?,
     val documentSaveRequests: List<DocumentSaveRequest>?
 )

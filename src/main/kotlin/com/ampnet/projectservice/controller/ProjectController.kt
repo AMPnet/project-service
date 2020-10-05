@@ -53,7 +53,7 @@ class ProjectController(
     @PutMapping("/project/{projectUuid}", consumes = ["multipart/form-data"])
     fun updateProject(
         @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestPart("request") request: ProjectUpdateRequest,
+        @RequestPart("request", required = false) request: ProjectUpdateRequest?,
         @RequestParam("image", required = false) image: MultipartFile?,
         @RequestParam("documents", required = false) documents: List<MultipartFile>?
     ): ResponseEntity<ProjectFullResponse> {

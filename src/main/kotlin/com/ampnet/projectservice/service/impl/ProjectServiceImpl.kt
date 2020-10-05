@@ -82,22 +82,22 @@ class ProjectServiceImpl(
 
     @Transactional
     override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): Project {
-        validateRoi(serviceRequest.request.roi)
-        serviceRequest.request.name?.let { serviceRequest.project.name = it }
-        serviceRequest.request.description?.let { serviceRequest.project.description = it }
-        serviceRequest.request.location?.let {
+        validateRoi(serviceRequest.request?.roi)
+        serviceRequest.request?.name?.let { serviceRequest.project.name = it }
+        serviceRequest.request?.description?.let { serviceRequest.project.description = it }
+        serviceRequest.request?.location?.let {
             serviceRequest.project.location.lat = it.lat
             serviceRequest.project.location.long = it.long
         }
-        serviceRequest.request.roi?.let {
+        serviceRequest.request?.roi?.let {
             serviceRequest.project.roi.from = it.from
             serviceRequest.project.roi.to = it.to
         }
-        serviceRequest.request.active?.let { serviceRequest.project.active = it }
-        serviceRequest.request.tags?.let {
+        serviceRequest.request?.active?.let { serviceRequest.project.active = it }
+        serviceRequest.request?.tags?.let {
             serviceRequest.project.tags = it.toSet().map { tag -> tag.toLowerCase() }
         }
-        serviceRequest.request.news?.let { serviceRequest.project.newsLinks = it }
+        serviceRequest.request?.news?.let { serviceRequest.project.newsLinks = it }
         serviceRequest.image?.let {
             addMainImageToProject(it, serviceRequest.project)
         }
