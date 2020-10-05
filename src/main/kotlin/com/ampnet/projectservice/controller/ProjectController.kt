@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class ProjectController(
@@ -40,7 +41,7 @@ class ProjectController(
     companion object : KLogging()
 
     @PostMapping("/project")
-    fun createProject(@RequestBody request: ProjectRequest): ResponseEntity<ProjectResponse> {
+    fun createProject(@RequestBody @Valid request: ProjectRequest): ResponseEntity<ProjectResponse> {
         logger.debug { "Received request to create project: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 

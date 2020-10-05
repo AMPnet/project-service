@@ -203,7 +203,13 @@ abstract class ControllerTestBase : TestBase() {
             .setEnabled(enabled)
             .build()
 
-    protected fun createProjectRequest(organizationUuid: UUID, name: String): ProjectRequest {
+    protected fun createProjectRequest(
+        organizationUuid: UUID,
+        name: String,
+        expectedFunding: Long = 1_000_000,
+        minPerUser: Long = 1,
+        maxPerUser: Long = 1_000_000
+    ): ProjectRequest {
         val time = ZonedDateTime.now()
         return ProjectRequest(
             organizationUuid,
@@ -213,10 +219,10 @@ abstract class ControllerTestBase : TestBase() {
             ProjectRoiRequest(2.22, 7.77),
             time,
             time.plusDays(30),
-            1_000_000,
+            expectedFunding,
             Currency.EUR,
-            1,
-            1_000_000,
+            minPerUser,
+            maxPerUser,
             true
         )
     }
