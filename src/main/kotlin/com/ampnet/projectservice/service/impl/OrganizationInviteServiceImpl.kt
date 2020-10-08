@@ -8,6 +8,7 @@ import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
+import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
@@ -34,6 +35,8 @@ class OrganizationInviteServiceImpl(
 
     companion object : KLogging()
 
+    private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
+
     @Transactional
     override fun sendInvitation(request: OrganizationInviteServiceRequest) {
         val invitedToOrganization = organizationService.findOrganizationById(request.organizationUuid)
@@ -42,7 +45,7 @@ class OrganizationInviteServiceImpl(
                 "Missing organization with id: ${request.organizationUuid}"
             )
         inviteRepository.findByOrganizationUuidAndEmailIn(request.organizationUuid, request.emails)
-            .whenNotNullNorEmpty { invitations ->
+            .whenNotEmpty { invitations ->
                 val emails = invitations.joinToString { it.email }
                 throw ResourceAlreadyExistsException(
                     ErrorCode.ORG_DUPLICATE_INVITE,
@@ -50,7 +53,6 @@ class OrganizationInviteServiceImpl(
                     invitations.associate { "emails" to emails }
                 )
             }
-        val memberRole = roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id)
         val invites = request.emails.map { email ->
             OrganizationInvitation(
                 0, request.organizationUuid, email, request.invitedByUserUuid,
@@ -134,8 +136,8 @@ class OrganizationInviteServiceImpl(
     }
 }
 
-inline fun <E : Any, T : Collection<E>> T?.whenNotNullNorEmpty(func: (T) -> Unit) {
-    if (this != null && this.isNotEmpty()) {
+inline fun <E : Any, T : Collection<E>> T.whenNotEmpty(func: (T) -> Unit) {
+    if (this.isNotEmpty()) {
         func(this)
     }
 }

@@ -4,7 +4,7 @@ import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteReque
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
-import com.ampnet.projectservice.exception.InvalidRequestException
+import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
@@ -213,13 +213,14 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
         verify("Organization invite request is in wrong format") {
             val request = OrganizationInviteRequest(listOf("wrongFormat", "$%wrongFormat2"))
-            mockMvc.perform(
+            val result = mockMvc.perform(
                 post("$pathOrganization/${testContext.organization.uuid}/invite")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isBadRequest)
-                .andExpect { result -> assertThat(result.resolvedException).isInstanceOf(InvalidRequestException:: class.java) }
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
         }
     }
 
