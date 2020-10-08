@@ -39,8 +39,13 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
+            testContext.anotherOrganization = createOrganization("Test org 2", testContext.uuid)
             createOrganizationInvite(
                 defaultEmail, testContext.organization.uuid, testContext.uuid,
+                OrganizationRoleType.ORG_MEMBER
+            )
+            createOrganizationInvite(
+                defaultEmail, testContext.anotherOrganization.uuid, testContext.uuid,
                 OrganizationRoleType.ORG_MEMBER
             )
         }
@@ -52,7 +57,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
             val invitesResponse: OrganizationInvitesListResponse =
                 objectMapper.readValue(result.response.contentAsString)
-            assertThat(invitesResponse.organizationInvites).hasSize(1)
+            assertThat(invitesResponse.organizationInvites).hasSize(2)
             val invite = invitesResponse.organizationInvites.first()
             assertThat(invite.role).isEqualTo(OrganizationRoleType.ORG_MEMBER)
             assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
@@ -325,6 +330,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
     private class TestContext {
         lateinit var organization: Organization
+        lateinit var anotherOrganization: Organization
         lateinit var organizationInvitation: OrganizationInvitation
         val uuid: UUID = UUID.randomUUID()
         val invitedEmail = "invited@email.com"

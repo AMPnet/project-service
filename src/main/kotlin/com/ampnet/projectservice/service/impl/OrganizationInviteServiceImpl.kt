@@ -14,9 +14,11 @@ import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
+import com.ampnet.projectservice.service.pojo.OrganizationInvitationWithName
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import mu.KLogging
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
@@ -48,7 +50,7 @@ class OrganizationInviteServiceImpl(
         val invites = request.emails.map { email ->
             OrganizationInvitation(
                 0, request.organizationUuid, email, request.invitedByUserUuid,
-                memberRole, ZonedDateTime.now(), invitedToOrganization
+                memberRole, ZonedDateTime.now()
             )
         }
         inviteRepository.saveAll(invites)
@@ -65,8 +67,16 @@ class OrganizationInviteServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitation> {
-        return inviteRepository.findByEmail(email)
+    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitationWithName> {
+        val invitations = inviteRepository.findByEmail(email)
+        val orgNameAndUuid = organizationService.getAllOrganizations(Pageable.unpaged())
+            .content.associateBy({ it.uuid }, { it.name })
+        return invitations.mapNotNull { invitation ->
+            orgNameAndUuid[invitation.organizationUuid]?.let {
+                name ->
+                OrganizationInvitationWithName(invitation, name)
+            }
+        }
     }
 
     @Transactional

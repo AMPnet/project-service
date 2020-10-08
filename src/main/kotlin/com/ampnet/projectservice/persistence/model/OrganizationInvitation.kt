@@ -4,7 +4,6 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
-import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -33,9 +32,5 @@ data class OrganizationInvitation(
     var role: Role,
 
     @Column(nullable = false)
-    var createdAt: ZonedDateTime,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizationUuid", insertable = false, updatable = false)
-    var organization: Organization?
+    var createdAt: ZonedDateTime
 )
