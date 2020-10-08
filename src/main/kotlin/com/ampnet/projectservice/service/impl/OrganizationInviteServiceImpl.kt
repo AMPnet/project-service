@@ -5,7 +5,6 @@ import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.grpc.mailservice.MailService
-import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.persistence.model.Role
@@ -44,24 +43,17 @@ class OrganizationInviteServiceImpl(
                 ErrorCode.ORG_MISSING,
                 "Missing organization with id: ${request.organizationUuid}"
             )
-        inviteRepository.findByOrganizationUuidAndEmailIn(request.organizationUuid, request.emails)
-            .whenNotEmpty { invitations ->
-                val emails = invitations.joinToString { it.email }
-                throw ResourceAlreadyExistsException(
-                    ErrorCode.ORG_DUPLICATE_INVITE,
-                    "Some users are already invited to join organization ($emails)",
-                    invitations.associate { "emails" to emails }
-                )
-            }
+        throwExceptionForDuplicatedInvitations(request)
+
         val invites = request.emails.map { email ->
             OrganizationInvitation(
                 0, request.organizationUuid, email, request.invitedByUserUuid,
                 memberRole, ZonedDateTime.now(), invitedToOrganization
             )
         }
-        logger.debug { "Users: ${request.emails.joinToString()} invited to organization: ${request.organizationUuid}" }
         inviteRepository.saveAll(invites)
-        sendMailInvitationToJoinOrganization(request.emails, invitedToOrganization)
+        mailService.sendOrganizationInvitationMail(request.emails, invitedToOrganization.name)
+        logger.debug { "Users: ${request.emails.joinToString()} invited to organization: ${request.organizationUuid}" }
     }
 
     @Transactional
@@ -124,20 +116,16 @@ class OrganizationInviteServiceImpl(
         return inviteRepository.findByOrganizationUuid(organizationUuid)
     }
 
-    private fun sendMailInvitationToJoinOrganization(
-        emails: List<String>,
-        invitedTo: Organization
-    ) {
-        logger.debug {
-            "Sending invitation mail to users: (${emails.joinToString()}) " +
-                "for organization: ${invitedTo.name}"
+    private fun throwExceptionForDuplicatedInvitations(request: OrganizationInviteServiceRequest) {
+        val existingInvitations =
+            inviteRepository.findByOrganizationUuidAndEmailIn(request.organizationUuid, request.emails)
+        if (existingInvitations.isNotEmpty()) {
+            val emails = existingInvitations.joinToString { it.email }
+            throw ResourceAlreadyExistsException(
+                ErrorCode.ORG_DUPLICATE_INVITE,
+                "Some users are already invited to join organization. Emails: $emails",
+                mapOf("emails" to emails)
+            )
         }
-        mailService.sendOrganizationInvitationMail(emails, invitedTo.name)
-    }
-}
-
-inline fun <E : Any, T : Collection<E>> T.whenNotEmpty(func: (T) -> Unit) {
-    if (this.isNotEmpty()) {
-        func(this)
     }
 }
