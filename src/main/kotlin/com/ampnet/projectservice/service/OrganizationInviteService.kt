@@ -7,7 +7,7 @@ import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import java.util.UUID
 
 interface OrganizationInviteService {
-    fun sendInvitation(request: OrganizationInviteServiceRequest): OrganizationInvitation
+    fun sendInvitation(request: OrganizationInviteServiceRequest)
     fun revokeInvitation(organizationUuid: UUID, email: String)
     fun getAllInvitationsForUser(email: String): List<OrganizationInvitation>
     fun answerToInvitation(request: OrganizationInviteAnswerRequest)

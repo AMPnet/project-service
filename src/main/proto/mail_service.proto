@@ -10,7 +10,7 @@ message MailConfirmationRequest {
 }
 
 message OrganizationInvitationRequest {
-  string email = 1;
+  repeated string emails = 1;
   string organization = 2;
 }
 

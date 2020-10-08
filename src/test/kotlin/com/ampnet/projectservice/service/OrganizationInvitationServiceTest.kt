@@ -34,7 +34,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         databaseCleanerService.deleteAllOrganizations()
         createOrganization("test org", userUuid)
     }
-    private val invitedUser = "invited@email.com"
+    private val invitedUsers = listOf("invited@email.com", "invited2@email.com")
 
     @Test
     fun userCanFollowOrganization() {
@@ -75,7 +75,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun adminUserCanInviteOtherUserToOrganization() {
+    fun adminUserCanInviteOtherUsersToOrganization() {
         suppose("User is admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
             organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
@@ -83,24 +83,30 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
         verify("The admin can invite user to organization") {
             val request = OrganizationInviteServiceRequest(
-                invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid
+                invitedUsers, organization.uuid, userUuid
             )
             organizationInviteService.sendInvitation(request)
         }
         verify("Invitation is stored in database") {
-            val optionalInvitation =
-                inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUser)
-            assertThat(optionalInvitation).isPresent
-            val invitation = optionalInvitation.get()
-            assertThat(invitation.email).isEqualTo(invitedUser)
-            assertThat(invitation.organizationUuid).isEqualTo(organization.uuid)
-            assertThat(invitation.invitedByUserUuid).isEqualTo(userUuid)
-            assertThat(OrganizationRoleType.fromInt(invitation.role.id)).isEqualTo(OrganizationRoleType.ORG_MEMBER)
-            assertThat(invitation.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+
+            val firstInvitationOptional =
+                inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUsers.first())
+            val secondInvitationOptional =
+                inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUsers.last())
+            assertThat(firstInvitationOptional).isPresent
+            assertThat(secondInvitationOptional).isPresent
+            val firstInvitation = firstInvitationOptional.get()
+            val secondInvitation = secondInvitationOptional.get()
+            assertThat(firstInvitation.email).isEqualTo(invitedUsers.first())
+            assertThat(firstInvitation.organizationUuid).isEqualTo(organization.uuid)
+            assertThat(firstInvitation.invitedByUserUuid).isEqualTo(userUuid)
+            assertThat(OrganizationRoleType.fromInt(firstInvitation.role.id)).isEqualTo(OrganizationRoleType.ORG_MEMBER)
+            assertThat(firstInvitation.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(secondInvitation.email).isEqualTo(invitedUsers.last())
         }
         verify("Sending mail invitation is called") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendOrganizationInvitationMail(invitedUser, organization.name)
+                .sendOrganizationInvitationMail(invitedUsers, organization.name)
         }
     }
 
@@ -109,14 +115,14 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         suppose("User has organization invite") {
             databaseCleanerService.deleteAllOrganizationInvitations()
             val request = OrganizationInviteServiceRequest(
-                invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid
+                invitedUsers, organization.uuid, userUuid
             )
             organizationInviteService.sendInvitation(request)
         }
 
         verify("Service will throw an error for duplicate user invite to organization") {
             val request = OrganizationInviteServiceRequest(
-                invitedUser, OrganizationRoleType.ORG_MEMBER, organization.uuid, userUuid
+                invitedUsers, organization.uuid, userUuid
             )
             assertThrows<ResourceAlreadyExistsException> {
                 organizationInviteService.sendInvitation(request)

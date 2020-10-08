@@ -19,7 +19,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ResourceAlreadyExistsException::class)
     fun handleResourceAlreadyExists(exception: ResourceAlreadyExistsException): ErrorResponse {
         logger.warn("ResourceAlreadyExistsException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message)
+        return generateErrorResponse(exception.errorCode, exception.message, exception.errors)
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -33,7 +33,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRequestException::class)
     fun handleInvalidRequestException(exception: InvalidRequestException): ErrorResponse {
         logger.warn("InvalidRequestException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message)
+        return generateErrorResponse(exception.errorCode, exception.message, exception.errors)
     }
 
     @ResponseStatus(HttpStatus.BAD_GATEWAY)

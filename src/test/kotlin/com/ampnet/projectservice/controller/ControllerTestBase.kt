@@ -9,6 +9,7 @@ import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
+import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
@@ -88,6 +89,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var walletService: WalletService
+
+    @Autowired
+    protected lateinit var mailService: MailService
 
     @Autowired
     private lateinit var documentRepository: DocumentRepository
