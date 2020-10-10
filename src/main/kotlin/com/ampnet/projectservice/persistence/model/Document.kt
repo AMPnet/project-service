@@ -11,7 +11,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "document")
-data class Document(
+@Suppress("LongParameterList")
+class Document(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

@@ -81,7 +81,6 @@ abstract class JpaServiceTestBase : TestBase() {
         organization.createdAt = ZonedDateTime.now()
         organization.approved = true
         organization.createdByUserUuid = createdByUuid
-        organization.documents = emptyList()
         organization.headerImage = null
         return organizationRepository.save(organization)
     }

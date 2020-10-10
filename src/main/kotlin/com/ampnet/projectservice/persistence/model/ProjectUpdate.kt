@@ -11,7 +11,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "project_update")
-data class ProjectUpdate(
+@Suppress("LongParameterList")
+class ProjectUpdate(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

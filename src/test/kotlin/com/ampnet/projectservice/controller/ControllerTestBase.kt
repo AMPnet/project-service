@@ -131,7 +131,6 @@ abstract class ControllerTestBase : TestBase() {
         organization.createdAt = ZonedDateTime.now()
         organization.approved = true
         organization.createdByUserUuid = userUuid
-        organization.documents = emptyList()
         organization.headerImage = "Organization header image"
         return organizationRepository.save(organization)
     }
@@ -250,8 +249,8 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createOrganizationDocument(
         organization: Organization,
         createdByUserUuid: UUID,
-        name: String,
-        link: String,
+        name: String = "name",
+        link: String = "link",
         type: String = "document/type",
         size: Int = 100
     ): Document {

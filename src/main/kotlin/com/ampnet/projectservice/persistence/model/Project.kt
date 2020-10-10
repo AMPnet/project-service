@@ -20,12 +20,13 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "project")
-data class Project(
+@Suppress("LongParameterList")
+class Project(
     @Id
     var uuid: UUID,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_uuid")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organization_uuid", nullable = false)
     var organization: Organization,
 
     @Column(nullable = false)
@@ -87,7 +88,7 @@ data class Project(
         joinColumns = [JoinColumn(name = "project_uuid")],
         inverseJoinColumns = [JoinColumn(name = "document_id")]
     )
-    var documents: List<Document>?,
+    var documents: MutableList<Document>?,
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])

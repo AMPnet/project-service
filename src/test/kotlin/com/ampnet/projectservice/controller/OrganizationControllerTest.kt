@@ -237,7 +237,7 @@ class OrganizationControllerTest : ControllerTestBase() {
                 ?: fail("Organization documents must not be null")
             assertThat(organizationDocuments).hasSize(1)
 
-            val document = organizationDocuments[0]
+            val document = organizationDocuments.first()
             assertThat(document.name).isEqualTo(testContext.multipartFile.originalFilename)
             assertThat(document.size).isEqualTo(testContext.multipartFile.size)
             assertThat(document.type).isEqualTo(testContext.multipartFile.contentType)

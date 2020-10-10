@@ -98,7 +98,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             val firstInvitation = firstInvitationOptional.get()
             val secondInvitation = secondInvitationOptional.get()
             assertThat(firstInvitation.email).isEqualTo(invitedUsers.first())
-            assertThat(firstInvitation.organizationUuid).isEqualTo(organization.uuid)
+            assertThat(firstInvitation.organization.uuid).isEqualTo(organization.uuid)
             assertThat(firstInvitation.invitedByUserUuid).isEqualTo(userUuid)
             assertThat(OrganizationRoleType.fromInt(firstInvitation.role.id)).isEqualTo(OrganizationRoleType.ORG_MEMBER)
             assertThat(firstInvitation.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
