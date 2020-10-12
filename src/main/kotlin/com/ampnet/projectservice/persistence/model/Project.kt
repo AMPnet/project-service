@@ -89,5 +89,4 @@ class Project(
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "tag")
     var tags: List<String>?
-
 )
