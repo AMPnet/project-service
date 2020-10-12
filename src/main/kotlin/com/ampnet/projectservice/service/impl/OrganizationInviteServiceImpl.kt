@@ -49,8 +49,7 @@ class OrganizationInviteServiceImpl(
 
         val invites = request.emails.map { email ->
             OrganizationInvitation(
-                0, request.organizationUuid, email, request.invitedByUserUuid,
-                memberRole, ZonedDateTime.now()
+                0, request.organizationUuid, email, request.invitedByUserUuid, memberRole, ZonedDateTime.now()
             )
         }
         inviteRepository.saveAll(invites)
@@ -72,8 +71,7 @@ class OrganizationInviteServiceImpl(
         val orgNameAndUuid = organizationService.getAllOrganizations(Pageable.unpaged())
             .content.associateBy({ it.uuid }, { it.name })
         return invitations.mapNotNull { invitation ->
-            orgNameAndUuid[invitation.organizationUuid]?.let {
-                name ->
+            orgNameAndUuid[invitation.organizationUuid]?.let { name ->
                 OrganizationInvitationWithName(invitation, name)
             }
         }
