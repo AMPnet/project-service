@@ -4,6 +4,7 @@ import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteReque
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
@@ -12,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -122,7 +124,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfundUser
-    fun mustBeAbleToInviteUserToOrganizationWithOrgAdminRole() {
+    fun mustBeAbleToInviteUsersToOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("test organization", userUuid)
@@ -134,8 +136,8 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizationInvitations()
         }
 
-        verify("Admin user can invite user to his organization") {
-            val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
+        verify("Organization member can invite users to his organization") {
+            val request = OrganizationInviteRequest(testContext.emails)
             mockMvc.perform(
                 post("$pathOrganization/${testContext.organization.uuid}/invite")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -145,12 +147,18 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
         verify("Organization invite is stored in database") {
             val invites = organizationInviteRepository.findAll()
-            assertThat(invites).hasSize(1)
-            val invite = invites.first()
-            assertThat(invite.email).isEqualTo(testContext.invitedEmail)
-            assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
-            assertThat(invite.invitedByUserUuid).isEqualTo(userUuid)
-            assertThat(invite.role.id).isEqualTo(OrganizationRoleType.ORG_MEMBER.id)
+            assertThat(invites).hasSize(2)
+            val firstInvite = invites.first()
+            val secondInvite = invites.last()
+            assertThat(firstInvite.email).isEqualTo(testContext.emails.first())
+            assertThat(firstInvite.organizationUuid).isEqualTo(testContext.organization.uuid)
+            assertThat(firstInvite.invitedByUserUuid).isEqualTo(userUuid)
+            assertThat(firstInvite.role.id).isEqualTo(OrganizationRoleType.ORG_MEMBER.id)
+            assertThat(secondInvite.email).isEqualTo(testContext.emails.last())
+        }
+        verify("Sending mail invitation is called") {
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendOrganizationInvitationMail(testContext.emails, testContext.organization.name)
         }
     }
 
@@ -166,7 +174,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
 
         verify("User cannot invite other user without ORG_ADMIN role") {
-            val request = OrganizationInviteRequest(testContext.invitedEmail, OrganizationRoleType.ORG_MEMBER)
+            val request = OrganizationInviteRequest(testContext.emails)
             mockMvc.perform(
                 post("$pathOrganization/${testContext.organization.uuid}/invite")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -185,13 +193,65 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
 
         verify("User can invite user to organization if he is not a member of organization") {
-            val request = OrganizationInviteRequest("some@user.ocm", OrganizationRoleType.ORG_MEMBER)
+            val request = OrganizationInviteRequest(testContext.emails)
             mockMvc.perform(
                 post("$pathOrganization/${testContext.organization.uuid}/invite")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isForbidden)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustThrowValidationExceptionIfEmailIsInWrongFormat() {
+        suppose("Organization exists") {
+            databaseCleanerService.deleteAllOrganizations()
+            testContext.organization = createOrganization("test organization", userUuid)
+        }
+
+        verify("Organization invite request is in wrong format") {
+            val request = OrganizationInviteRequest(listOf("wrongFormat", "$%wrongFormat2"))
+            val result = mockMvc.perform(
+                post("$pathOrganization/${testContext.organization.uuid}/invite")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustThrowValidationExceptionForDuplicatedInvitation() {
+        suppose("Organization exists") {
+            databaseCleanerService.deleteAllOrganizations()
+            testContext.organization = createOrganization("test organization", userUuid)
+        }
+        suppose("User has admin role in the organization") {
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("There are user invitations") {
+            testContext.emails.forEach {
+                createOrganizationInvite(
+                    it, testContext.organization.uuid, userUuid, OrganizationRoleType.ORG_MEMBER
+                )
+            }
+        }
+
+        verify("Organization invites already exist") {
+            val request = OrganizationInviteRequest(testContext.emails)
+            val result = mockMvc.perform(
+                post("$pathOrganization/${testContext.organization.uuid}/invite")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.ORG_DUPLICATE_INVITE)
         }
     }
 
@@ -206,9 +266,8 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Other user has organization invites") {
-            inviteUserToOrganization(
-                testContext.invitedEmail, testContext.organization.uuid, userUuid,
-                OrganizationRoleType.ORG_MEMBER
+            createOrganizationInvite(
+                testContext.invitedEmail, testContext.organization.uuid, userUuid, OrganizationRoleType.ORG_MEMBER
             )
         }
 
@@ -249,21 +308,6 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun inviteUserToOrganization(
-        email: String,
-        organizationUuid: UUID,
-        invitedByUuid: UUID,
-        role: OrganizationRoleType
-    ) {
-        val invitation = OrganizationInvitation::class.java.getConstructor().newInstance()
-        invitation.email = email
-        invitation.organizationUuid = organizationUuid
-        invitation.invitedByUserUuid = invitedByUuid
-        invitation.createdAt = ZonedDateTime.now()
-        invitation.role = roleRepository.getOne(role.id)
-        organizationInviteRepository.save(invitation)
-    }
-
     private fun createOrganizationInvite(
         email: String,
         organizationUuid: UUID,
@@ -284,5 +328,6 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         lateinit var organizationInvitation: OrganizationInvitation
         val uuid: UUID = UUID.randomUUID()
         val invitedEmail = "invited@email.com"
+        val emails = listOf("user1@gmail.com", "user2@gmail.com")
     }
 }

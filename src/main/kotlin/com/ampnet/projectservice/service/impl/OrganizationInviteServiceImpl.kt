@@ -5,7 +5,6 @@ import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.grpc.mailservice.MailService
-import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.persistence.model.Role
@@ -35,36 +34,26 @@ class OrganizationInviteServiceImpl(
 
     companion object : KLogging()
 
-    private val adminRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_ADMIN.id) }
     private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
 
     @Transactional
-    override fun sendInvitation(request: OrganizationInviteServiceRequest): OrganizationInvitation {
+    override fun sendInvitation(request: OrganizationInviteServiceRequest) {
         val invitedToOrganization = organizationService.findOrganizationById(request.organizationUuid)
             ?: throw ResourceNotFoundException(
                 ErrorCode.ORG_MISSING,
                 "Missing organization with id: ${request.organizationUuid}"
             )
+        throwExceptionForDuplicatedInvitations(request)
 
-        inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
-            throw ResourceAlreadyExistsException(
-                ErrorCode.ORG_DUPLICATE_INVITE,
-                "User is already invited to join organization"
+        val invites = request.emails.map { email ->
+            OrganizationInvitation(
+                0, request.organizationUuid, email, request.invitedByUserUuid,
+                memberRole, ZonedDateTime.now(), invitedToOrganization
             )
         }
-
-        val organizationInvite = OrganizationInvitation::class.java.getConstructor().newInstance()
-        organizationInvite.organizationUuid = request.organizationUuid
-        organizationInvite.email = request.email
-        organizationInvite.role = getRole(request.roleType)
-        organizationInvite.invitedByUserUuid = request.invitedByUserUuid
-        organizationInvite.createdAt = ZonedDateTime.now()
-
-        logger.debug { "User: ${request.email} invited to organization: ${request.organizationUuid}" }
-
-        val savedInvite = inviteRepository.save(organizationInvite)
-        sendMailInvitationToJoinOrganization(request.email, invitedToOrganization)
-        return savedInvite
+        inviteRepository.saveAll(invites)
+        mailService.sendOrganizationInvitationMail(request.emails, invitedToOrganization.name)
+        logger.debug { "Users: ${request.emails.joinToString()} invited to organization: ${request.organizationUuid}" }
     }
 
     @Transactional
@@ -127,15 +116,16 @@ class OrganizationInviteServiceImpl(
         return inviteRepository.findByOrganizationUuid(organizationUuid)
     }
 
-    private fun sendMailInvitationToJoinOrganization(email: String, invitedTo: Organization) {
-        logger.debug { "Sending invitation mail to user: $email for organization: ${invitedTo.name}" }
-        mailService.sendOrganizationInvitationMail(email, invitedTo.name)
-    }
-
-    private fun getRole(role: OrganizationRoleType): Role {
-        return when (role) {
-            OrganizationRoleType.ORG_ADMIN -> adminRole
-            OrganizationRoleType.ORG_MEMBER -> memberRole
+    private fun throwExceptionForDuplicatedInvitations(request: OrganizationInviteServiceRequest) {
+        val existingInvitations =
+            inviteRepository.findByOrganizationUuidAndEmailIn(request.organizationUuid, request.emails)
+        if (existingInvitations.isNotEmpty()) {
+            val emails = existingInvitations.joinToString { it.email }
+            throw ResourceAlreadyExistsException(
+                ErrorCode.ORG_DUPLICATE_INVITE,
+                "Some users are already invited to join organization. Emails: $emails",
+                mapOf("emails" to emails)
+            )
         }
     }
 }

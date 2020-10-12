@@ -24,16 +24,18 @@ class MailServiceImpl(
         MailServiceGrpc.newStub(channel)
     }
 
-    override fun sendOrganizationInvitationMail(email: String, organizationName: String) {
-        logger.debug { "Sending organization invitation mail" }
+    override fun sendOrganizationInvitationMail(emails: List<String>, organizationName: String) {
+        logger.debug { "Sending organization invitation mail to ${emails.joinToString()}" }
         try {
             val request = OrganizationInvitationRequest.newBuilder()
-                .setEmail(email)
+                .addAllEmails(emails)
                 .setOrganization(organizationName)
                 .build()
 
             serviceWithTimeout()
-                .sendOrganizationInvitation(request, createSteamObserver("organization invitation mail to: $email"))
+                .sendOrganizationInvitation(
+                    request, createSteamObserver("organization invitation mail to: ${emails.joinToString()}")
+                )
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send deposit request mail.", ex)
         }

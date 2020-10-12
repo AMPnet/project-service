@@ -75,9 +75,9 @@ include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToGetOrganiza
 
 ===== Send invitation
 .Request
-include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToInviteUserToOrganizationWithOrgAdminRole/http-request.adoc[]
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToInviteUsersToOrganization/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToInviteUserToOrganizationWithOrgAdminRole/http-response.adoc[]
+include::{snippets}/OrganizationInvitationControllerTest/mustBeAbleToInviteUsersToOrganization/http-response.adoc[]
 
 ===== Failed to send invitation without organization admin role
 User missing a privilege: `OrganizationPrivilegeType.PW_USERS`

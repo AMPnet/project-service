@@ -9,4 +9,5 @@ interface OrganizationInviteRepository : JpaRepository<OrganizationInvitation, I
     fun findByOrganizationUuidAndEmail(organizationUuid: UUID, email: String): Optional<OrganizationInvitation>
     fun findByEmail(email: String): List<OrganizationInvitation>
     fun findByOrganizationUuid(organizationUuid: UUID): List<OrganizationInvitation>
+    fun findByOrganizationUuidAndEmailIn(organizationUuid: UUID, email: List<String>): List<OrganizationInvitation>
 }
