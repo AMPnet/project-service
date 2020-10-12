@@ -11,6 +11,7 @@ import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
+import org.hibernate.Hibernate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -40,9 +41,11 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
             createOrganizationInvite(
-                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                defaultEmail, testContext.organization, testContext.uuid,
                 OrganizationRoleType.ORG_MEMBER
             )
+            createOrganizationDocument(testContext.organization, userUuid)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
 
         verify("User can get a list of his invites") {
@@ -58,6 +61,13 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
             assertThat(invite.organizationName).isEqualTo(testContext.organization.name)
         }
+        verify("Hibernate fetches only required entities") {
+            val invites = organizationInviteRepository.findAllByEmail(defaultEmail)
+            val invite = invites.first()
+            assertThat(Hibernate.isInitialized(invite.organization)).isTrue()
+            assertThat(Hibernate.isInitialized(invite.organization.documents)).isFalse()
+            assertThat(Hibernate.isInitialized(invite.organization.memberships)).isFalse()
+        }
     }
 
     @Test
@@ -68,7 +78,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizationInvitations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
             createOrganizationInvite(
-                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                defaultEmail, testContext.organization, testContext.uuid,
                 OrganizationRoleType.ORG_MEMBER
             )
         }
@@ -101,7 +111,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizationInvitations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
             createOrganizationInvite(
-                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                defaultEmail, testContext.organization, testContext.uuid,
                 OrganizationRoleType.ORG_MEMBER
             )
         }
@@ -151,7 +161,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val firstInvite = invites.first()
             val secondInvite = invites.last()
             assertThat(firstInvite.email).isEqualTo(testContext.emails.first())
-            assertThat(firstInvite.organizationUuid).isEqualTo(testContext.organization.uuid)
+            assertThat(firstInvite.organization.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(firstInvite.invitedByUserUuid).isEqualTo(userUuid)
             assertThat(firstInvite.role.id).isEqualTo(OrganizationRoleType.ORG_MEMBER.id)
             assertThat(secondInvite.email).isEqualTo(testContext.emails.last())
@@ -237,7 +247,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         suppose("There are user invitations") {
             testContext.emails.forEach {
                 createOrganizationInvite(
-                    it, testContext.organization.uuid, userUuid, OrganizationRoleType.ORG_MEMBER
+                    it, testContext.organization, userUuid, OrganizationRoleType.ORG_MEMBER
                 )
             }
         }
@@ -267,7 +277,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
         suppose("Other user has organization invites") {
             createOrganizationInvite(
-                testContext.invitedEmail, testContext.organization.uuid, userUuid, OrganizationRoleType.ORG_MEMBER
+                testContext.invitedEmail, testContext.organization, userUuid, OrganizationRoleType.ORG_MEMBER
             )
         }
 
@@ -286,7 +296,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("test organization", userUuid)
             testContext.organizationInvitation = createOrganizationInvite(
-                defaultEmail, testContext.organization.uuid, testContext.uuid,
+                defaultEmail, testContext.organization, testContext.uuid,
                 OrganizationRoleType.ORG_MEMBER
             )
         }
@@ -310,13 +320,13 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
     private fun createOrganizationInvite(
         email: String,
-        organizationUuid: UUID,
+        organization: Organization,
         invitedByUuid: UUID,
         role: OrganizationRoleType
     ): OrganizationInvitation {
         val organizationInvite = OrganizationInvitation::class.java.getConstructor().newInstance()
         organizationInvite.email = email
-        organizationInvite.organizationUuid = organizationUuid
+        organizationInvite.organization = organization
         organizationInvite.invitedByUserUuid = invitedByUuid
         organizationInvite.role = roleRepository.getOne(role.id)
         organizationInvite.createdAt = ZonedDateTime.now()
@@ -325,6 +335,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
 
     private class TestContext {
         lateinit var organization: Organization
+        lateinit var anotherOrganization: Organization
         lateinit var organizationInvitation: OrganizationInvitation
         val uuid: UUID = UUID.randomUUID()
         val invitedEmail = "invited@email.com"

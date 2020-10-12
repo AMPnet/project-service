@@ -7,13 +7,13 @@ import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
 import javax.persistence.OneToMany
 import javax.persistence.Table
 
 @Entity
 @Table(name = "organization")
-data class Organization(
+@Suppress("LongParameterList")
+class Organization(
     @Id
     var uuid: UUID,
 
@@ -36,16 +36,12 @@ data class Organization(
     var approvedByUserUuid: UUID?,
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "organization_document",
-        joinColumns = [JoinColumn(name = "organization_uuid")],
-        inverseJoinColumns = [JoinColumn(name = "document_id")]
-    )
-    var documents: List<Document>?,
+    @JoinColumn(name = "organizationUuid")
+    var documents: MutableList<Document>?,
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationUuid")
-    var memberships: List<OrganizationMembership>?,
+    var memberships: MutableList<OrganizationMembership>?,
 
     @Column
     var headerImage: String?,

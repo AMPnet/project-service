@@ -1,7 +1,6 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
-import com.ampnet.projectservice.controller.pojo.response.OrganizationInviteResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
@@ -35,7 +34,6 @@ class OrganizationInvitationController(
         logger.debug { "Received request to list my invites" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val invites = organizationInviteService.getAllInvitationsForUser(userPrincipal.email)
-            .map { OrganizationInviteResponse(it) }
         return ResponseEntity.ok(OrganizationInvitesListResponse(invites))
     }
 

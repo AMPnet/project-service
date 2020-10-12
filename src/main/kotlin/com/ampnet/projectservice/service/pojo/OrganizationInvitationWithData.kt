@@ -1,19 +1,17 @@
-package com.ampnet.projectservice.controller.pojo.response
+package com.ampnet.projectservice.service.pojo
 
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import java.util.UUID
 
-data class OrganizationInviteResponse(
+data class OrganizationInvitationWithData(
     val organizationUuid: UUID,
     val organizationName: String,
     val role: OrganizationRoleType?
 ) {
     constructor(invite: OrganizationInvitation) : this(
-        invite.organizationUuid,
-        invite.organization?.name ?: "Missing value",
+        invite.organization.uuid,
+        invite.organization.name,
         OrganizationRoleType.fromInt(invite.role.id)
     )
 }
-
-data class OrganizationInvitesListResponse(val organizationInvites: List<OrganizationInviteResponse>)

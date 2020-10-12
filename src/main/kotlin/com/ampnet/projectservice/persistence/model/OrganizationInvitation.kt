@@ -14,13 +14,11 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "organization_invitation")
-data class OrganizationInvitation(
+@Suppress("LongParameterList")
+class OrganizationInvitation(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
-
-    @Column(nullable = false)
-    var organizationUuid: UUID,
 
     @Column(nullable = false)
     var email: String,
@@ -35,7 +33,7 @@ data class OrganizationInvitation(
     @Column(nullable = false)
     var createdAt: ZonedDateTime,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizationUuid", insertable = false, updatable = false)
-    var organization: Organization?
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organizationUuid", nullable = false)
+    var organization: Organization
 )

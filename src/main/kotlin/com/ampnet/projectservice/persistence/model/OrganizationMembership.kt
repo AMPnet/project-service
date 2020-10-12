@@ -15,7 +15,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "organization_membership")
-data class OrganizationMembership(
+class OrganizationMembership(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
