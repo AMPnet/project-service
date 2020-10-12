@@ -1,9 +1,8 @@
-package com.ampnet.projectservice.grpc.walletserviceimport
+package com.ampnet.projectservice.grpc.walletservice
 
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.GrpcException
-import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
@@ -38,7 +37,7 @@ class WalletServiceImpl(
             logger.debug { "Fetched wallets: $response" }
             return response
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_WALLET, "Failed to fetch wallets. ${ex.localizedMessage}")
+            throw GrpcException(ErrorCode.INT_GRPC_WALLET, "Failed to fetch wallets.", ex)
         }
     }
 

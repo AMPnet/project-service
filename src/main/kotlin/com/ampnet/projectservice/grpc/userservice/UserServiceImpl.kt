@@ -38,7 +38,7 @@ class UserServiceImpl(
             logger.debug { "Fetched users: $response" }
             return response
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users. ${ex.localizedMessage}")
+            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users.", ex)
         }
     }
 }

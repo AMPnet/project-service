@@ -51,7 +51,7 @@ class MailServiceImpl(
             }
 
             override fun onError(t: Throwable?) {
-                logger.warn { "Failed to sent $message. ${t?.message}" }
+                logger.warn("Failed to sent $message. ${t?.message}", t)
             }
 
             override fun onCompleted() {
