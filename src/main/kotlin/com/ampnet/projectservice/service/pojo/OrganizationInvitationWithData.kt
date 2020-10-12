@@ -4,7 +4,7 @@ import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import java.util.UUID
 
-class OrganizationInvitationResponse(
+data class OrganizationInvitationWithData(
     val organizationUuid: UUID,
     val organizationName: String,
     val role: OrganizationRoleType?

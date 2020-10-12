@@ -2,15 +2,20 @@ package com.ampnet.projectservice.repository
 
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
+import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
+import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.persistence.model.ProjectLocation
+import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.DocumentRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
+import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.RoleRepository
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,6 +47,9 @@ class RepositoryTestBase : TestBase() {
 
     @Autowired
     protected lateinit var membershipRepository: OrganizationMembershipRepository
+
+    @Autowired
+    protected lateinit var projectRepository: ProjectRepository
 
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
@@ -101,5 +109,41 @@ class RepositoryTestBase : TestBase() {
             0, organizationUuid, userUuid, roleRepository.getOne(role.id), ZonedDateTime.now()
         )
         membershipRepository.save(membership)
+    }
+
+    protected fun createProject(
+        name: String,
+        organization: Organization,
+        createdByUserUuid: UUID,
+        active: Boolean = true,
+        startDate: ZonedDateTime = ZonedDateTime.now(),
+        endDate: ZonedDateTime = ZonedDateTime.now().plusDays(30),
+        expectedFunding: Long = 10_000_000,
+        minPerUser: Long = 10,
+        maxPerUser: Long = 10_000
+    ): Project {
+        val project = Project(
+            UUID.randomUUID(), organization, name, "description", ProjectLocation(0.1, 1.0),
+            ProjectRoi(4.44, 9.99), startDate, endDate, expectedFunding, Currency.EUR, minPerUser, maxPerUser,
+            null, listOf("gallery1", "gallery2"), listOf("news1", "news2"), createdByUserUuid,
+            startDate.minusMinutes(1), active, null, listOf("blue", "yellow", "green")
+        )
+        return projectRepository.save(project)
+    }
+
+    protected fun createProjectDocument(
+        project: Project,
+        createdByUserUuid: UUID,
+        name: String = "name",
+        link: String = "link",
+        type: String = "document/type",
+        size: Int = 100
+    ): Document {
+        val savedDocument = saveDocument(name, link, type, size, createdByUserUuid)
+        val documents = project.documents.orEmpty().toMutableList()
+        documents.add(savedDocument)
+        project.documents = documents
+        projectRepository.save(project)
+        return savedDocument
     }
 }

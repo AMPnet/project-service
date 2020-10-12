@@ -14,7 +14,7 @@ import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
-import com.ampnet.projectservice.service.pojo.OrganizationInvitationResponse
+import com.ampnet.projectservice.service.pojo.OrganizationInvitationWithData
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import mu.KLogging
@@ -66,9 +66,9 @@ class OrganizationInviteServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitationResponse> {
+    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitationWithData> {
         val invites = inviteRepository.findAllByEmail(email)
-        return invites.map { OrganizationInvitationResponse(it) }
+        return invites.map { OrganizationInvitationWithData(it) }
     }
 
     @Transactional

@@ -41,7 +41,7 @@ class OrganizationRepositoryTest : RepositoryTestBase() {
 
     @Test
     fun mustGetOrganizationWithDocument() {
-        verify("Jpa query return organizations with document") {
+        verify("Jpa query returns organizations with document") {
             val organization = organizationRepository.findByIdWithDocuments(testContext.organization.uuid).get()
             assertThat(organization).isNotNull
             assertThat(Hibernate.isInitialized(organization.documents)).isTrue()
