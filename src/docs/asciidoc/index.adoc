@@ -163,7 +163,7 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsFor
 
 === Update
 All values are optional. Only provided values will be updated. For list values: `tags` and `news`,
-new list overrides old values.
+new list overrides old values. Adding new `image` overrides old main image.
 
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-request.adoc[]

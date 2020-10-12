@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 @Service
@@ -38,7 +37,7 @@ class OrganizationServiceImpl(
                 "Organization with name: ${serviceRequest.name} already exists"
             )
         }
-        val imageName = getImageNameFromMultipartFile(serviceRequest.headerImage)
+        val imageName = ServiceUtils.getImageNameFromMultipartFile(serviceRequest.headerImage)
         val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
         val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
@@ -88,7 +87,7 @@ class OrganizationServiceImpl(
     override fun updateOrganization(request: OrganizationUpdateServiceRequest): Organization {
         val organization = getOrganization(request.organizationUuid)
         request.headerImage?.let {
-            val imageName = getImageNameFromMultipartFile(it)
+            val imageName = ServiceUtils.getImageNameFromMultipartFile(it)
             val link = storageService.saveImage(
                 imageName,
                 it.bytes
@@ -115,7 +114,4 @@ class OrganizationServiceImpl(
         organizationRepository.save(organization)
         logger.debug { "Add document: ${document.name} to organization: ${organization.uuid}" }
     }
-
-    private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
-        multipartFile.originalFilename ?: multipartFile.name
 }

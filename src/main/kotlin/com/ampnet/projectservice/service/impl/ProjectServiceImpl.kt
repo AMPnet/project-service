@@ -3,7 +3,6 @@ package com.ampnet.projectservice.service.impl
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
-import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.grpc.walletservice.WalletService
@@ -18,6 +17,7 @@ import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import com.ampnet.walletservice.proto.WalletResponse
 import mu.KLogging
@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -80,22 +81,31 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    override fun updateProject(project: Project, request: ProjectUpdateRequest): Project {
-        validateRoi(request.roi)
-        request.name?.let { project.name = it }
-        request.description?.let { project.description = it }
-        request.location?.let {
-            project.location.lat = it.lat
-            project.location.long = it.long
+    override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): Project {
+        validateRoi(serviceRequest.request?.roi)
+        serviceRequest.request?.name?.let { serviceRequest.project.name = it }
+        serviceRequest.request?.description?.let { serviceRequest.project.description = it }
+        serviceRequest.request?.location?.let {
+            serviceRequest.project.location.lat = it.lat
+            serviceRequest.project.location.long = it.long
         }
-        request.roi?.let {
-            project.roi.from = it.from
-            project.roi.to = it.to
+        serviceRequest.request?.roi?.let {
+            serviceRequest.project.roi.from = it.from
+            serviceRequest.project.roi.to = it.to
         }
-        request.active?.let { project.active = it }
-        request.tags?.let { it -> project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
-        request.news?.let { project.newsLinks = it }
-        return projectRepository.save(project)
+        serviceRequest.request?.active?.let { serviceRequest.project.active = it }
+        serviceRequest.request?.tags?.let {
+            serviceRequest.project.tags = it.toSet().map { tag -> tag.toLowerCase() }
+        }
+        serviceRequest.request?.news?.let { serviceRequest.project.newsLinks = it }
+        serviceRequest.image?.let {
+            addMainImageToProject(it, serviceRequest.project)
+        }
+        serviceRequest.documentSaveRequests?.parallelStream()?.forEach {
+            val document = storageService.saveDocument(it)
+            addDocumentToProject(serviceRequest.project, document)
+        }
+        return projectRepository.save(serviceRequest.project)
     }
 
     @Transactional
@@ -127,7 +137,8 @@ class ProjectServiceImpl(
     @Transactional
     override fun addDocument(project: Project, request: DocumentSaveRequest): Document {
         val document = storageService.saveDocument(request)
-        addDocumentToProject(project, document)
+        val updatedProject = addDocumentToProject(project, document)
+        projectRepository.save(updatedProject)
         return document
     }
 
@@ -196,11 +207,18 @@ class ProjectServiceImpl(
         }
     }
 
-    private fun addDocumentToProject(project: Project, document: Document) {
+    private fun addDocumentToProject(project: Project, document: Document): Project {
         val documents = project.documents.orEmpty().toMutableList()
         documents += document
         project.documents = documents
-        projectRepository.save(project)
+        return project
+    }
+
+    private fun addMainImageToProject(image: MultipartFile, project: Project) {
+        val link = storageService.saveImage(
+            ServiceUtils.getImageNameFromMultipartFile(image), image.bytes
+        )
+        project.mainImage = link
     }
 
     private fun createProjectFromRequest(user: UUID, organization: Organization, request: ProjectRequest) =

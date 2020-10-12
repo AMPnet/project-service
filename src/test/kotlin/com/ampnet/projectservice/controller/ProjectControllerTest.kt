@@ -15,6 +15,7 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -24,9 +25,10 @@ import org.mockito.Mockito
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
 
@@ -169,17 +171,56 @@ class ProjectControllerTest : ControllerTestBase() {
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
         }
+        suppose("File service will store image") {
+            testContext.imageMock = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.imageMock.originalFilename,
+                    testContext.imageMock.bytes
+                )
+            ).thenReturn(testContext.imageLink)
+        }
+        suppose("File service will store documents") {
+            testContext.documentMock1 = MockMultipartFile(
+                "documents", "test.txt",
+                "text/plain", "Document with bigger size".toByteArray()
+            )
+            testContext.documentMock2 = MockMultipartFile(
+                "documents", "test2.pdf",
+                "application/pdf", "Smaller document".toByteArray()
+            )
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.documentMock1.originalFilename,
+                    testContext.documentMock1.bytes
+                )
+            ).thenReturn(testContext.documentLink1)
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.documentMock2.originalFilename,
+                    testContext.documentMock2.bytes
+                )
+            ).thenReturn(testContext.documentLink2)
+        }
 
         verify("Admin can update project") {
-            testContext.projectUpdateRequest =
-                ProjectUpdateRequest(
-                    "new name", "description",
-                    ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag")
-                )
+            testContext.projectUpdateRequest = ProjectUpdateRequest(
+                "new name", "description",
+                ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag")
+            )
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
-                put("$projectPath/${testContext.project.uuid}")
-                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
+                    .file(testContext.imageMock)
+                    .file(testContext.documentMock1)
+                    .file(testContext.documentMock2)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -194,11 +235,19 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.roi.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
+            assertThat(projectResponse.mainImage).contains(testContext.imageLink)
+            assertThat(projectResponse.documents).hasSize(2)
+            val documents = projectResponse.documents.sortedByDescending { it.size }
+            val document = documents.first()
+            assertThat(document.id).isNotNull()
+            assertThat(document.link).isEqualTo(testContext.documentLink1)
+            assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock1.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
         }
         verify("Project is updated") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            val updatedProject = optionalProject.get()
+            val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
             assertThat(updatedProject.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(updatedProject.description).isEqualTo(testContext.projectUpdateRequest.description)
             assertThat(updatedProject.location.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
@@ -207,6 +256,154 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(updatedProject.roi.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
+            assertThat(updatedProject.mainImage).contains(testContext.imageLink)
+            val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
+            assertThat(documents).hasSize(2)
+            val document = documents.last()
+            assertThat(document.id).isNotNull()
+            assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock2.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
+            assertThat(document.link).isEqualTo(testContext.documentLink2)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustBeAbleToUpdateProjectMainImage() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("Project exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+        suppose("File service will store image") {
+            testContext.imageMock = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.imageMock.originalFilename,
+                    testContext.imageMock.bytes
+                )
+            ).thenReturn(testContext.imageLink)
+        }
+
+        verify("Admin can update project image") {
+            testContext.projectUpdateRequest =
+                ProjectUpdateRequest(null, null, null, null, null)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
+            val result = mockMvc.perform(
+                builder.file(requestJson)
+                    .file(requestJson)
+                    .file(testContext.imageMock)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
+            assertThat(projectResponse.name).isNotEqualTo(testContext.projectUpdateRequest.name)
+            assertThat(projectResponse.description).isNotEqualTo(testContext.projectUpdateRequest.description)
+            assertThat(projectResponse.location.lat).isNotEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(projectResponse.location.long).isNotEqualTo(testContext.projectUpdateRequest.location?.long)
+            assertThat(projectResponse.roi.from).isNotEqualTo(testContext.projectUpdateRequest.roi?.from)
+            assertThat(projectResponse.roi.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
+            assertThat(projectResponse.active).isNotEqualTo(testContext.projectUpdateRequest.active)
+            assertThat(projectResponse.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
+            assertThat(projectResponse.mainImage).contains(testContext.imageLink)
+        }
+        verify("Only project image is updated") {
+            val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(updatedProject.name).isNotEqualTo(testContext.projectUpdateRequest.name)
+            assertThat(updatedProject.description).isNotEqualTo(testContext.projectUpdateRequest.description)
+            assertThat(updatedProject.location.lat).isNotEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(updatedProject.location.long).isNotEqualTo(testContext.projectUpdateRequest.location?.long)
+            assertThat(updatedProject.roi.from).isNotEqualTo(testContext.projectUpdateRequest.roi?.from)
+            assertThat(updatedProject.roi.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
+            assertThat(updatedProject.active).isNotEqualTo(testContext.projectUpdateRequest.active)
+            assertThat(updatedProject.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
+            assertThat(updatedProject.mainImage).contains(testContext.imageLink)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustBeAbleToUpdateProjectWithDocuments() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+        }
+        suppose("Project exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+        suppose("File service will store documents") {
+            testContext.documentMock1 = MockMultipartFile(
+                "documents", "test.txt",
+                "text/plain", "Document with bigger size".toByteArray()
+            )
+            testContext.documentMock2 = MockMultipartFile(
+                "documents", "test2.pdf",
+                "application/pdf", "Smaller document".toByteArray()
+            )
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.documentMock1.originalFilename,
+                    testContext.documentMock1.bytes
+                )
+            ).thenReturn(testContext.documentLink1)
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.documentMock2.originalFilename,
+                    testContext.documentMock2.bytes
+                )
+            ).thenReturn(testContext.documentLink2)
+        }
+
+        verify("Admin can update project") {
+            testContext.projectUpdateRequest = ProjectUpdateRequest(null, null, null, null, null)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
+            val result = mockMvc.perform(
+                builder.file(requestJson)
+                    .file(testContext.documentMock1)
+                    .file(testContext.documentMock2)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectResponse.documents).hasSize(2)
+            val documents = projectResponse.documents.sortedByDescending { it.size }
+            val document = documents.first()
+            assertThat(document.id).isNotNull()
+            assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock1.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
+            assertThat(document.link).isEqualTo(testContext.documentLink1)
+        }
+        verify("Project is updated") {
+            val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
+            assertThat(documents).hasSize(2)
+            documents.sortedBy { it.size }
+            val document = documents.last()
+            assertThat(document.id).isNotNull()
+            assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock2.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
+            assertThat(document.link).isEqualTo(testContext.documentLink2)
         }
     }
 
@@ -226,10 +423,13 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can add new tags to project") {
             testContext.tags = listOf("wind", "green", "gg")
             testContext.projectUpdateRequest = ProjectUpdateRequest(tags = testContext.tags)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
-                put("$projectPath/${testContext.project.uuid}")
-                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -261,10 +461,13 @@ class ProjectControllerTest : ControllerTestBase() {
                     "new name", "description",
                     ProjectLocationRequest(12.234, 23.432), ProjectRoiRequest(4.44, 8.88), false
                 )
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
             mockMvc.perform(
-                put("$projectPath/${testContext.project.uuid}")
-                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
             )
                 .andExpect(status().isForbidden)
         }
@@ -276,10 +479,18 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User cannot update non existing project") {
             testContext.projectUpdateRequest =
                 ProjectUpdateRequest("new name", "description", null, null, false)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder =
+                multipart("$projectPath/${UUID.randomUUID()}")
+            builder.with { request ->
+                request.method = "PUT"
+                request
+            }
             val response = mockMvc.perform(
-                put("$projectPath/${UUID.randomUUID()}")
-                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
             )
                 .andReturn()
             verifyResponseErrorCode(response, ErrorCode.PRJ_MISSING)
@@ -297,32 +508,32 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store document") {
-            testContext.multipartFile = MockMultipartFile(
+            testContext.documentMock1 = MockMultipartFile(
                 "file", "test.txt",
                 "text/plain", "Some document data".toByteArray()
             )
             Mockito.`when`(
                 cloudStorageService.saveFile(
-                    testContext.multipartFile.originalFilename,
-                    testContext.multipartFile.bytes
+                    testContext.documentMock1.originalFilename,
+                    testContext.documentMock1.bytes
                 )
-            ).thenReturn(testContext.documentLink)
+            ).thenReturn(testContext.documentLink1)
         }
 
         verify("User can add document") {
             val result = mockMvc.perform(
                 RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/document")
-                    .file(testContext.multipartFile)
+                    .file(testContext.documentMock1)
             )
                 .andExpect(status().isOk)
                 .andReturn()
 
             val documentResponse: DocumentResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(documentResponse.id).isNotNull()
-            assertThat(documentResponse.name).isEqualTo(testContext.multipartFile.originalFilename)
-            assertThat(documentResponse.size).isEqualTo(testContext.multipartFile.size)
-            assertThat(documentResponse.type).isEqualTo(testContext.multipartFile.contentType)
-            assertThat(documentResponse.link).isEqualTo(testContext.documentLink)
+            assertThat(documentResponse.name).isEqualTo(testContext.documentMock1.originalFilename)
+            assertThat(documentResponse.size).isEqualTo(testContext.documentMock1.size)
+            assertThat(documentResponse.type).isEqualTo(testContext.documentMock1.contentType)
+            assertThat(documentResponse.link).isEqualTo(testContext.documentLink1)
         }
         verify("Document is stored in database and connected to project") {
             val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
@@ -331,10 +542,10 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectDocuments).hasSize(1)
 
             val document = projectDocuments[0]
-            assertThat(document.name).isEqualTo(testContext.multipartFile.originalFilename)
-            assertThat(document.size).isEqualTo(testContext.multipartFile.size)
-            assertThat(document.type).isEqualTo(testContext.multipartFile.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink)
+            assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
+            assertThat(document.size).isEqualTo(testContext.documentMock1.size)
+            assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
+            assertThat(document.link).isEqualTo(testContext.documentLink1)
         }
     }
 
@@ -350,7 +561,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("Project has some documents") {
             testContext.document =
-                createProjectDocument(testContext.project, userUuid, "Prj doc", testContext.documentLink)
+                createProjectDocument(testContext.project, userUuid, "Prj doc", testContext.documentLink1)
             createProjectDocument(testContext.project, userUuid, "Sec.pdf", "Sec-some-link.pdf")
         }
 
@@ -379,14 +590,14 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store image") {
-            testContext.multipartFile = MockMultipartFile(
+            testContext.imageMock = MockMultipartFile(
                 "image", "image.png",
                 "image/png", "ImageData".toByteArray()
             )
             Mockito.`when`(
                 cloudStorageService.saveFile(
-                    testContext.multipartFile.originalFilename,
-                    testContext.multipartFile.bytes
+                    testContext.imageMock.originalFilename,
+                    testContext.imageMock.bytes
                 )
             ).thenReturn(testContext.imageLink)
         }
@@ -394,7 +605,7 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can add main image") {
             mockMvc.perform(
                 RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/main")
-                    .file(testContext.multipartFile)
+                    .file(testContext.imageMock)
             )
                 .andExpect(status().isOk)
         }
@@ -416,14 +627,14 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("File service will store image") {
-            testContext.multipartFile = MockMultipartFile(
+            testContext.imageMock = MockMultipartFile(
                 "image", "image.png",
                 "image/png", "ImageData".toByteArray()
             )
             Mockito.`when`(
                 cloudStorageService.saveFile(
-                    testContext.multipartFile.originalFilename,
-                    testContext.multipartFile.bytes
+                    testContext.imageMock.originalFilename,
+                    testContext.imageMock.bytes
                 )
             ).thenReturn(testContext.imageLink)
         }
@@ -431,7 +642,7 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can add main image") {
             mockMvc.perform(
                 RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/gallery")
-                    .file(testContext.multipartFile)
+                    .file(testContext.imageMock)
             )
                 .andExpect(status().isOk)
         }
@@ -486,11 +697,15 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("User can add news link") {
-            val request = ProjectUpdateRequest(news = listOf("news-link"))
+
+            testContext.projectUpdateRequest = ProjectUpdateRequest(news = listOf("news-link"))
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
-                put("$projectPath/${testContext.project.uuid}")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -521,10 +736,13 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("User can add new tags to project") {
             testContext.tags = listOf("wind".repeat(50))
             testContext.projectUpdateRequest = ProjectUpdateRequest(tags = testContext.tags)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
-                put("$projectPath/${testContext.project.uuid}")
-                    .content(objectMapper.writeValueAsString(testContext.projectUpdateRequest))
-                    .contentType(MediaType.APPLICATION_JSON)
+                builder.file(requestJson)
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()
@@ -533,13 +751,25 @@ class ProjectControllerTest : ControllerTestBase() {
         }
     }
 
+    private fun getPutMultipartRequestBuilder(): MockMultipartHttpServletRequestBuilder {
+        return multipart("$projectPath/${testContext.project.uuid}").apply {
+            with { request ->
+                request.method = "PUT"
+                request
+            }
+        }
+    }
+
     private class TestContext {
         lateinit var project: Project
         lateinit var projectRequest: ProjectRequest
         lateinit var projectUpdateRequest: ProjectUpdateRequest
-        lateinit var multipartFile: MockMultipartFile
+        lateinit var imageMock: MockMultipartFile
         lateinit var document: Document
-        val documentLink = "link"
+        lateinit var documentMock1: MockMultipartFile
+        lateinit var documentMock2: MockMultipartFile
+        val documentLink1 = "document-link1"
+        val documentLink2 = "document-link2"
         val imageLink = "image-link"
         lateinit var projectUuid: UUID
         lateinit var tags: List<String>
