@@ -222,7 +222,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
 
         verify("Organization invite request is in wrong format") {
-            val request = OrganizationInviteRequest(listOf("wrongFormat", "$%wrongFormat2"))
+            val request = OrganizationInviteRequest(listOf("valid@email.com, wrongFormat@", "$%wrongFor@mat2"))
             val result = mockMvc.perform(
                 post("$pathOrganization/${testContext.organization.uuid}/invite")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -230,7 +230,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.INT_REQUEST)
+            verifyResponseErrorCode(result, ErrorCode.ORG_INVALID_INVITE)
         }
     }
 

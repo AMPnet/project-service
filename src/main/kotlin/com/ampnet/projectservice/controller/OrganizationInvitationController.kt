@@ -114,16 +114,15 @@ class OrganizationInvitationController(
     }
 
     private fun validateEmails(emails: List<String>) {
-        val regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
-        val pattern = Pattern.compile(regex)
-        val errorEmails = mutableListOf<String>()
-        emails.forEach {
-            if (!pattern.matcher(it).matches()) errorEmails.add(it)
+        val pattern = Pattern.compile("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")
+        val invalidEmails = emails.filter { pattern.matcher(it).matches().not() }
+        if (invalidEmails.isNotEmpty()) {
+            val joinedInvalidEmails = invalidEmails.joinToString()
+            throw InvalidRequestException(
+                ErrorCode.ORG_INVALID_INVITE,
+                "Some emails are in wrong format: $joinedInvalidEmails",
+                errors = mapOf("emails" to joinedInvalidEmails)
+            )
         }
-        if (errorEmails.isNotEmpty()) throw InvalidRequestException(
-            ErrorCode.INT_REQUEST,
-            "Some emails are in wrong format (${emails.joinToString()})",
-            errors = mapOf("emails" to emails.joinToString())
-        )
     }
 }

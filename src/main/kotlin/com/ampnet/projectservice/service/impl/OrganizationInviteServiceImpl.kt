@@ -125,7 +125,7 @@ class OrganizationInviteServiceImpl(
             val emails = existingInvitations.joinToString { it.email }
             throw ResourceAlreadyExistsException(
                 ErrorCode.ORG_DUPLICATE_INVITE,
-                "Some users are already invited to join organization. Emails: $emails",
+                "Some users are already invited: $emails",
                 mapOf("emails" to emails)
             )
         }
