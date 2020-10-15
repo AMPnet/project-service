@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.repository
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import org.assertj.core.api.Assertions.assertThat
 import org.hibernate.Hibernate
@@ -57,8 +57,8 @@ class OrganizationRepositoryTest : RepositoryTestBase() {
         createOrganizationInvite(defaultEmail, testContext.anotherOrganization, testContext.uuid)
         createOrganizationDocument(testContext.organization, userUuid)
         createOrganizationDocument(testContext.anotherOrganization, userUuid)
-        addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
-        addUserToOrganization(userUuid, testContext.anotherOrganization.uuid, OrganizationRoleType.ORG_ADMIN)
+        addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
+        addUserToOrganization(userUuid, testContext.anotherOrganization.uuid, OrganizationRole.ORG_ADMIN)
     }
 
     private class TestContext {

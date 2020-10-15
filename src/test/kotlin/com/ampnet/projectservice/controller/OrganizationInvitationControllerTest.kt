@@ -3,7 +3,7 @@ package com.ampnet.projectservice.controller
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.persistence.model.Organization
@@ -43,7 +43,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("Test org", testContext.uuid)
             createOrganizationInvite(defaultEmail, testContext.organization, testContext.uuid)
             createOrganizationDocument(testContext.organization, userUuid)
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
         verify("User can get a list of his invites") {
@@ -55,7 +55,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(invitesResponse.organizationInvites).hasSize(1)
             val invite = invitesResponse.organizationInvites.first()
-            assertThat(invite.role).isEqualTo(OrganizationRoleType.ORG_MEMBER)
+            assertThat(invite.role).isEqualTo(OrganizationRole.ORG_MEMBER)
             assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
             assertThat(invite.organizationName).isEqualTo(testContext.organization.name)
         }
@@ -89,7 +89,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(organization.uuid).isEqualTo(testContext.organization.uuid)
             val memberships = organization.memberships ?: fail("Organization membership must no be null")
             assertThat(memberships).hasSize(1)
-            assertThat(memberships.first().role.id).isEqualTo(OrganizationRoleType.ORG_MEMBER.id)
+            assertThat(memberships.first().role.id).isEqualTo(OrganizationRole.ORG_MEMBER.id)
         }
         verify("User invitation is deleted") {
             val optionalInvite = organizationInviteRepository
@@ -132,7 +132,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User has admin role in the organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Other user has non organization invites") {
             databaseCleanerService.deleteAllOrganizationInvitations()
@@ -155,7 +155,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(firstInvite.email).isEqualTo(testContext.emails.first())
             assertThat(firstInvite.organization.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(firstInvite.invitedByUserUuid).isEqualTo(userUuid)
-            assertThat(firstInvite.role.id).isEqualTo(OrganizationRoleType.ORG_MEMBER.id)
+            assertThat(firstInvite.role.id).isEqualTo(OrganizationRole.ORG_MEMBER.id)
             assertThat(secondInvite.email).isEqualTo(testContext.emails.last())
         }
         verify("Sending mail invitation is called") {
@@ -172,7 +172,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User has admin role in the organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
         verify("User cannot invite other user without ORG_ADMIN role") {
@@ -236,7 +236,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User has admin role in the organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("There are user invitations") {
             testContext.emails.forEach {
@@ -265,7 +265,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User has admin role in the organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Other user has organization invites") {
             createOrganizationInvite(testContext.invitedEmail, testContext.organization, userUuid)
@@ -302,7 +302,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val invite = pendingInvitations.pendingInvites.first()
             assertThat(invite.userEmail).isEqualTo(testContext.organizationInvitation.email)
             assertThat(invite.createdAt).isEqualTo(testContext.organizationInvitation.createdAt)
-            assertThat(invite.role).isEqualTo(OrganizationRoleType.fromInt(testContext.organizationInvitation.role.id))
+            assertThat(invite.role).isEqualTo(testContext.organizationInvitation.role)
         }
     }
 
@@ -315,7 +315,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         organizationInvite.email = email
         organizationInvite.organization = organization
         organizationInvite.invitedByUserUuid = invitedByUuid
-        organizationInvite.role = OrganizationRoleType.ORG_MEMBER
+        organizationInvite.role = OrganizationRole.ORG_MEMBER
         organizationInvite.createdAt = ZonedDateTime.now()
         return organizationInviteRepository.save(organizationInvite)
     }

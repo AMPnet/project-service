@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.persistence.model
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -28,7 +28,7 @@ class OrganizationInvitation(
     var invitedByUserUuid: UUID,
 
     @Column(name = "role_id", nullable = false)
-    var role: OrganizationRoleType,
+    var role: OrganizationRole,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime,

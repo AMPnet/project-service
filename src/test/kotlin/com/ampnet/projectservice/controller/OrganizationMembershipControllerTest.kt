@@ -2,7 +2,7 @@ package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.UpdateOrganizationRoleRequest
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.userservice.proto.UserResponse
@@ -38,14 +38,14 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Organization has two members") {
             testContext.member = UUID.randomUUID()
             testContext.memberSecond = UUID.randomUUID()
-            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
             addUserToOrganization(
-                testContext.memberSecond, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN
+                testContext.memberSecond, testContext.organization.uuid, OrganizationRole.ORG_ADMIN
             )
         }
         suppose("User service will return user data") {
@@ -67,7 +67,7 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
             assertThat(members.members.map { it.uuid }).hasSize(2)
                 .containsAll(listOf(testContext.memberSecond, testContext.member))
             assertThat(members.members.map { it.role }).hasSize(2)
-                .containsAll(listOf(OrganizationRoleType.ORG_ADMIN.name, OrganizationRoleType.ORG_MEMBER.name))
+                .containsAll(listOf(OrganizationRole.ORG_ADMIN.name, OrganizationRole.ORG_MEMBER.name))
             assertThat(members.members.map { it.firstName }).containsAll(testContext.userResponses.map { it.firstName })
             assertThat(members.members.map { it.lastName }).containsAll(testContext.userResponses.map { it.lastName })
         }
@@ -81,11 +81,11 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Organization has a member") {
             testContext.member = UUID.randomUUID()
-            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
         verify("User can delete organization member") {
@@ -109,17 +109,17 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Organization has a member") {
             testContext.member = UUID.randomUUID()
-            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
         verify("Admin can change user organization role") {
             val request = UpdateOrganizationRoleRequest(
                 testContext.member,
-                OrganizationRoleType.ORG_ADMIN
+                OrganizationRole.ORG_ADMIN
             )
             mockMvc.perform(
                 post("$organizationPath/${testContext.organization.uuid}/members")
@@ -131,7 +131,7 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
         }
         verify("Member has changed organization role") {
             val membership = membershipRepository.findByOrganizationUuidAndUserUuid(testContext.organization.uuid, testContext.member).get()
-            assertThat(membership.role.id).isEqualTo(OrganizationRoleType.ORG_ADMIN.id)
+            assertThat(membership.role.id).isEqualTo(OrganizationRole.ORG_ADMIN.id)
             assertThat(membership.organizationUuid).isEqualTo(testContext.organization.uuid)
             assertThat(membership.userUuid).isEqualTo(testContext.member)
             assertThat(membership.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())

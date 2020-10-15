@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
@@ -44,7 +44,7 @@ class OrganizationInviteServiceImpl(
         val invites = request.emails.map { email ->
             OrganizationInvitation(
                 0, email, request.invitedByUserUuid,
-                OrganizationRoleType.ORG_MEMBER, ZonedDateTime.now(), invitedToOrganization
+                OrganizationRole.ORG_MEMBER, ZonedDateTime.now(), invitedToOrganization
             )
         }
         inviteRepository.saveAll(invites)
@@ -70,12 +70,7 @@ class OrganizationInviteServiceImpl(
     override fun answerToInvitation(request: OrganizationInviteAnswerRequest) {
         inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
             if (request.join) {
-                val role = OrganizationRoleType.fromInt(it.role.id)
-                    ?: throw ResourceNotFoundException(
-                        ErrorCode.USER_ROLE_MISSING,
-                        "Missing role with id: ${it.role.id}"
-                    )
-                organizationMembershipService.addUserToOrganization(request.userUuid, it.organization.uuid, role)
+                organizationMembershipService.addUserToOrganization(request.userUuid, it.organization.uuid, it.role)
             }
             inviteRepository.delete(it)
             logger.debug {

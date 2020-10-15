@@ -3,7 +3,7 @@ package com.ampnet.projectservice.repository
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
@@ -67,7 +67,7 @@ class RepositoryTestBase : TestBase() {
         invitedByUuid: UUID
     ): OrganizationInvitation {
         val organizationInvite = OrganizationInvitation(
-            0, email, invitedByUuid, OrganizationRoleType.ORG_MEMBER, ZonedDateTime.now(), organization
+            0, email, invitedByUuid, OrganizationRole.ORG_MEMBER, ZonedDateTime.now(), organization
         )
         return organizationInviteRepository.save(organizationInvite)
     }
@@ -99,7 +99,7 @@ class RepositoryTestBase : TestBase() {
         return documentRepository.save(document)
     }
 
-    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
         val membership = OrganizationMembership(
             0, organizationUuid, userUuid, role, ZonedDateTime.now()
         )

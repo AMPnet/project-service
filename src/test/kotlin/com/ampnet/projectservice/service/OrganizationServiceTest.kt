@@ -2,7 +2,7 @@ package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
 import com.ampnet.projectservice.controller.pojo.request.OrganizationUpdateRequest
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
@@ -172,7 +172,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
         suppose("User is added to organization as member") {
             organizationMembershipService
-                .addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+                .addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
         verify("Description and header image cannot be updated with null values") {

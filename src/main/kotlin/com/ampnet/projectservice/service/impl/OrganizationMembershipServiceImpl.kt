@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
@@ -25,7 +25,7 @@ class OrganizationMembershipServiceImpl(
     override fun addUserToOrganization(
         userUuid: UUID,
         organizationUuid: UUID,
-        role: OrganizationRoleType
+        role: OrganizationRole
     ): OrganizationMembership {
         // user can have only one membership(role) per one organization
         membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {

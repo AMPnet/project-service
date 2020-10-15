@@ -6,7 +6,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.grpc.mailservice.MailService
@@ -131,7 +131,7 @@ abstract class ControllerTestBase : TestBase() {
         return organizationRepository.save(organization)
     }
 
-    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.userUuid = userUuid
         membership.organizationUuid = organizationUuid

@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
@@ -42,7 +42,7 @@ class OrganizationServiceImpl(
         val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
         val savedOrganization = organizationRepository.save(organization)
         organizationMembershipService.addUserToOrganization(
-            serviceRequest.ownerUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN
+            serviceRequest.ownerUuid, organization.uuid, OrganizationRole.ORG_ADMIN
         )
 
         logger.info { "Created organization: ${organization.name}" }

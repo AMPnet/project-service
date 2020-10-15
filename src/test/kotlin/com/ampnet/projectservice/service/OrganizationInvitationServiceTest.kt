@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.service
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
@@ -78,7 +78,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             organizationMembershipService.addUserToOrganization(
                 userUuid,
                 organization.uuid,
-                OrganizationRoleType.ORG_ADMIN
+                OrganizationRole.ORG_ADMIN
             )
         }
 
@@ -101,7 +101,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             assertThat(firstInvitation.email).isEqualTo(invitedUsers.first())
             assertThat(firstInvitation.organization.uuid).isEqualTo(organization.uuid)
             assertThat(firstInvitation.invitedByUserUuid).isEqualTo(userUuid)
-            assertThat(OrganizationRoleType.fromInt(firstInvitation.role.id)).isEqualTo(OrganizationRoleType.ORG_MEMBER)
+            assertThat(firstInvitation.role).isEqualTo(OrganizationRole.ORG_MEMBER)
             assertThat(firstInvitation.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(secondInvitation.email).isEqualTo(invitedUsers.last())
         }

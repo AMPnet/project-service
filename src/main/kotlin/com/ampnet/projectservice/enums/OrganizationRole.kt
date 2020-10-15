@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.enums
 
-enum class OrganizationRoleType(val id: Int) {
+enum class OrganizationRole(val id: Int) {
 
     ORG_ADMIN(1) {
         override fun getPrivileges(): List<OrganizationPrivilegeType> {
@@ -22,7 +22,7 @@ enum class OrganizationRoleType(val id: Int) {
     };
 
     companion object {
-        private val map = values().associateBy(OrganizationRoleType::id)
+        private val map = values().associateBy(OrganizationRole::id)
         fun fromInt(type: Int) = map[type]
     }
 

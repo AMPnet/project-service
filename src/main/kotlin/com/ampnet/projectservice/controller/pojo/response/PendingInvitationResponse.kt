@@ -1,18 +1,18 @@
 package com.ampnet.projectservice.controller.pojo.response
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import java.time.ZonedDateTime
 
 data class PendingInvitationResponse(
     val userEmail: String,
-    val role: OrganizationRoleType?,
+    val role: OrganizationRole,
     val createdAt: ZonedDateTime
 
 ) {
     constructor(invite: OrganizationInvitation) : this(
         invite.email,
-        OrganizationRoleType.fromInt(invite.role.id),
+        invite.role,
         invite.createdAt
     )
 }

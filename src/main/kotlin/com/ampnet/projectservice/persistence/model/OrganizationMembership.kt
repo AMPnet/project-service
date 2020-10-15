@@ -1,7 +1,7 @@
 package com.ampnet.projectservice.persistence.model
 
 import com.ampnet.projectservice.enums.OrganizationPrivilegeType
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -25,12 +25,12 @@ class OrganizationMembership(
     var userUuid: UUID,
 
     @Column(name = "role_id", nullable = false)
-    var role: OrganizationRoleType,
+    var role: OrganizationRole,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime
 ) {
-    constructor(organizationUuid: UUID, userUuid: UUID, role: OrganizationRoleType, createdAt: ZonedDateTime) : this(
+    constructor(organizationUuid: UUID, userUuid: UUID, role: OrganizationRole, createdAt: ZonedDateTime) : this(
         0, organizationUuid, userUuid, role, createdAt
     )
 
