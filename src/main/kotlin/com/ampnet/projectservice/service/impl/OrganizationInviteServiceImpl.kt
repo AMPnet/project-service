@@ -7,10 +7,8 @@ import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
-import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
@@ -27,15 +25,12 @@ import java.util.UUID
 class OrganizationInviteServiceImpl(
     private val inviteRepository: OrganizationInviteRepository,
     private val followerRepository: OrganizationFollowerRepository,
-    private val roleRepository: RoleRepository,
     private val mailService: MailService,
     private val organizationService: OrganizationService,
     private val organizationMembershipService: OrganizationMembershipService
 ) : OrganizationInviteService {
 
     companion object : KLogging()
-
-    private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
 
     @Transactional
     override fun sendInvitation(request: OrganizationInviteServiceRequest) {
@@ -49,7 +44,7 @@ class OrganizationInviteServiceImpl(
         val invites = request.emails.map { email ->
             OrganizationInvitation(
                 0, email, request.invitedByUserUuid,
-                memberRole, ZonedDateTime.now(), invitedToOrganization
+                OrganizationRoleType.ORG_MEMBER, ZonedDateTime.now(), invitedToOrganization
             )
         }
         inviteRepository.saveAll(invites)

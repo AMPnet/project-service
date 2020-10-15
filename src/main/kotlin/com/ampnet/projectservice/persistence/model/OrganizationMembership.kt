@@ -9,8 +9,6 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Entity
@@ -26,19 +24,17 @@ class OrganizationMembership(
     @Column(nullable = false)
     var userUuid: UUID,
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    var role: Role,
+    @Column(name = "role_id", nullable = false)
+    var role: OrganizationRoleType,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime
 ) {
-    constructor(organizationUuid: UUID, userUuid: UUID, role: Role, createdAt: ZonedDateTime) : this(
+    constructor(organizationUuid: UUID, userUuid: UUID, role: OrganizationRoleType, createdAt: ZonedDateTime) : this(
         0, organizationUuid, userUuid, role, createdAt
     )
 
-    private fun getPrivileges(): List<OrganizationPrivilegeType> =
-        OrganizationRoleType.fromInt(role.id)?.getPrivileges().orEmpty()
+    private fun getPrivileges(): List<OrganizationPrivilegeType> = role.getPrivileges()
 
     fun hasPrivilegeToSeeOrganizationUsers(): Boolean = getPrivileges().contains(OrganizationPrivilegeType.PR_USERS)
 

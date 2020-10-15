@@ -23,7 +23,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.userservice.proto.UserResponse
@@ -62,9 +61,6 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var projectRepository: ProjectRepository
@@ -139,7 +135,7 @@ abstract class ControllerTestBase : TestBase() {
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.userUuid = userUuid
         membership.organizationUuid = organizationUuid
-        membership.role = roleRepository.getOne(role.id)
+        membership.role = role
         membership.createdAt = ZonedDateTime.now()
         membershipRepository.save(membership)
     }

@@ -16,17 +16,14 @@ import java.time.ZonedDateTime
 
 class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
-    private val organizationMembershipService by lazy {
-        OrganizationMembershipServiceImpl(membershipRepository, roleRepository)
-    }
+    private val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
     private val organizationService: OrganizationService by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl)
     }
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
-            inviteRepository, followerRepository, roleRepository,
-            mailService, organizationService, organizationMembershipService
+            inviteRepository, followerRepository, mailService, organizationService, organizationMembershipService
         )
     }
 
@@ -78,7 +75,11 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     fun adminUserCanInviteOtherUsersToOrganization() {
         suppose("User is admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            organizationMembershipService.addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            organizationMembershipService.addUserToOrganization(
+                userUuid,
+                organization.uuid,
+                OrganizationRoleType.ORG_ADMIN
+            )
         }
 
         verify("The admin can invite user to organization") {

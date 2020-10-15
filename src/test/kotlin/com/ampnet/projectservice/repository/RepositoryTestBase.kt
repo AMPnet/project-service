@@ -16,7 +16,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -38,9 +37,6 @@ class RepositoryTestBase : TestBase() {
 
     @Autowired
     protected lateinit var organizationRepository: OrganizationRepository
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var documentRepository: DocumentRepository
@@ -68,11 +64,10 @@ class RepositoryTestBase : TestBase() {
     protected fun createOrganizationInvite(
         email: String,
         organization: Organization,
-        invitedByUuid: UUID,
-        role: OrganizationRoleType
+        invitedByUuid: UUID
     ): OrganizationInvitation {
         val organizationInvite = OrganizationInvitation(
-            0, email, invitedByUuid, roleRepository.getOne(role.id), ZonedDateTime.now(), organization
+            0, email, invitedByUuid, OrganizationRoleType.ORG_MEMBER, ZonedDateTime.now(), organization
         )
         return organizationInviteRepository.save(organizationInvite)
     }
@@ -106,7 +101,7 @@ class RepositoryTestBase : TestBase() {
 
     protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
         val membership = OrganizationMembership(
-            0, organizationUuid, userUuid, roleRepository.getOne(role.id), ZonedDateTime.now()
+            0, organizationUuid, userUuid, role, ZonedDateTime.now()
         )
         membershipRepository.save(membership)
     }

@@ -41,10 +41,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
-            createOrganizationInvite(
-                defaultEmail, testContext.organization, testContext.uuid,
-                OrganizationRoleType.ORG_MEMBER
-            )
+            createOrganizationInvite(defaultEmail, testContext.organization, testContext.uuid)
             createOrganizationDocument(testContext.organization, userUuid)
             addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
         }
@@ -78,10 +75,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             databaseCleanerService.deleteAllOrganizationInvitations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
-            createOrganizationInvite(
-                defaultEmail, testContext.organization, testContext.uuid,
-                OrganizationRoleType.ORG_MEMBER
-            )
+            createOrganizationInvite(defaultEmail, testContext.organization, testContext.uuid)
         }
 
         verify("User can get a list of his invites") {
@@ -111,10 +105,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             databaseCleanerService.deleteAllOrganizationInvitations()
             testContext.organization = createOrganization("Test org", testContext.uuid)
-            createOrganizationInvite(
-                defaultEmail, testContext.organization, testContext.uuid,
-                OrganizationRoleType.ORG_MEMBER
-            )
+            createOrganizationInvite(defaultEmail, testContext.organization, testContext.uuid)
         }
 
         verify("User can get a list of his invites") {
@@ -249,9 +240,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
         suppose("There are user invitations") {
             testContext.emails.forEach {
-                createOrganizationInvite(
-                    it, testContext.organization, userUuid, OrganizationRoleType.ORG_MEMBER
-                )
+                createOrganizationInvite(it, testContext.organization, userUuid)
             }
         }
 
@@ -279,9 +268,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
         }
         suppose("Other user has organization invites") {
-            createOrganizationInvite(
-                testContext.invitedEmail, testContext.organization, userUuid, OrganizationRoleType.ORG_MEMBER
-            )
+            createOrganizationInvite(testContext.invitedEmail, testContext.organization, userUuid)
         }
 
         verify("User can revoke invitation") {
@@ -298,10 +285,8 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         suppose("User has organization invites") {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("test organization", userUuid)
-            testContext.organizationInvitation = createOrganizationInvite(
-                defaultEmail, testContext.organization, testContext.uuid,
-                OrganizationRoleType.ORG_MEMBER
-            )
+            testContext.organizationInvitation =
+                createOrganizationInvite(defaultEmail, testContext.organization, testContext.uuid)
         }
 
         verify("We can get a list of pending invitations") {
@@ -324,21 +309,19 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     private fun createOrganizationInvite(
         email: String,
         organization: Organization,
-        invitedByUuid: UUID,
-        role: OrganizationRoleType
+        invitedByUuid: UUID
     ): OrganizationInvitation {
         val organizationInvite = OrganizationInvitation::class.java.getConstructor().newInstance()
         organizationInvite.email = email
         organizationInvite.organization = organization
         organizationInvite.invitedByUserUuid = invitedByUuid
-        organizationInvite.role = roleRepository.getOne(role.id)
+        organizationInvite.role = OrganizationRoleType.ORG_MEMBER
         organizationInvite.createdAt = ZonedDateTime.now()
         return organizationInviteRepository.save(organizationInvite)
     }
 
     private class TestContext {
         lateinit var organization: Organization
-        lateinit var anotherOrganization: Organization
         lateinit var organizationInvitation: OrganizationInvitation
         val uuid: UUID = UUID.randomUUID()
         val invitedEmail = "invited@email.com"

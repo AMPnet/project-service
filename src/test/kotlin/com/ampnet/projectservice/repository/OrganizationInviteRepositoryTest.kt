@@ -46,13 +46,9 @@ class OrganizationInviteRepositoryTest : RepositoryTestBase() {
         databaseCleanerService.deleteAllOrganizations()
         testContext.organization = createOrganization("Test org", testContext.uuid)
         testContext.anotherOrganization = createOrganization("Test org 2", testContext.uuid)
+        createOrganizationInvite(defaultEmail, testContext.organization, testContext.uuid)
         createOrganizationInvite(
-            defaultEmail, testContext.organization, testContext.uuid,
-            OrganizationRoleType.ORG_MEMBER
-        )
-        createOrganizationInvite(
-            defaultEmail, testContext.anotherOrganization, testContext.uuid,
-            OrganizationRoleType.ORG_MEMBER
+            defaultEmail, testContext.anotherOrganization, testContext.uuid
         )
         createOrganizationDocument(testContext.organization, userUuid)
         createOrganizationDocument(testContext.anotherOrganization, userUuid)
