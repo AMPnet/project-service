@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesLis
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
 import com.ampnet.projectservice.enums.OrganizationRoleType
 import com.ampnet.projectservice.exception.ErrorCode
+import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
@@ -230,7 +231,9 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.ORG_INVALID_INVITE)
+            val errorResponse: ErrorResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(errorResponse.errCode).isEqualTo(getResponseErrorCode(ErrorCode.ORG_INVALID_INVITE))
+            assertThat(errorResponse.errors?.values?.first()?.split(",")).hasSize(2)
         }
     }
 

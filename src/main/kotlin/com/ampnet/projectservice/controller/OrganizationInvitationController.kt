@@ -114,7 +114,7 @@ class OrganizationInvitationController(
     }
 
     private fun validateEmails(emails: List<String>) {
-        val pattern = Pattern.compile("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")
+        val pattern = Pattern.compile("^[^@]+@[^@]+\$")
         val invalidEmails = emails.filter { pattern.matcher(it).matches().not() }
         if (invalidEmails.isNotEmpty()) {
             val joinedInvalidEmails = invalidEmails.joinToString()
