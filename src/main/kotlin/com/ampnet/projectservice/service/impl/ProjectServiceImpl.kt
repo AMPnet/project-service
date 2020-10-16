@@ -181,7 +181,13 @@ class ProjectServiceImpl(
         if (request.minPerUser > request.maxPerUser) {
             throw InvalidRequestException(
                 ErrorCode.PRJ_MIN_ABOVE_MAX,
-                "Min: ${request.minPerUser} > Max: ${request.maxPerUser}"
+                "Min per user: ${request.minPerUser} > Max per user: ${request.maxPerUser}"
+            )
+        }
+        if (request.maxPerUser > request.expectedFunding) {
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
+                "Max per user: ${request.maxPerUser} > Expected funding: ${request.expectedFunding} "
             )
         }
         if (applicationProperties.investment.maxPerProject <= request.expectedFunding) {
