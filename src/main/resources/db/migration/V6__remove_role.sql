@@ -1,0 +1,3 @@
+ALTER TABLE organization_membership DROP CONSTRAINT organization_membership_role_id_fkey;
+ALTER TABLE organization_invitation DROP CONSTRAINT organization_invitation_role_id_fkey;
+DROP TABLE role;

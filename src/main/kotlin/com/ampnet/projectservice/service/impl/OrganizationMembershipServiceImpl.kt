@@ -1,13 +1,11 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
-import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
 import mu.KLogging
@@ -18,20 +16,16 @@ import java.util.UUID
 
 @Service
 class OrganizationMembershipServiceImpl(
-    private val membershipRepository: OrganizationMembershipRepository,
-    private val roleRepository: RoleRepository
+    private val membershipRepository: OrganizationMembershipRepository
 ) : OrganizationMembershipService {
 
     companion object : KLogging()
-
-    private val adminRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_ADMIN.id) }
-    private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
 
     @Transactional
     override fun addUserToOrganization(
         userUuid: UUID,
         organizationUuid: UUID,
-        role: OrganizationRoleType
+        role: OrganizationRole
     ): OrganizationMembership {
         // user can have only one membership(role) per one organization
         membershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid).ifPresent {
@@ -44,7 +38,7 @@ class OrganizationMembershipServiceImpl(
         val membership = OrganizationMembership(
             organizationUuid,
             userUuid,
-            getRole(role),
+            role,
             ZonedDateTime.now()
         )
         return membershipRepository.save(membership)
@@ -75,13 +69,6 @@ class OrganizationMembershipServiceImpl(
             ErrorCode.ORG_MEM_MISSING,
             "User ${request.memberUuid} is not a member of this organization ${request.organizationUuid}"
         )
-        membership.role = getRole(request.roleType)
-    }
-
-    private fun getRole(role: OrganizationRoleType): Role {
-        return when (role) {
-            OrganizationRoleType.ORG_ADMIN -> adminRole
-            OrganizationRoleType.ORG_MEMBER -> memberRole
-        }
+        membership.role = request.roleType
     }
 }

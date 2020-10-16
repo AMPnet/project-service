@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.repository
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import org.assertj.core.api.Assertions.assertThat
@@ -64,7 +64,7 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         databaseCleanerService.deleteAllOrganizations()
         testContext.organization = createOrganization("Test org", testContext.uuid)
         createOrganizationDocument(testContext.organization, userUuid)
-        addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+        addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         testContext.project = createProject("project1", testContext.organization, userUuid)
         createProjectDocument(testContext.project, userUuid)
     }

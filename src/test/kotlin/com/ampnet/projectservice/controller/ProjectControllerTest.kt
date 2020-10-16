@@ -8,7 +8,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.persistence.model.Document
@@ -66,7 +66,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnErrorForUserOrganizationMembership() {
         suppose("User is a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
         verify("Controller will return forbidden for missing organization membership") {
@@ -99,7 +99,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToCreateProject() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
 
         verify("Controller will return create project") {
@@ -140,7 +140,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustRejectRequestWithNegativeProjectValues() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
 
         verify("Controller will reject project") {
@@ -166,7 +166,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToUpdateProject() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
@@ -273,7 +273,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToUpdateProjectMainImage() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
@@ -339,7 +339,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToUpdateProjectWithDocuments() {
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
@@ -412,7 +412,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToAddProjectTags() {
         suppose("User is admin in the organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("There is a project with tags") {
             testContext.project = createProject("Projectos", organization, userUuid)
@@ -449,7 +449,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnForbiddenIfUserIsMissingOrgPrivileges() {
         suppose("User is a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)
@@ -505,7 +505,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("File service will store document") {
             testContext.documentMock1 = MockMultipartFile(
@@ -557,7 +557,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project has some documents") {
             testContext.document =
@@ -587,7 +587,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("File service will store image") {
             testContext.imageMock = MockMultipartFile(
@@ -624,7 +624,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("File service will store image") {
             testContext.imageMock = MockMultipartFile(
@@ -661,7 +661,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project has gallery images") {
             testContext.project.gallery = listOf("image-link-1", "image-link-2", "image-link-3")
@@ -693,7 +693,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("User is an admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
 
         verify("User can add news link") {
@@ -725,7 +725,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustThrowExceptionForTooLongProjectTags() {
         suppose("User is admin in the organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("There is a project with tags") {
             testContext.project = createProject("Project ex", organization, userUuid)

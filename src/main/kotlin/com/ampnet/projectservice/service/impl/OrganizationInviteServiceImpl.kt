@@ -1,16 +1,14 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
-import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
@@ -27,15 +25,12 @@ import java.util.UUID
 class OrganizationInviteServiceImpl(
     private val inviteRepository: OrganizationInviteRepository,
     private val followerRepository: OrganizationFollowerRepository,
-    private val roleRepository: RoleRepository,
     private val mailService: MailService,
     private val organizationService: OrganizationService,
     private val organizationMembershipService: OrganizationMembershipService
 ) : OrganizationInviteService {
 
     companion object : KLogging()
-
-    private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
 
     @Transactional
     override fun sendInvitation(request: OrganizationInviteServiceRequest) {
@@ -49,7 +44,7 @@ class OrganizationInviteServiceImpl(
         val invites = request.emails.map { email ->
             OrganizationInvitation(
                 0, email, request.invitedByUserUuid,
-                memberRole, ZonedDateTime.now(), invitedToOrganization
+                OrganizationRole.ORG_MEMBER, ZonedDateTime.now(), invitedToOrganization
             )
         }
         inviteRepository.saveAll(invites)
@@ -75,12 +70,7 @@ class OrganizationInviteServiceImpl(
     override fun answerToInvitation(request: OrganizationInviteAnswerRequest) {
         inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
             if (request.join) {
-                val role = OrganizationRoleType.fromInt(it.role.id)
-                    ?: throw ResourceNotFoundException(
-                        ErrorCode.USER_ROLE_MISSING,
-                        "Missing role with id: ${it.role.id}"
-                    )
-                organizationMembershipService.addUserToOrganization(request.userUuid, it.organization.uuid, role)
+                organizationMembershipService.addUserToOrganization(request.userUuid, it.organization.uuid, it.role)
             }
             inviteRepository.delete(it)
             logger.debug {

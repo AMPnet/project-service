@@ -6,7 +6,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.grpc.mailservice.MailService
@@ -23,7 +23,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.userservice.proto.UserResponse
@@ -62,9 +61,6 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var projectRepository: ProjectRepository
@@ -135,11 +131,11 @@ abstract class ControllerTestBase : TestBase() {
         return organizationRepository.save(organization)
     }
 
-    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.userUuid = userUuid
         membership.organizationUuid = organizationUuid
-        membership.role = roleRepository.getOne(role.id)
+        membership.role = role
         membership.createdAt = ZonedDateTime.now()
         membershipRepository.save(membership)
     }
