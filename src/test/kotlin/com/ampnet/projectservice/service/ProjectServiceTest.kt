@@ -268,6 +268,35 @@ class ProjectServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustNotBeAbleToSetMaxPerUserAboveExpectedFunding() {
+        suppose("Request has max per user above expected funding") {
+            val currentTime = ZonedDateTime.now()
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
+                "Invalid end date",
+                "Description",
+                ProjectLocationRequest(12.34, 3.1324),
+                ProjectRoiRequest(6.66, 7.77),
+                currentTime,
+                currentTime.plusDays(30),
+                10000_00,
+                Currency.EUR,
+                1_00,
+                1000000_00,
+                false,
+                emptyList()
+            )
+        }
+
+        verify("Service will throw an exception") {
+            val exception = assertThrows<InvalidRequestException> {
+                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH)
+        }
+    }
+
+    @Test
     fun mustNotBeAbleToSetMaxPerUserAboveSystemMax() {
         suppose("Request has max per user value above system max") {
             val currentTime = ZonedDateTime.now()

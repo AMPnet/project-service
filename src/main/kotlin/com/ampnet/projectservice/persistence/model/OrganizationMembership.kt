@@ -1,7 +1,7 @@
 package com.ampnet.projectservice.persistence.model
 
 import com.ampnet.projectservice.enums.OrganizationPrivilegeType
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -9,13 +9,11 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Entity
 @Table(name = "organization_membership")
-data class OrganizationMembership(
+class OrganizationMembership(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
@@ -26,19 +24,17 @@ data class OrganizationMembership(
     @Column(nullable = false)
     var userUuid: UUID,
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    var role: Role,
+    @Column(name = "role_id", nullable = false)
+    var role: OrganizationRole,
 
     @Column(nullable = false)
     var createdAt: ZonedDateTime
 ) {
-    constructor(organizationUuid: UUID, userUuid: UUID, role: Role, createdAt: ZonedDateTime) : this(
+    constructor(organizationUuid: UUID, userUuid: UUID, role: OrganizationRole, createdAt: ZonedDateTime) : this(
         0, organizationUuid, userUuid, role, createdAt
     )
 
-    private fun getPrivileges(): List<OrganizationPrivilegeType> =
-        OrganizationRoleType.fromInt(role.id)?.getPrivileges().orEmpty()
+    private fun getPrivileges(): List<OrganizationPrivilegeType> = role.getPrivileges()
 
     fun hasPrivilegeToSeeOrganizationUsers(): Boolean = getPrivileges().contains(OrganizationPrivilegeType.PR_USERS)
 

@@ -1,20 +1,18 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.grpc.mailservice.MailService
-import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
-import com.ampnet.projectservice.persistence.model.Role
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationInviteRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
+import com.ampnet.projectservice.service.pojo.OrganizationInvitationWithData
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import mu.KLogging
@@ -27,7 +25,6 @@ import java.util.UUID
 class OrganizationInviteServiceImpl(
     private val inviteRepository: OrganizationInviteRepository,
     private val followerRepository: OrganizationFollowerRepository,
-    private val roleRepository: RoleRepository,
     private val mailService: MailService,
     private val organizationService: OrganizationService,
     private val organizationMembershipService: OrganizationMembershipService
@@ -35,36 +32,24 @@ class OrganizationInviteServiceImpl(
 
     companion object : KLogging()
 
-    private val adminRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_ADMIN.id) }
-    private val memberRole: Role by lazy { roleRepository.getOne(OrganizationRoleType.ORG_MEMBER.id) }
-
     @Transactional
-    override fun sendInvitation(request: OrganizationInviteServiceRequest): OrganizationInvitation {
+    override fun sendInvitation(request: OrganizationInviteServiceRequest) {
         val invitedToOrganization = organizationService.findOrganizationById(request.organizationUuid)
             ?: throw ResourceNotFoundException(
                 ErrorCode.ORG_MISSING,
                 "Missing organization with id: ${request.organizationUuid}"
             )
+        throwExceptionForDuplicatedInvitations(request)
 
-        inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
-            throw ResourceAlreadyExistsException(
-                ErrorCode.ORG_DUPLICATE_INVITE,
-                "User is already invited to join organization"
+        val invites = request.emails.map { email ->
+            OrganizationInvitation(
+                0, email, request.invitedByUserUuid,
+                OrganizationRole.ORG_MEMBER, ZonedDateTime.now(), invitedToOrganization
             )
         }
-
-        val organizationInvite = OrganizationInvitation::class.java.getConstructor().newInstance()
-        organizationInvite.organizationUuid = request.organizationUuid
-        organizationInvite.email = request.email
-        organizationInvite.role = getRole(request.roleType)
-        organizationInvite.invitedByUserUuid = request.invitedByUserUuid
-        organizationInvite.createdAt = ZonedDateTime.now()
-
-        logger.debug { "User: ${request.email} invited to organization: ${request.organizationUuid}" }
-
-        val savedInvite = inviteRepository.save(organizationInvite)
-        sendMailInvitationToJoinOrganization(request.email, invitedToOrganization)
-        return savedInvite
+        inviteRepository.saveAll(invites)
+        mailService.sendOrganizationInvitationMail(request.emails, invitedToOrganization.name)
+        logger.debug { "Users: ${request.emails.joinToString()} invited to organization: ${request.organizationUuid}" }
     }
 
     @Transactional
@@ -76,20 +61,16 @@ class OrganizationInviteServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitation> {
-        return inviteRepository.findByEmail(email)
+    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitationWithData> {
+        val invites = inviteRepository.findAllByEmail(email)
+        return invites.map { OrganizationInvitationWithData(it) }
     }
 
     @Transactional
     override fun answerToInvitation(request: OrganizationInviteAnswerRequest) {
         inviteRepository.findByOrganizationUuidAndEmail(request.organizationUuid, request.email).ifPresent {
             if (request.join) {
-                val role = OrganizationRoleType.fromInt(it.role.id)
-                    ?: throw ResourceNotFoundException(
-                        ErrorCode.USER_ROLE_MISSING,
-                        "Missing role with id: ${it.role.id}"
-                    )
-                organizationMembershipService.addUserToOrganization(request.userUuid, it.organizationUuid, role)
+                organizationMembershipService.addUserToOrganization(request.userUuid, it.organization.uuid, it.role)
             }
             inviteRepository.delete(it)
             logger.debug {
@@ -127,15 +108,16 @@ class OrganizationInviteServiceImpl(
         return inviteRepository.findByOrganizationUuid(organizationUuid)
     }
 
-    private fun sendMailInvitationToJoinOrganization(email: String, invitedTo: Organization) {
-        logger.debug { "Sending invitation mail to user: $email for organization: ${invitedTo.name}" }
-        mailService.sendOrganizationInvitationMail(email, invitedTo.name)
-    }
-
-    private fun getRole(role: OrganizationRoleType): Role {
-        return when (role) {
-            OrganizationRoleType.ORG_ADMIN -> adminRole
-            OrganizationRoleType.ORG_MEMBER -> memberRole
+    private fun throwExceptionForDuplicatedInvitations(request: OrganizationInviteServiceRequest) {
+        val existingInvitations =
+            inviteRepository.findByOrganizationUuidAndEmailIn(request.organizationUuid, request.emails)
+        if (existingInvitations.isNotEmpty()) {
+            val emails = existingInvitations.joinToString { it.email }
+            throw ResourceAlreadyExistsException(
+                ErrorCode.ORG_DUPLICATE_INVITE,
+                "Some users are already invited: $emails",
+                mapOf("emails" to emails)
+            )
         }
     }
 }

@@ -6,9 +6,10 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
+import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
@@ -22,7 +23,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.userservice.proto.UserResponse
@@ -65,9 +65,6 @@ abstract class ControllerTestBase : TestBase() {
     protected lateinit var databaseCleanerService: DatabaseCleanerService
 
     @Autowired
-    protected lateinit var roleRepository: RoleRepository
-
-    @Autowired
     protected lateinit var projectRepository: ProjectRepository
 
     @Autowired
@@ -90,6 +87,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var walletService: WalletService
+
+    @Autowired
+    protected lateinit var mailService: MailService
 
     @Autowired
     private lateinit var documentRepository: DocumentRepository
@@ -129,17 +129,16 @@ abstract class ControllerTestBase : TestBase() {
         organization.createdAt = ZonedDateTime.now()
         organization.approved = true
         organization.createdByUserUuid = userUuid
-        organization.documents = emptyList()
         organization.headerImage = "Organization header image"
         organization.coop = COOP
         return organizationRepository.save(organization)
     }
 
-    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRoleType) {
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.userUuid = userUuid
         membership.organizationUuid = organizationUuid
-        membership.role = roleRepository.getOne(role.id)
+        membership.role = role
         membership.createdAt = ZonedDateTime.now()
         membershipRepository.save(membership)
     }
@@ -208,7 +207,13 @@ abstract class ControllerTestBase : TestBase() {
             .setEnabled(enabled)
             .build()
 
-    protected fun createProjectRequest(organizationUuid: UUID, name: String): ProjectRequest {
+    protected fun createProjectRequest(
+        organizationUuid: UUID,
+        name: String,
+        expectedFunding: Long = 1_000_000,
+        minPerUser: Long = 1,
+        maxPerUser: Long = 1_000_000
+    ): ProjectRequest {
         val time = ZonedDateTime.now()
         return ProjectRequest(
             organizationUuid,
@@ -218,10 +223,10 @@ abstract class ControllerTestBase : TestBase() {
             ProjectRoiRequest(2.22, 7.77),
             time,
             time.plusDays(30),
-            1_000_000,
+            expectedFunding,
             Currency.EUR,
-            1,
-            1_000_000,
+            minPerUser,
+            maxPerUser,
             true
         )
     }
@@ -245,8 +250,8 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createOrganizationDocument(
         organization: Organization,
         createdByUserUuid: UUID,
-        name: String,
-        link: String,
+        name: String = "name",
+        link: String = "link",
         type: String = "document/type",
         size: Int = 100
     ): Document {

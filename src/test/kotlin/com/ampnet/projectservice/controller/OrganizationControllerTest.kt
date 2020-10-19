@@ -6,7 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
@@ -149,7 +149,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is a member of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_MEMBER)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
         suppose("Another organization exists") {
             createOrganization("new organization", userUuid)
@@ -203,7 +203,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is an admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("File storage will store document") {
             testContext.multipartFile = MockMultipartFile(
@@ -238,7 +238,7 @@ class OrganizationControllerTest : ControllerTestBase() {
                 ?: fail("Organization documents must not be null")
             assertThat(organizationDocuments).hasSize(1)
 
-            val document = organizationDocuments[0]
+            val document = organizationDocuments.first()
             assertThat(document.name).isEqualTo(testContext.multipartFile.originalFilename)
             assertThat(document.size).isEqualTo(testContext.multipartFile.size)
             assertThat(document.type).isEqualTo(testContext.multipartFile.contentType)
@@ -259,7 +259,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             createOrganizationDocument(testContext.organization, userUuid, "second.pdf", "second-link.pdf")
         }
         suppose("User is an admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
 
         verify("User admin can delete document") {
@@ -282,7 +282,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.organization = createOrganization("test organization", userUuid)
         }
         suppose("User is an admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("File service will store image") {
             testContext.multipartFile = MockMultipartFile(

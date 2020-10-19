@@ -11,6 +11,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     ORG_DUPLICATE_INVITE("06", "05", "User is already invited"),
     ORG_DUPLICATE_NAME("06", "06", "Organization with this name already exists"),
     ORG_MEM_MISSING("06", "08", "Organization membership missing"),
+    ORG_INVALID_INVITE("06", "09", "Invalid organization invitation"),
 
     // Project: 07
     PRJ_MISSING("07", "01", "Non existing project"),
@@ -27,5 +28,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),
     INT_GRPC_USER("08", "04", "Failed gRPC call to user service"),
     INT_DB("08", "07", "Database exception"),
+    INT_REQUEST("08", "08", "Invalid controller request exception"),
     INT_GRPC_WALLET("08", "09", "Failed gRPC call to wallet service")
 }

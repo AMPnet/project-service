@@ -21,7 +21,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRe
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
-import com.ampnet.projectservice.persistence.repository.RoleRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
 import org.junit.jupiter.api.extension.ExtendWith
@@ -45,9 +44,6 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
-
-    @Autowired
-    protected lateinit var roleRepository: RoleRepository
 
     @Autowired
     protected lateinit var organizationRepository: OrganizationRepository
@@ -87,7 +83,6 @@ abstract class JpaServiceTestBase : TestBase() {
         organization.createdAt = ZonedDateTime.now()
         organization.approved = true
         organization.createdByUserUuid = createdByUuid
-        organization.documents = emptyList()
         organization.headerImage = null
         organization.coop = COOP
         return organizationRepository.save(organization)

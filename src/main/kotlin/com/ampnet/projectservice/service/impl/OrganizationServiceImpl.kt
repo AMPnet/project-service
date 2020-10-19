@@ -1,6 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 @Service
@@ -38,7 +37,7 @@ class OrganizationServiceImpl(
                 "Organization with name: ${serviceRequest.name} already exists"
             )
         }
-        val imageName = getImageNameFromMultipartFile(serviceRequest.headerImage)
+        val imageName = ServiceUtils.getImageNameFromMultipartFile(serviceRequest.headerImage)
         val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
         val organization = Organization(
             serviceRequest.name, serviceRequest.owner.uuid, link,
@@ -46,7 +45,7 @@ class OrganizationServiceImpl(
         )
         val savedOrganization = organizationRepository.save(organization)
         organizationMembershipService.addUserToOrganization(
-            serviceRequest.owner.uuid, organization.uuid, OrganizationRoleType.ORG_ADMIN
+            serviceRequest.owner.uuid, organization.uuid, OrganizationRole.ORG_ADMIN
         )
 
         logger.info { "Created organization: ${organization.name}" }
@@ -91,7 +90,7 @@ class OrganizationServiceImpl(
     override fun updateOrganization(request: OrganizationUpdateServiceRequest): Organization {
         val organization = getOrganization(request.organizationUuid)
         request.headerImage?.let {
-            val imageName = getImageNameFromMultipartFile(it)
+            val imageName = ServiceUtils.getImageNameFromMultipartFile(it)
             val link = storageService.saveImage(
                 imageName,
                 it.bytes
@@ -118,7 +117,4 @@ class OrganizationServiceImpl(
         organizationRepository.save(organization)
         logger.debug { "Add document: ${document.name} to organization: ${organization.uuid}" }
     }
-
-    private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
-        multipartFile.originalFilename ?: multipartFile.name
 }

@@ -1,10 +1,11 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
-import com.ampnet.projectservice.controller.pojo.response.OrganizationInviteResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
+import com.ampnet.projectservice.exception.ErrorCode
+import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
-import javax.validation.Valid
+import java.util.regex.Pattern
 
 @RestController
 class OrganizationInvitationController(
@@ -33,7 +34,6 @@ class OrganizationInvitationController(
         logger.debug { "Received request to list my invites" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val invites = organizationInviteService.getAllInvitationsForUser(userPrincipal.email)
-            .map { OrganizationInviteResponse(it) }
         return ResponseEntity.ok(OrganizationInvitesListResponse(invites))
     }
 
@@ -58,11 +58,11 @@ class OrganizationInvitationController(
     @PostMapping("/invites/organization/{uuid}/invite")
     fun inviteToOrganization(
         @PathVariable("uuid") uuid: UUID,
-        @RequestBody @Valid request: OrganizationInviteRequest
+        @RequestBody request: OrganizationInviteRequest
     ): ResponseEntity<Unit> {
+        validateEmails(request.emails)
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to invited user to organization $uuid by user: ${userPrincipal.email}" }
-
         return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
             val serviceRequest = OrganizationInviteServiceRequest(request, uuid, userPrincipal.uuid)
             organizationInviteService.sendInvitation(serviceRequest)
@@ -111,5 +111,18 @@ class OrganizationInvitationController(
             }
         logger.info { "User $userUuid is not a member of organization $organizationUuid" }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+    }
+
+    private fun validateEmails(emails: List<String>) {
+        val pattern = Pattern.compile("^[^@]+@[^@]+\$")
+        val invalidEmails = emails.filter { pattern.matcher(it).matches().not() }
+        if (invalidEmails.isNotEmpty()) {
+            val joinedInvalidEmails = invalidEmails.joinToString()
+            throw InvalidRequestException(
+                ErrorCode.ORG_INVALID_INVITE,
+                "Some emails are in wrong format: $joinedInvalidEmails",
+                errors = mapOf("emails" to joinedInvalidEmails)
+            )
+        }
     }
 }

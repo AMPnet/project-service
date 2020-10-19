@@ -3,7 +3,7 @@ package com.ampnet.projectservice.controller
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdatesRequest
 import com.ampnet.projectservice.controller.pojo.response.ProjectUpdateResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectUpdatesResponse
-import com.ampnet.projectservice.enums.OrganizationRoleType
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectUpdate
 import com.ampnet.projectservice.persistence.repository.ProjectUpdateRepository
@@ -65,7 +65,7 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser
     fun mustBeAbleToDeleteProjectUpdate() {
         suppose("User is project admin") {
-            addUserToOrganization(userUuid, project.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, project.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Suppose project has update") {
             testContext.projectUpdate = createProjectUpdate(testContext.title, testContext.content)
@@ -86,7 +86,7 @@ class ProjectUpdateControllerTest : ControllerTestBase() {
     @WithMockCrowdfundUser
     fun mustBeAbleToCreateProjectUpdate() {
         suppose("User is project admin") {
-            addUserToOrganization(userUuid, project.organization.uuid, OrganizationRoleType.ORG_ADMIN)
+            addUserToOrganization(userUuid, project.organization.uuid, OrganizationRole.ORG_ADMIN)
         }
 
         verify("Project admin can create project update") {

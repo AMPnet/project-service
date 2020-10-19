@@ -4,6 +4,8 @@ import mu.KLogging
 import org.springframework.core.NestedExceptionUtils
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
+import org.springframework.validation.FieldError
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -17,7 +19,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ResourceAlreadyExistsException::class)
     fun handleResourceAlreadyExists(exception: ResourceAlreadyExistsException): ErrorResponse {
         logger.warn("ResourceAlreadyExistsException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message)
+        return generateErrorResponse(exception.errorCode, exception.message, exception.errors)
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -31,7 +33,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRequestException::class)
     fun handleInvalidRequestException(exception: InvalidRequestException): ErrorResponse {
         logger.warn("InvalidRequestException", exception)
-        return generateErrorResponse(exception.errorCode, exception.message)
+        return generateErrorResponse(exception.errorCode, exception.message, exception.errors)
     }
 
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
@@ -56,9 +58,28 @@ class GlobalExceptionHandler {
         return generateErrorResponse(ErrorCode.INT_DB, message)
     }
 
-    private fun generateErrorResponse(errorCode: ErrorCode, systemMessage: String?): ErrorResponse {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ErrorResponse {
+        val errors = mutableMapOf<String, String>()
+        val sb = StringBuilder()
+        exception.bindingResult.allErrors.forEach { error ->
+            val filed = (error as FieldError).field
+            val errorMessage = error.defaultMessage ?: "Unknown"
+            errors[filed] = errorMessage
+            sb.append("$filed $errorMessage. ")
+        }
+        logger.info { "MethodArgumentNotValidException: $sb" }
+        return generateErrorResponse(ErrorCode.INT_REQUEST, sb.toString(), errors)
+    }
+
+    private fun generateErrorResponse(
+        errorCode: ErrorCode,
+        systemMessage: String?,
+        errors: Map<String, String> = emptyMap()
+    ): ErrorResponse {
         val errorMessage = systemMessage ?: "Error not defined"
         val errCode = errorCode.categoryCode + errorCode.specificCode
-        return ErrorResponse(errorCode.message, errCode, errorMessage)
+        return ErrorResponse(errorCode.message, errCode, errorMessage, errors)
     }
 }

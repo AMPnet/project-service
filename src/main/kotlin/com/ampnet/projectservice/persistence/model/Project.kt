@@ -13,19 +13,19 @@ import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
+import javax.persistence.OneToMany
 import javax.persistence.Table
 
 @Entity
 @Table(name = "project")
-data class Project(
+@Suppress("LongParameterList")
+class Project(
     @Id
     var uuid: UUID,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_uuid")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organization_uuid", nullable = false)
     var organization: Organization,
 
     @Column(nullable = false)
@@ -81,13 +81,9 @@ data class Project(
     @Column(nullable = false)
     var active: Boolean,
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "project_document",
-        joinColumns = [JoinColumn(name = "project_uuid")],
-        inverseJoinColumns = [JoinColumn(name = "document_id")]
-    )
-    var documents: List<Document>?,
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_uuid")
+    var documents: MutableList<Document>?,
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
@@ -96,4 +92,5 @@ data class Project(
 
     @Column(nullable = false)
     var coop: String
+
 )
