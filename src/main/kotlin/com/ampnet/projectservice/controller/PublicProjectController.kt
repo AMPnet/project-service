@@ -51,7 +51,7 @@ class PublicProjectController(private val projectService: ProjectService) {
                 "Received request to get project all projects " +
                     "for cooperative with id: $coop"
             }
-            projectService.getAllProjects(pageable)
+            projectService.getAllProjects(coop, pageable)
         } else {
             logger.debug {
                 "Received request to get project all projects by tags: $tags " +

@@ -118,6 +118,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         verify("Controller will return all projects") {
             val result = mockMvc.perform(
                 get(publicProjectPath)
+                    .param("coop", COOP)
                     .param("size", "10")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")

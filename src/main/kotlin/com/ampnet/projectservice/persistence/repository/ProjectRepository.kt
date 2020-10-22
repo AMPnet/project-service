@@ -54,4 +54,6 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
             "AND project.coop = :coop"
     )
     fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
+
+    fun findAllByCoop(coop: String, pageable: Pageable): Page<Project>
 }

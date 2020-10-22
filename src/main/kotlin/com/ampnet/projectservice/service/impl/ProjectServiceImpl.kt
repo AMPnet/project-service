@@ -66,7 +66,8 @@ class ProjectServiceImpl(
         projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
 
     @Transactional(readOnly = true)
-    override fun getAllProjects(pageable: Pageable): Page<Project> = projectRepository.findAll(pageable)
+    override fun getAllProjects(coop: String?, pageable: Pageable): Page<Project> =
+        projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
 
     @Transactional(readOnly = true)
     override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {

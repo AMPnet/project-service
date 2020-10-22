@@ -20,7 +20,7 @@ interface ProjectService {
 
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<Project>
-    fun getAllProjects(pageable: Pageable): Page<Project>
+    fun getAllProjects(coop: String?, pageable: Pageable): Page<Project>
 
     fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet>
     fun getProjectsByTags(tags: List<String>, coop: String?, pageable: Pageable, active: Boolean = true): Page<Project>
