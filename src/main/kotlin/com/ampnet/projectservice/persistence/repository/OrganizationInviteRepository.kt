@@ -12,9 +12,9 @@ interface OrganizationInviteRepository : JpaRepository<OrganizationInvitation, I
     @Query(
         "SELECT invitation FROM OrganizationInvitation invitation " +
             "INNER JOIN FETCH invitation.organization " +
-            "WHERE invitation.email = ?1"
+            "WHERE invitation.email = ?1 AND invitation.organization.coop = ?2"
     )
-    fun findAllByEmail(email: String): List<OrganizationInvitation>
+    fun findAllByEmailAndCoop(email: String, coop: String): List<OrganizationInvitation>
 
     fun findByOrganizationUuid(organizationUuid: UUID): List<OrganizationInvitation>
     fun findByOrganizationUuidAndEmailIn(organizationUuid: UUID, email: List<String>): List<OrganizationInvitation>

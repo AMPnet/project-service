@@ -45,6 +45,10 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             createOrganizationDocument(testContext.organization, userUuid)
             addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
+        suppose("User has invite from another organization") {
+            val org = createOrganization("Second org", testContext.uuid, coop = "new-cop")
+            createOrganizationInvite(defaultEmail, org, testContext.uuid)
+        }
 
         verify("User can get a list of his invites") {
             val result = mockMvc.perform(get(pathMe))
@@ -60,7 +64,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(invite.organizationName).isEqualTo(testContext.organization.name)
         }
         verify("Hibernate fetches only required entities") {
-            val invites = organizationInviteRepository.findAllByEmail(defaultEmail)
+            val invites = organizationInviteRepository.findAllByEmailAndCoop(defaultEmail, COOP)
             val invite = invites.first()
             assertThat(Hibernate.isInitialized(invite.organization)).isTrue()
             assertThat(Hibernate.isInitialized(invite.organization.documents)).isFalse()

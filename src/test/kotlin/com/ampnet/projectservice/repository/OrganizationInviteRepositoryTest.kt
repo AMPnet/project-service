@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.repository
 
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import org.assertj.core.api.Assertions.assertThat
@@ -21,7 +22,7 @@ class OrganizationInviteRepositoryTest : RepositoryTestBase() {
     @Test
     fun mustGetAllInvitationsByUserEmail() {
         verify("Jpa query returns organization invites for user email") {
-            val invites = organizationInviteRepository.findAllByEmail(defaultEmail)
+            val invites = organizationInviteRepository.findAllByEmailAndCoop(defaultEmail, COOP)
             assertThat(invites).hasSize(2)
             val invite = invites.first()
             assertThat(Hibernate.isInitialized(invite.organization)).isTrue()
