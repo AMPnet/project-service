@@ -125,7 +125,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfundUser
+    @WithMockCrowdfundUser(email = "user@email.com")
     fun mustBeAbleToInviteUsersToOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
@@ -160,7 +160,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
         }
         verify("Sending mail invitation is called") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendOrganizationInvitationMail(testContext.emails, testContext.organization.name)
+                .sendOrganizationInvitationMail(testContext.emails, testContext.organization.name, "user@email.com")
         }
     }
 

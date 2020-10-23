@@ -84,7 +84,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
         verify("The admin can invite user to organization") {
             val request = OrganizationInviteServiceRequest(
-                invitedUsers, organization.uuid, userUuid
+                invitedUsers, organization.uuid, createUser(userUuid, userEmail)
             )
             organizationInviteService.sendInvitation(request)
         }
@@ -107,7 +107,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         }
         verify("Sending mail invitation is called") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendOrganizationInvitationMail(invitedUsers, organization.name)
+                .sendOrganizationInvitationMail(invitedUsers, organization.name, userEmail)
         }
     }
 
@@ -116,14 +116,14 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         suppose("User has organization invite") {
             databaseCleanerService.deleteAllOrganizationInvitations()
             val request = OrganizationInviteServiceRequest(
-                invitedUsers, organization.uuid, userUuid
+                invitedUsers, organization.uuid, createUser(userUuid, userEmail)
             )
             organizationInviteService.sendInvitation(request)
         }
 
         verify("Service will throw an error for duplicate user invite to organization") {
             val request = OrganizationInviteServiceRequest(
-                invitedUsers, organization.uuid, userUuid
+                invitedUsers, organization.uuid, createUser(userUuid, userEmail)
             )
             assertThrows<ResourceAlreadyExistsException> {
                 organizationInviteService.sendInvitation(request)

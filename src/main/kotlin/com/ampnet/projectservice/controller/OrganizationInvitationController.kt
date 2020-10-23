@@ -64,7 +64,7 @@ class OrganizationInvitationController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to invited user to organization $uuid by user: ${userPrincipal.email}" }
         return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
-            val serviceRequest = OrganizationInviteServiceRequest(request, uuid, userPrincipal.uuid)
+            val serviceRequest = OrganizationInviteServiceRequest(request, uuid, userPrincipal)
             organizationInviteService.sendInvitation(serviceRequest)
             Unit
         }
