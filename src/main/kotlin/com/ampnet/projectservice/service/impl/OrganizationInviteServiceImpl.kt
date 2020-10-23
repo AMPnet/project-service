@@ -43,12 +43,12 @@ class OrganizationInviteServiceImpl(
 
         val invites = request.emails.map { email ->
             OrganizationInvitation(
-                0, email, request.invitedByUserUuid,
+                0, email, request.invitedByUser.uuid,
                 OrganizationRole.ORG_MEMBER, ZonedDateTime.now(), invitedToOrganization
             )
         }
         inviteRepository.saveAll(invites)
-        mailService.sendOrganizationInvitationMail(request.emails, invitedToOrganization.name)
+        mailService.sendOrganizationInvitationMail(request.emails, invitedToOrganization.name, request.invitedByUser.email)
         logger.debug { "Users: ${request.emails.joinToString()} invited to organization: ${request.organizationUuid}" }
     }
 

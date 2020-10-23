@@ -12,6 +12,7 @@ message MailConfirmationRequest {
 message OrganizationInvitationRequest {
   repeated string emails = 1;
   string organization = 2;
+  string sender_email = 3;
 }
 
 message DepositRequest {

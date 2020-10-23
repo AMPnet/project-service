@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
@@ -68,6 +69,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val walletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val defaultPageable: Pageable = PageRequest.of(0, 20)
+    protected val userEmail = "user@email.com"
 
     protected fun createOrganization(name: String, createdByUuid: UUID): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()
@@ -120,5 +122,11 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Document {
         val document = Document(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
         return documentRepository.save(document)
+    }
+
+    protected fun createUser(userUuid: UUID, email: String): UserPrincipal {
+        return UserPrincipal(
+            userUuid, email, "josipk", setOf(), true, true, "coop"
+        )
     }
 }
