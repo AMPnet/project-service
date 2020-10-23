@@ -125,7 +125,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfundUser
+    @WithMockCrowdfundUser(email = "user@email.com")
     fun mustBeAbleToInviteUsersToOrganization() {
         suppose("Organization exists") {
             databaseCleanerService.deleteAllOrganizations()
