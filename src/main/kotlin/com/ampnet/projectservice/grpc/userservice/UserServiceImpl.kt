@@ -3,6 +3,7 @@ package com.ampnet.projectservice.grpc.userservice
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.GrpcException
+import com.ampnet.userservice.proto.GetUsersByEmailRequest
 import com.ampnet.userservice.proto.GetUsersRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
@@ -39,6 +40,22 @@ class UserServiceImpl(
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users. ${ex.localizedMessage}")
+        }
+    }
+
+    override fun getUsersByEmail(emails: List<String>): List<UserResponse> {
+        logger.debug { "Fetching users by emails: ${emails.joinToString()}" }
+        try {
+            val request = GetUsersByEmailRequest.newBuilder()
+                .addAllEmails(emails)
+                .build()
+            val response = serviceBlockingStub
+                .withDeadlineAfter(applicationProperties.grpc.userServiceTimeout, TimeUnit.MILLISECONDS)
+                .getUsersByEmail(request).usersList
+            logger.debug { "Fetched users by emails: $response" }
+            return response
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users by emails. ${ex.localizedMessage}")
         }
     }
 }

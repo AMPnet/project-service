@@ -65,6 +65,10 @@ class OrganizationServiceImpl(
         return organizationRepository.findAllOrganizationsForUserUuid(userUuid)
     }
 
+    override fun findByIdWithMemberships(organizationUuid: UUID): Organization? {
+        return ServiceUtils.wrapOptional(organizationRepository.findByIdWithMemberships(organizationUuid))
+    }
+
     @Transactional
     override fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document {
         val organization = getOrganization(organizationUuid)

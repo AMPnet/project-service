@@ -6,6 +6,7 @@ import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
+import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
@@ -21,6 +22,7 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
+import com.ampnet.userservice.proto.UserResponse
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -67,6 +69,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
     protected val walletService: WalletService = Mockito.mock(WalletService::class.java)
+    protected val userService: UserService = Mockito.mock(UserService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val defaultPageable: Pageable = PageRequest.of(0, 20)
     protected val userEmail = "user@email.com"
@@ -129,4 +132,19 @@ abstract class JpaServiceTestBase : TestBase() {
             userUuid, email, "josipk", setOf(), true, true, "coop"
         )
     }
+
+    protected fun createUserResponse(
+        uuid: UUID,
+        email: String = "email@mail.com",
+        first: String = "First",
+        last: String = "Last",
+        enabled: Boolean = true
+    ): UserResponse =
+        UserResponse.newBuilder()
+            .setUuid(uuid.toString())
+            .setEmail(email)
+            .setFirstName(first)
+            .setLastName(last)
+            .setEnabled(enabled)
+            .build()
 }

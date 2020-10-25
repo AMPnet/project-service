@@ -23,7 +23,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     }
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
-            inviteRepository, followerRepository, mailService, organizationService, organizationMembershipService
+            inviteRepository, followerRepository, mailService, organizationService, organizationMembershipService, userService
         )
     }
 
@@ -31,7 +31,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         databaseCleanerService.deleteAllOrganizations()
         createOrganization("test org", userUuid)
     }
-    private val invitedUsers = listOf("invited@email.com", "invited2@email.com")
+    private val invitedUsers = listOf("invited@email.com", "invited2@email.com", userEmail)
 
     @Test
     fun userCanFollowOrganization() {
@@ -122,6 +122,30 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will throw an error for duplicate user invite to organization") {
+            val request = OrganizationInviteServiceRequest(
+                invitedUsers, organization.uuid, createUser(userUuid, userEmail)
+            )
+            assertThrows<ResourceAlreadyExistsException> {
+                organizationInviteService.sendInvitation(request)
+            }
+        }
+    }
+
+    @Test
+    fun mustThrowErrorForUserAlreadyMemberOfOrganization() {
+        suppose("User is a member or organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            organizationMembershipService.addUserToOrganization(
+                userUuid,
+                organization.uuid,
+                OrganizationRole.ORG_ADMIN
+            )
+        }
+        suppose("User service will return user already in organization") {
+            Mockito.`when`(userService.getUsersByEmail(invitedUsers)).thenReturn(listOf(createUserResponse(userUuid, userEmail)))
+        }
+
+        verify("Service will throw an error for inviting user who is already a member") {
             val request = OrganizationInviteServiceRequest(
                 invitedUsers, organization.uuid, createUser(userUuid, userEmail)
             )
