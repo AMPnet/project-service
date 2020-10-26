@@ -6,6 +6,8 @@ import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.grpc.mailservice.MailService
+import com.ampnet.projectservice.grpc.userservice.UserService
+import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.persistence.repository.OrganizationFollowerRepository
@@ -23,24 +25,27 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
+@Suppress("LongParameterList")
 class OrganizationInviteServiceImpl(
     private val inviteRepository: OrganizationInviteRepository,
     private val followerRepository: OrganizationFollowerRepository,
     private val mailService: MailService,
     private val organizationService: OrganizationService,
-    private val organizationMembershipService: OrganizationMembershipService
+    private val organizationMembershipService: OrganizationMembershipService,
+    private val userService: UserService
 ) : OrganizationInviteService {
 
     companion object : KLogging()
 
     @Transactional
     override fun sendInvitation(request: OrganizationInviteServiceRequest) {
-        val invitedToOrganization = organizationService.findOrganizationById(request.organizationUuid)
+        val invitedToOrganization = organizationService.findByIdWithMemberships(request.organizationUuid)
             ?: throw ResourceNotFoundException(
                 ErrorCode.ORG_MISSING,
                 "Missing organization with id: ${request.organizationUuid}"
             )
         throwExceptionForDuplicatedInvitations(request)
+        throwExceptionForAlreadyInOrganization(invitedToOrganization, request)
 
         val invites = request.emails.map { email ->
             OrganizationInvitation(
@@ -121,6 +126,24 @@ class OrganizationInviteServiceImpl(
                 "Some users are already invited: $emails",
                 mapOf("emails" to emails)
             )
+        }
+    }
+
+    private fun throwExceptionForAlreadyInOrganization(
+        organization: Organization,
+        request: OrganizationInviteServiceRequest
+    ) {
+        organization.memberships?.associateBy { it.userUuid.toString() }?.let { membershipMap ->
+            val duplicatedUsers = userService.getUsersByEmail(request.invitedByUser.coop, request.emails)
+                .filter { membershipMap.containsKey(it.uuid) }
+            if (duplicatedUsers.isNotEmpty()) {
+                val duplicatedEmails = duplicatedUsers.joinToString { it.email }
+                throw ResourceAlreadyExistsException(
+                    ErrorCode.ORG_DUPLICATE_USER,
+                    "Some users are already a member of this organization: $duplicatedEmails",
+                    mapOf("emails" to duplicatedEmails)
+                )
+            }
         }
     }
 }

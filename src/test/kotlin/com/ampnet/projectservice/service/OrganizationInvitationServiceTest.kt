@@ -1,6 +1,8 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.OrganizationRole
+import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
@@ -23,7 +25,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     }
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
-            inviteRepository, followerRepository, mailService, organizationService, organizationMembershipService
+            inviteRepository, followerRepository, mailService, organizationService, organizationMembershipService, userService
         )
     }
 
@@ -31,7 +33,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
         databaseCleanerService.deleteAllOrganizations()
         createOrganization("test org", userUuid)
     }
-    private val invitedUsers = listOf("invited@email.com", "invited2@email.com")
+    private val invitedUsers = listOf("invited@email.com", "invited2@email.com", userEmail)
 
     @Test
     fun userCanFollowOrganization() {
@@ -125,9 +127,35 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             val request = OrganizationInviteServiceRequest(
                 invitedUsers, organization.uuid, createUserPrincipal(userUuid, userEmail)
             )
-            assertThrows<ResourceAlreadyExistsException> {
+            val exception = assertThrows<ResourceAlreadyExistsException> {
                 organizationInviteService.sendInvitation(request)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_DUPLICATE_INVITE)
+        }
+    }
+
+    @Test
+    fun mustThrowErrorForUserAlreadyMemberOfOrganization() {
+        suppose("User is a member or organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            organizationMembershipService.addUserToOrganization(
+                userUuid,
+                organization.uuid,
+                OrganizationRole.ORG_ADMIN
+            )
+        }
+        suppose("User service will return user already in organization") {
+            Mockito.`when`(userService.getUsersByEmail(COOP, invitedUsers)).thenReturn(listOf(createUserResponse(userUuid, userEmail)))
+        }
+
+        verify("Service will throw an error for inviting user who is already a member") {
+            val request = OrganizationInviteServiceRequest(
+                invitedUsers, organization.uuid, createUserPrincipal(userUuid, userEmail)
+            )
+            val exception = assertThrows<ResourceAlreadyExistsException> {
+                organizationInviteService.sendInvitation(request)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_DUPLICATE_USER)
         }
     }
 }
