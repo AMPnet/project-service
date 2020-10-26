@@ -128,21 +128,14 @@ class OrganizationInviteServiceImpl(
     }
 
     private fun throwExceptionForAlreadyInOrganization(organization: Organization, emails: List<String>) {
-        val users = userService.getUsersByEmail(emails)
-        if (users.isNotEmpty()) {
-            val memberships = organization.memberships
-            if (memberships?.isNotEmpty() == true) {
-                val userMembershipMap = memberships.associateBy { it.userUuid.toString() }
-                users.filter { user ->
-                    userMembershipMap.containsKey(user.uuid)
-                }
-            }
-            if (users.isNotEmpty()) {
-                val mails = users.joinToString { it.email }
+        organization.memberships?.associateBy { it.userUuid.toString() }?.let { membershipMap ->
+            val duplicatedUsers = userService.getUsersByEmail(emails).filter { membershipMap.containsKey(it.uuid) }
+            if (duplicatedUsers.isNotEmpty()) {
+                val duplicatedEmails = duplicatedUsers.joinToString { it.email }
                 throw ResourceAlreadyExistsException(
                     ErrorCode.ORG_DUPLICATE_USER,
-                    "Some users are already a member of this organization: $mails",
-                    mapOf("emails" to mails)
+                    "Some users are already a member of this organization: $duplicatedEmails",
+                    mapOf("emails" to duplicatedEmails)
                 )
             }
         }
