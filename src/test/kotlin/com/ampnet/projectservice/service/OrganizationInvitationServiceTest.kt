@@ -2,6 +2,7 @@ package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.OrganizationRole
+import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
@@ -126,9 +127,10 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             val request = OrganizationInviteServiceRequest(
                 invitedUsers, organization.uuid, createUserPrincipal(userUuid, userEmail)
             )
-            assertThrows<ResourceAlreadyExistsException> {
+            val exception = assertThrows<ResourceAlreadyExistsException> {
                 organizationInviteService.sendInvitation(request)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_DUPLICATE_INVITE)
         }
     }
 
@@ -150,9 +152,10 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             val request = OrganizationInviteServiceRequest(
                 invitedUsers, organization.uuid, createUserPrincipal(userUuid, userEmail)
             )
-            assertThrows<ResourceAlreadyExistsException> {
+            val exception = assertThrows<ResourceAlreadyExistsException> {
                 organizationInviteService.sendInvitation(request)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_DUPLICATE_USER)
         }
     }
 }

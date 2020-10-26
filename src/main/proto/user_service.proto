@@ -57,5 +57,4 @@ service UserService {
   rpc GetTokenIssuers(CoopRequest) returns (UsersResponse);
   rpc GetUserWithInfo(GetUserRequest) returns (UserWithInfoResponse);
   rpc GetUsersByEmail(GetUsersByEmailRequest) returns (UsersResponse);
-
 }

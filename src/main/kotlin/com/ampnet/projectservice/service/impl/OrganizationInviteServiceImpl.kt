@@ -25,6 +25,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
+@Suppress("LongParameterList")
 class OrganizationInviteServiceImpl(
     private val inviteRepository: OrganizationInviteRepository,
     private val followerRepository: OrganizationFollowerRepository,
