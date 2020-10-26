@@ -40,7 +40,7 @@ class ProjectUpdateServiceTest : JpaServiceTestBase() {
                 val serviceRequest = CreateProjectUpdate(userUuid, "author", project.uuid, "title", "content")
                 service.createProjectUpdate(serviceRequest)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_MISSING)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
         }
     }
 
@@ -58,7 +58,7 @@ class ProjectUpdateServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<InvalidRequestException> {
                 service.deleteProjectUpdate(userUuid, project.uuid, projectUpdate.id)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_MISSING)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
         }
     }
 }

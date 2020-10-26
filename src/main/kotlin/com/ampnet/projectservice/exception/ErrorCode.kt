@@ -3,7 +3,7 @@ package com.ampnet.projectservice.exception
 enum class ErrorCode(val categoryCode: String, var specificCode: String, var message: String) {
 
     // Users: 03
-    USER_ROLE_MISSING("03", "05", "Missing user role"),
+    USER_ROLE_INVALID("03", "05", "Invalid user role"),
 
     // Organization: 06
     ORG_MISSING("06", "01", "Non existing organization"),
