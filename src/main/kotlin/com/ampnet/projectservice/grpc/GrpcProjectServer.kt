@@ -68,6 +68,7 @@ class GrpcProjectServer(
             .setCreatedByUser(organization.createdByUserUuid.toString())
             .setCreatedAt(organization.createdAt.toInstant().toEpochMilli())
             .setApproved(organization.approved)
+            .setCoop(organization.coop)
         organization.description?.let { builder.setDescription(it) }
         organization.headerImage?.let { builder.setHeaderImage(it) }
         return builder.build()
@@ -87,6 +88,7 @@ class GrpcProjectServer(
             .setActive(project.active)
             .setOrganizationUuid(project.organization.uuid.toString())
             .setDescription(project.description)
+            .setCoop(project.coop)
         project.mainImage?.let { builder.setImageUrl(it) }
         return builder.build()
     }

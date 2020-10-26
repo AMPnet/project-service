@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.SearchServiceImpl
 import org.assertj.core.api.Assertions.assertThat
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test
 class SearchServiceTest : JpaServiceTestBase() {
 
     private val searchService: SearchService by lazy {
-        SearchServiceImpl(organizationRepository, projectRepository)
+        SearchServiceImpl(organizationRepository, projectRepository, applicationProperties)
     }
 
     private lateinit var testContext: TestContext
@@ -30,7 +31,7 @@ class SearchServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return empty list") {
-            val organizations = searchService.searchOrganizations("Non existing", defaultPageable)
+            val organizations = searchService.searchOrganizations("Non existing", COOP, defaultPageable)
             assertThat(organizations).hasSize(0)
         }
     }
@@ -48,9 +49,11 @@ class SearchServiceTest : JpaServiceTestBase() {
 
         verify("Service will find one organization") {
             val organizations = searchService
-                .searchOrganizations(testContext.organizationName, defaultPageable)
+                .searchOrganizations(testContext.organizationName, COOP, defaultPageable)
             assertThat(organizations).hasSize(1)
-            assertThat(organizations.first().name).isEqualTo(testContext.organizationName)
+            val org = organizations.first()
+            assertThat(org.name).isEqualTo(testContext.organizationName)
+            assertThat(org.coop).isEqualTo(COOP)
         }
     }
 
@@ -69,30 +72,36 @@ class SearchServiceTest : JpaServiceTestBase() {
 
         verify("Service will find by name in lower case") {
             val organizations = searchService
-                .searchOrganizations(testContext.organizationName.toLowerCase(), defaultPageable)
+                .searchOrganizations(testContext.organizationName.toLowerCase(), COOP, defaultPageable)
             assertThat(organizations).hasSize(1)
-            assertThat(organizations.first().name).isEqualTo(testContext.organizationName)
+            val org = organizations.first()
+            assertThat(org.name).isEqualTo(testContext.organizationName)
+            assertThat(org.coop).isEqualTo(COOP)
         }
         verify("Service will find by similar in upper case") {
             val organizations = searchService
-                .searchOrganizations(testContext.organizationName.toUpperCase(), defaultPageable)
+                .searchOrganizations(testContext.organizationName.toUpperCase(), COOP, defaultPageable)
             assertThat(organizations).hasSize(1)
-            assertThat(organizations.first().name).isEqualTo(testContext.organizationName)
+            val org = organizations.first()
+            assertThat(org.name).isEqualTo(testContext.organizationName)
+            assertThat(org.coop).isEqualTo(COOP)
         }
         verify("Service will find by name if the last word is missing") {
             val organizations = searchService
-                .searchOrganizations(testContext.organizationName.split(" ")[0], defaultPageable)
-            assertThat(organizations).hasSize(1)
-            assertThat(organizations.first().name).isEqualTo(testContext.organizationName)
+                .searchOrganizations(testContext.organizationName.split(" ")[0], COOP, defaultPageable)
+            val org = organizations.first()
+            assertThat(org.name).isEqualTo(testContext.organizationName)
+            assertThat(org.coop).isEqualTo(COOP)
         }
         verify("Service will find by name if the first word is missing") {
             val organizations = searchService
-                .searchOrganizations(testContext.organizationName.split(" ")[1], defaultPageable)
-            assertThat(organizations).hasSize(1)
-            assertThat(organizations.first().name).isEqualTo(testContext.organizationName)
+                .searchOrganizations(testContext.organizationName.split(" ")[1], COOP, defaultPageable)
+            val org = organizations.first()
+            assertThat(org.name).isEqualTo(testContext.organizationName)
+            assertThat(org.coop).isEqualTo(COOP)
         }
         verify("Service will find multiple organizations with similar name") {
-            val organizations = searchService.searchOrganizations("Org", defaultPageable)
+            val organizations = searchService.searchOrganizations("Org", COOP, defaultPageable)
             assertThat(organizations).hasSize(3)
         }
     }
@@ -112,7 +121,7 @@ class SearchServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will return empty list") {
-            val projects = searchService.searchProjects("Non existing", defaultPageable)
+            val projects = searchService.searchProjects("Non existing", COOP, defaultPageable)
             assertThat(projects).hasSize(0)
         }
     }
@@ -133,9 +142,11 @@ class SearchServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will find one organization") {
-            val organizations = searchService.searchProjects(testContext.projectName, defaultPageable)
+            val organizations = searchService.searchProjects(testContext.projectName, COOP, defaultPageable)
             assertThat(organizations).hasSize(1)
-            assertThat(organizations.first().name).isEqualTo(testContext.projectName)
+            val org = organizations.first()
+            assertThat(org.name).isEqualTo(testContext.projectName)
+            assertThat(org.coop).isEqualTo(COOP)
         }
     }
 
@@ -156,30 +167,38 @@ class SearchServiceTest : JpaServiceTestBase() {
 
         verify("Service will find by name in lower case") {
             val projects = searchService
-                .searchProjects(testContext.projectName.toLowerCase(), defaultPageable)
+                .searchProjects(testContext.projectName.toLowerCase(), COOP, defaultPageable)
             assertThat(projects).hasSize(1)
-            assertThat(projects.first().name).isEqualTo(testContext.projectName)
+            val project = projects.first()
+            assertThat(project.name).isEqualTo(testContext.projectName)
+            assertThat(project.coop).isEqualTo(COOP)
         }
         verify("Service will find by similar in upper case") {
             val projects = searchService
-                .searchProjects(testContext.projectName.toUpperCase(), defaultPageable)
+                .searchProjects(testContext.projectName.toUpperCase(), COOP, defaultPageable)
             assertThat(projects).hasSize(1)
-            assertThat(projects.first().name).isEqualTo(testContext.projectName)
+            val project = projects.first()
+            assertThat(project.name).isEqualTo(testContext.projectName)
+            assertThat(project.coop).isEqualTo(COOP)
         }
         verify("Service will find by name if the last word is missing") {
             val projects = searchService
-                .searchProjects(testContext.projectName.split(" ")[0], defaultPageable)
+                .searchProjects(testContext.projectName.split(" ")[0], COOP, defaultPageable)
             assertThat(projects).hasSize(1)
-            assertThat(projects.first().name).isEqualTo(testContext.projectName)
+            val project = projects.first()
+            assertThat(project.name).isEqualTo(testContext.projectName)
+            assertThat(project.coop).isEqualTo(COOP)
         }
         verify("Service will find by name if the first word is missing") {
             val projects = searchService
-                .searchProjects(testContext.projectName.split(" ")[1], defaultPageable)
+                .searchProjects(testContext.projectName.split(" ")[1], COOP, defaultPageable)
             assertThat(projects).hasSize(1)
-            assertThat(projects.first().name).isEqualTo(testContext.projectName)
+            val project = projects.first()
+            assertThat(project.name).isEqualTo(testContext.projectName)
+            assertThat(project.coop).isEqualTo(COOP)
         }
         verify("Service will return 2 projects that start with same letter") {
-            val projects = searchService.searchProjects("P", defaultPageable)
+            val projects = searchService.searchProjects("P", COOP, defaultPageable)
             assertThat(projects).hasSize(2)
         }
     }

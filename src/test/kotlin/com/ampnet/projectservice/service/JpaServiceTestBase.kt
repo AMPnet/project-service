@@ -2,7 +2,9 @@ package com.ampnet.projectservice.service
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.TestBase
+import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.config.DatabaseCleanerService
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
@@ -37,7 +39,7 @@ import java.util.UUID
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
-@Import(DatabaseCleanerService::class, ProjectTagRepositoryImpl::class)
+@Import(DatabaseCleanerService::class, ApplicationProperties::class, ProjectTagRepositoryImpl::class)
 abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
@@ -59,10 +61,13 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var projectRepository: ProjectRepository
 
     @Autowired
+    protected lateinit var projectTagRepository: ProjectTagRepository
+
+    @Autowired
     protected lateinit var documentRepository: DocumentRepository
 
     @Autowired
-    protected lateinit var projectTagRepository: ProjectTagRepository
+    protected lateinit var applicationProperties: ApplicationProperties
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
@@ -80,6 +85,7 @@ abstract class JpaServiceTestBase : TestBase() {
         organization.approved = true
         organization.createdByUserUuid = createdByUuid
         organization.headerImage = null
+        organization.coop = COOP
         return organizationRepository.save(organization)
     }
 
@@ -110,6 +116,7 @@ abstract class JpaServiceTestBase : TestBase() {
         project.createdByUserUuid = createdByUserUuid
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
+        project.coop = COOP
         return projectRepository.save(project)
     }
 
@@ -124,9 +131,18 @@ abstract class JpaServiceTestBase : TestBase() {
         return documentRepository.save(document)
     }
 
-    protected fun createUser(userUuid: UUID, email: String): UserPrincipal {
+    protected fun createUserPrincipal(
+        userUuid: UUID,
+        email: String = "email@email",
+        name: String = "Username",
+        authorities: Set<String> = mutableSetOf(),
+        enabled: Boolean = true,
+        verified: Boolean = true,
+        coop: String = COOP
+    ): UserPrincipal {
         return UserPrincipal(
-            userUuid, email, "josipk", setOf(), true, true, "coop"
+            userUuid, email, name, authorities,
+            enabled, verified, coop
         )
     }
 }

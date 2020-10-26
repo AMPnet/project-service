@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.controller
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
@@ -46,7 +47,7 @@ class ProjectController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, request.organizationUuid) {
-            createProject(request, userPrincipal.uuid)
+            createProject(request, userPrincipal)
         }
     }
 
@@ -146,9 +147,9 @@ class ProjectController(
     private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
         multipartFile.originalFilename ?: multipartFile.name
 
-    private fun createProject(request: ProjectRequest, userUuid: UUID): ProjectResponse {
+    private fun createProject(request: ProjectRequest, user: UserPrincipal): ProjectResponse {
         val organization = getOrganization(request.organizationUuid)
-        val project = projectService.createProject(userUuid, organization, request)
+        val project = projectService.createProject(user, organization, request)
         return ProjectResponse(project)
     }
 

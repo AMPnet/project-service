@@ -10,6 +10,7 @@ class ApplicationProperties {
     var fileStorage: FileStorageProperties = FileStorageProperties()
     var investment: InvestmentProperties = InvestmentProperties()
     var grpc: GrpcProperties = GrpcProperties()
+    val coop: CoopProperties = CoopProperties()
 }
 
 class JwtProperties {
@@ -33,4 +34,8 @@ class GrpcProperties {
     var mailServiceTimeout: Long = 1000
     var userServiceTimeout: Long = 1000
     var walletServiceTimeout: Long = 1000
+}
+
+class CoopProperties {
+    lateinit var default: String
 }

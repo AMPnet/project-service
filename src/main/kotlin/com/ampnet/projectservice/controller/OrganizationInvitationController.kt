@@ -33,7 +33,7 @@ class OrganizationInvitationController(
     fun getMyInvitations(): ResponseEntity<OrganizationInvitesListResponse> {
         logger.debug { "Received request to list my invites" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val invites = organizationInviteService.getAllInvitationsForUser(userPrincipal.email)
+        val invites = organizationInviteService.getAllInvitationsForUser(userPrincipal)
         return ResponseEntity.ok(OrganizationInvitesListResponse(invites))
     }
 

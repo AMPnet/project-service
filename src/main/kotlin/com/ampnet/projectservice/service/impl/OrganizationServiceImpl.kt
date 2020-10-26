@@ -39,10 +39,13 @@ class OrganizationServiceImpl(
         }
         val imageName = ServiceUtils.getImageNameFromMultipartFile(serviceRequest.headerImage)
         val link = storageService.saveImage(imageName, serviceRequest.headerImage.bytes)
-        val organization = Organization(serviceRequest.name, serviceRequest.ownerUuid, link, serviceRequest.description)
+        val organization = Organization(
+            serviceRequest.name, serviceRequest.owner.uuid, link,
+            serviceRequest.description, serviceRequest.owner.coop
+        )
         val savedOrganization = organizationRepository.save(organization)
         organizationMembershipService.addUserToOrganization(
-            serviceRequest.ownerUuid, organization.uuid, OrganizationRole.ORG_ADMIN
+            serviceRequest.owner.uuid, organization.uuid, OrganizationRole.ORG_ADMIN
         )
 
         logger.info { "Created organization: ${organization.name}" }

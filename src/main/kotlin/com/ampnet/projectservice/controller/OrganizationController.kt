@@ -69,7 +69,7 @@ class OrganizationController(
     ): ResponseEntity<OrganizationWithDocumentResponse> {
         logger.debug { "Received request to create organization: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val serviceRequest = OrganizationServiceRequest(request, userPrincipal.uuid, image)
+        val serviceRequest = OrganizationServiceRequest(request, userPrincipal, image)
         val organization = organizationService.createOrganization(serviceRequest)
         return ResponseEntity.ok(OrganizationWithDocumentResponse(organization))
     }

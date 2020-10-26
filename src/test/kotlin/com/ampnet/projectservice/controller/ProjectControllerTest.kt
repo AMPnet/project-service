@@ -132,6 +132,23 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Project is stored in database") {
             val optionalProject = projectRepository.findById(testContext.projectUuid)
             assertThat(optionalProject).isPresent
+            val project = optionalProject.get()
+            assertThat(project.name).isEqualTo(testContext.projectRequest.name)
+            assertThat(project.description).isEqualTo(testContext.projectRequest.description)
+            assertThat(project.location.lat).isEqualTo(testContext.projectRequest.location.lat)
+            assertThat(project.location.long).isEqualTo(testContext.projectRequest.location.long)
+            assertThat(project.roi.from).isEqualTo(testContext.projectRequest.roi.from)
+            assertThat(project.roi.to).isEqualTo(testContext.projectRequest.roi.to)
+            assertThat(project.startDate).isEqualTo(testContext.projectRequest.startDate)
+            assertThat(project.endDate).isEqualTo(testContext.projectRequest.endDate)
+            assertThat(project.expectedFunding).isEqualTo(testContext.projectRequest.expectedFunding)
+            assertThat(project.currency).isEqualTo(testContext.projectRequest.currency)
+            assertThat(project.minPerUser).isEqualTo(testContext.projectRequest.minPerUser)
+            assertThat(project.maxPerUser).isEqualTo(testContext.projectRequest.maxPerUser)
+            assertThat(project.createdByUserUuid).isEqualTo(userUuid)
+            assertThat(project.organization.uuid).isEqualTo(organization.uuid)
+            assertThat(project.active).isEqualTo(testContext.projectRequest.active)
+            assertThat(project.coop).isEqualTo(COOP)
         }
     }
 

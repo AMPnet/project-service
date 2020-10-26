@@ -39,7 +39,7 @@ class ProjectRepositoryTest : RepositoryTestBase() {
     @Test
     fun mustFindAllByOrganizationUuid() {
         verify("Jpa query returns projects with organization data") {
-            val projects = projectRepository.findAllByOrganizationUuid(testContext.organization.uuid)
+            val projects = projectRepository.findAllByOrganizationUuid(testContext.organization.uuid, coop)
             assertThat(projects).hasSize(1)
             val project = projects.first()
             assertThat(Hibernate.isInitialized(project.organization)).isTrue()

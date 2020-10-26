@@ -1,5 +1,5 @@
 package com.ampnet.projectservice.persistence.repository
 
 interface ProjectTagRepository {
-    fun getAllTags(): List<String>
+    fun getAllTagsByCoop(coop: String): List<String>
 }

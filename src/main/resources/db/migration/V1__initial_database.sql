@@ -1,14 +1,3 @@
--- Role
-CREATE TABLE role (
-  id INT PRIMARY KEY,
-  name VARCHAR NOT NULL,
-  description VARCHAR NOT NULL
-);
-INSERT INTO role VALUES
-  (1, 'ORG_ADMIN', 'Administrators can manage users in organization.');
-INSERT INTO role VALUES
-  (2, 'ORG_MEMBER', 'Members can use organization.');
-
 -- Organization
 CREATE TABLE organization (
     uuid UUID PRIMARY KEY,
@@ -18,28 +7,33 @@ CREATE TABLE organization (
     updated_at TIMESTAMP,
     approved BOOLEAN NOT NULL,
     approved_by_user_uuid UUID,
-    legal_info VARCHAR
+    description VARCHAR,
+    header_image VARCHAR,
+    coop VARCHAR(64) NOT NULL
 );
 CREATE TABLE organization_membership (
     id SERIAL PRIMARY KEY,
     organization_uuid UUID REFERENCES organization(uuid) NOT NULL,
     user_uuid UUID NOT NULL,
-    role_id INT REFERENCES role(id),
-    created_at TIMESTAMP NOT NULL
+    role_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    CONSTRAINT uc_organization_membership_org_user UNIQUE(organization_uuid, user_uuid)
 );
 CREATE TABLE organization_follower (
     id SERIAL PRIMARY KEY,
     organization_uuid UUID REFERENCES organization(uuid) NOT NULL,
     user_uuid UUID NOT NULL,
-    created_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP NOT NULL,
+    CONSTRAINT uc_organization_follower_org_user UNIQUE(organization_uuid, user_uuid)
 );
 CREATE TABLE organization_invitation (
     id SERIAL PRIMARY KEY,
     email VARCHAR NOT NULL,
     organization_uuid UUID REFERENCES organization(uuid) NOT NULL,
     invited_by_user_uuid UUID NOT NULL,
-    role_id INT REFERENCES role(id),
-    created_at TIMESTAMP NOT NULL
+    role_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    CONSTRAINT uc_organization_invitation_email_org UNIQUE(email, organization_uuid)
 );
 
 -- Project
@@ -61,7 +55,8 @@ CREATE TABLE project (
     main_image VARCHAR,
     created_by_user_uuid UUID NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    active BOOLEAN NOT NULL
+    active BOOLEAN NOT NULL,
+    coop VARCHAR(64) NOT NULL
 );
 CREATE TABLE project_tag (
     project_uuid UUID REFERENCES project(uuid) NOT NULL,
@@ -75,6 +70,15 @@ CREATE TABLE project_gallery (
     project_uuid UUID REFERENCES project(uuid) NOT NULL,
     image VARCHAR NOT NULL
 );
+CREATE TABLE project_update(
+    id SERIAL PRIMARY KEY,
+    project_uuid UUID REFERENCES project(uuid) NOT NULL,
+    title VARCHAR NOT NULL,
+    content VARCHAR NOT NULL,
+    author VARCHAR NOT NULL,
+    created_by UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
 
 -- Document
 CREATE TABLE document (
@@ -84,17 +88,7 @@ CREATE TABLE document (
     type VARCHAR(16) NOT NULL,
     size INT NOT NULL,
     created_by_user_uuid UUID NOT NULL,
-    created_at TIMESTAMP NOT NULL
-);
-CREATE TABLE project_document(
-    project_uuid UUID REFERENCES project(uuid) NOT NULL,
-    document_id INT REFERENCES document(id) NOT NULL,
-
-    PRIMARY KEY (project_uuid, document_id)
-);
-CREATE TABLE organization_document(
-    organization_uuid UUID REFERENCES organization(uuid) NOT NULL,
-    document_id INT REFERENCES document(id) NOT NULL,
-
-    PRIMARY KEY (organization_uuid, document_id)
+    created_at TIMESTAMP NOT NULL,
+    organization_uuid UUID,
+    project_uuid UUID
 );

@@ -157,7 +157,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<ResourceAlreadyExistsException> {
                 val request = OrganizationServiceRequest(
                     OrganizationRequest(organization.name, "description"),
-                    userUuid, multipartFile
+                    createUserPrincipal(userUuid), multipartFile
                 )
                 organizationService.createOrganization(request)
             }

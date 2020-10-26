@@ -6,6 +6,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface SearchService {
-    fun searchOrganizations(name: String, pageable: Pageable): Page<Organization>
-    fun searchProjects(name: String, pageable: Pageable): Page<Project>
+    fun searchOrganizations(name: String, coop: String?, pageable: Pageable): Page<Organization>
+    fun searchProjects(name: String, coop: String?, pageable: Pageable): Page<Project>
 }
