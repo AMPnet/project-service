@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
@@ -142,12 +143,12 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             )
         }
         suppose("User service will return user already in organization") {
-            Mockito.`when`(userService.getUsersByEmail(invitedUsers)).thenReturn(listOf(createUserResponse(userUuid, userEmail)))
+            Mockito.`when`(userService.getUsersByEmail(COOP, invitedUsers)).thenReturn(listOf(createUserResponse(userUuid, userEmail)))
         }
 
         verify("Service will throw an error for inviting user who is already a member") {
             val request = OrganizationInviteServiceRequest(
-                invitedUsers, organization.uuid, createUser(userUuid, userEmail)
+                invitedUsers, organization.uuid, createUserPrincipal(userUuid, userEmail)
             )
             assertThrows<ResourceAlreadyExistsException> {
                 organizationInviteService.sendInvitation(request)

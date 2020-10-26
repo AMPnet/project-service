@@ -44,7 +44,7 @@ class OrganizationInviteServiceImpl(
                 "Missing organization with id: ${request.organizationUuid}"
             )
         throwExceptionForDuplicatedInvitations(request)
-        throwExceptionForAlreadyInOrganization(invitedToOrganization, request.emails)
+        throwExceptionForAlreadyInOrganization(invitedToOrganization, request)
 
         val invites = request.emails.map { email ->
             OrganizationInvitation(
@@ -128,9 +128,13 @@ class OrganizationInviteServiceImpl(
         }
     }
 
-    private fun throwExceptionForAlreadyInOrganization(organization: Organization, emails: List<String>) {
+    private fun throwExceptionForAlreadyInOrganization(
+        organization: Organization,
+        request: OrganizationInviteServiceRequest
+    ) {
         organization.memberships?.associateBy { it.userUuid.toString() }?.let { membershipMap ->
-            val duplicatedUsers = userService.getUsersByEmail(emails).filter { membershipMap.containsKey(it.uuid) }
+            val duplicatedUsers = userService.getUsersByEmail(request.invitedByUser.coop, request.emails)
+                .filter { membershipMap.containsKey(it.uuid) }
             if (duplicatedUsers.isNotEmpty()) {
                 val duplicatedEmails = duplicatedUsers.joinToString { it.email }
                 throw ResourceAlreadyExistsException(

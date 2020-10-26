@@ -23,5 +23,4 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
     @Query("SELECT org FROM Organization org LEFT JOIN FETCH org.memberships")
     fun findByIdWithMemberships(organizationUuid: UUID): Optional<Organization>
-
 }

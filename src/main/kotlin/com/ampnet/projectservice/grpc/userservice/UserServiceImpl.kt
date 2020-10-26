@@ -42,11 +42,12 @@ class UserServiceImpl(
         }
     }
 
-    override fun getUsersByEmail(emails: List<String>): List<UserResponse> {
+    override fun getUsersByEmail(coop: String, emails: List<String>): List<UserResponse> {
         logger.debug { "Fetching users by emails: ${emails.joinToString()}" }
         try {
             val request = GetUsersByEmailRequest.newBuilder()
                 .addAllEmails(emails)
+                .setCoop(coop)
                 .build()
             val response = serviceWithTimeout()
                 .getUsersByEmail(request).usersList
