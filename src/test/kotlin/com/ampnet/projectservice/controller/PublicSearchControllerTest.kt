@@ -23,6 +23,7 @@ class PublicSearchControllerTest : ControllerTestBase() {
         verify("Controller will return empty list of projects and organizations") {
             val result = mockMvc.perform(
                 get(searchPath).param("name", "Empty")
+                    .param("coop", COOP)
                     .param("size", "10")
                     .param("page", "0")
             )
@@ -52,6 +53,7 @@ class PublicSearchControllerTest : ControllerTestBase() {
         verify("Controller will a list of organizations and project containing searched word") {
             val result = mockMvc.perform(
                 get(searchPath).param("name", "Pro")
+                    .param("coop", COOP)
                     .param("size", "10")
                     .param("page", "0")
             )

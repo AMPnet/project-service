@@ -19,13 +19,17 @@ class PublicSearchController(private val searchService: SearchService) {
     @GetMapping("/public/search")
     fun findOrganizationsAndProjects(
         @RequestParam(name = "name") name: String,
+        @RequestParam(name = "coop", required = false) coop: String?,
         pageable: Pageable
     ): ResponseEntity<SearchOrgAndProjectResponse> {
-        logger.debug { "Searching for organization and projects with name: $name" }
+        logger.debug {
+            "Searching for organization and projects with name: $name" +
+                " for cooperative with id: $coop"
+        }
 
-        val organizations = searchService.searchOrganizations(name, pageable)
+        val organizations = searchService.searchOrganizations(name, coop, pageable)
         logger.debug { "Found organizations = ${organizations.map { it.name }}" }
-        val projects = searchService.searchProjects(name, pageable)
+        val projects = searchService.searchProjects(name, coop, pageable)
         logger.debug { "Found projects = ${projects.map { it.name }}" }
 
         val organizationListResponse = organizations.map { OrganizationResponse(it) }.toList()

@@ -118,6 +118,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         verify("Controller will return all projects") {
             val result = mockMvc.perform(
                 get(publicProjectPath)
+                    .param("coop", COOP)
                     .param("size", "10")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")
@@ -172,6 +173,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         verify("Controller will return active projects with active wallets") {
             val result = mockMvc.perform(
                 get("$publicProjectPath/active")
+                    .param("coop", COOP)
                     .param("size", "10")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")
@@ -230,7 +232,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will count all active projects") {
-            val result = mockMvc.perform(get("$publicProjectPath/active/count"))
+            val result = mockMvc.perform(get("$publicProjectPath/active/count").param("coop", COOP))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -251,10 +253,15 @@ class PublicProjectControllerTest : ControllerTestBase() {
             val project3 = createProject("Project 3", organization, userUuid, active = false)
             addTagsToProject(project3, listOf("wind", "green"))
         }
+        suppose("There is project from another cooperative") {
+            val project4 = createProject("Project 3", organization, userUuid, coop = "another_coop")
+            addTagsToProject(project4, listOf("wind", "green"))
+        }
 
-        verify("Controller will return projects containing all tags and are active") {
+        verify("Controller will return projects containing all tags which are active and from the cooperative") {
             val result = mockMvc.perform(
                 get(publicProjectPath)
+                    .param("coop", COOP)
                     .param("tags", "wind", "green")
                     .param("size", "10")
                     .param("page", "0")
@@ -276,10 +283,16 @@ class PublicProjectControllerTest : ControllerTestBase() {
             addTagsToProject(project1, listOf("wind", "solar"))
             val project2 = createProject("Project 2", organization, userUuid)
             addTagsToProject(project2, listOf("wind", "green"))
+            val project3 = createProject("Project 3", organization, userUuid)
+            addTagsToProject(project3, listOf())
+        }
+        suppose("There is project from another cooperative") {
+            val project4 = createProject("Project 1", organization, userUuid, coop = "another_coop")
+            addTagsToProject(project4, listOf("wind", "solar", "blue"))
         }
 
         verify("Controller will return all tags") {
-            val result = mockMvc.perform(get("$publicProjectPath/tags"))
+            val result = mockMvc.perform(get("$publicProjectPath/tags").param("coop", COOP))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -305,6 +318,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         verify("Controller will return all projects for specified organization") {
             val result = mockMvc.perform(
                 get("$publicProjectPath/organization/${organization.uuid}")
+                    .param("coop", COOP)
                     .param("size", "10")
                     .param("page", "0")
                     .param("sort", "name,asc")

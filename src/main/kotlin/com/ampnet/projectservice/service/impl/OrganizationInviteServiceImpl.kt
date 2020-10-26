@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
@@ -67,8 +68,8 @@ class OrganizationInviteServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllInvitationsForUser(email: String): List<OrganizationInvitationWithData> {
-        val invites = inviteRepository.findAllByEmail(email)
+    override fun getAllInvitationsForUser(userPrincipal: UserPrincipal): List<OrganizationInvitationWithData> {
+        val invites = inviteRepository.findAllByEmailAndCoop(userPrincipal.email, userPrincipal.coop)
         return invites.map { OrganizationInvitationWithData(it) }
     }
 

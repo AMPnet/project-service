@@ -48,6 +48,8 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
 
+const val COOP = "ampnet-test"
+
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 @ActiveProfiles("GrpcServiceMockConfig, CloudStorageMockConfig")
@@ -119,7 +121,7 @@ abstract class ControllerTestBase : TestBase() {
         assert(response.errCode == expectedErrorCode)
     }
 
-    protected fun createOrganization(name: String, userUuid: UUID): Organization {
+    protected fun createOrganization(name: String, userUuid: UUID, coop: String = COOP): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()
         organization.uuid = UUID.randomUUID()
         organization.name = name
@@ -128,6 +130,7 @@ abstract class ControllerTestBase : TestBase() {
         organization.approved = true
         organization.createdByUserUuid = userUuid
         organization.headerImage = "Organization header image"
+        organization.coop = coop
         return organizationRepository.save(organization)
     }
 
@@ -149,7 +152,8 @@ abstract class ControllerTestBase : TestBase() {
         endDate: ZonedDateTime = ZonedDateTime.now().plusDays(30),
         expectedFunding: Long = 10_000_000,
         minPerUser: Long = 10,
-        maxPerUser: Long = 10_000
+        maxPerUser: Long = 10_000,
+        coop: String = COOP
     ): Project {
         val project = Project::class.java.getDeclaredConstructor().newInstance()
         project.uuid = UUID.randomUUID()
@@ -167,6 +171,7 @@ abstract class ControllerTestBase : TestBase() {
         project.createdByUserUuid = createdByUserUuid
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
+        project.coop = coop
         return projectRepository.save(project)
     }
 

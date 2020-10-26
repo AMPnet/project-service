@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
@@ -34,16 +35,16 @@ import java.util.UUID
 @Service
 class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
-    private val projectTagRepository: ProjectTagRepository,
     private val storageService: StorageService,
     private val applicationProperties: ApplicationProperties,
-    private val walletService: WalletService
+    private val walletService: WalletService,
+    private val projectTagRepository: ProjectTagRepository
 ) : ProjectService {
 
     companion object : KLogging()
 
     @Transactional
-    override fun createProject(user: UUID, organization: Organization, request: ProjectRequest): Project {
+    override fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project {
         validateCreateProjectRequest(request)
         logger.debug { "Creating project: ${request.name}" }
         val project = createProjectFromRequest(user, organization, request)
@@ -61,15 +62,18 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectsForOrganization(organizationId: UUID): List<Project> =
-        projectRepository.findAllByOrganizationUuid(organizationId)
+    override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<Project> =
+        projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
 
     @Transactional(readOnly = true)
-    override fun getAllProjects(pageable: Pageable): Page<Project> = projectRepository.findAll(pageable)
+    override fun getAllProjects(coop: String?, pageable: Pageable): Page<Project> =
+        projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
 
     @Transactional(readOnly = true)
-    override fun getActiveProjects(pageable: Pageable): Page<ProjectWithWallet> {
-        val activeProjects = projectRepository.findByActive(ZonedDateTime.now(), true, pageable)
+    override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
+        val activeProjects = projectRepository.findByActive(
+            ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default, pageable
+        )
         val activeWallets = walletService.getWalletsByOwner(activeProjects.toList().map { it.uuid })
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
@@ -153,8 +157,20 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectTags(): List<String> = projectTagRepository.getAllTags()
+    override fun getAllProjectTags(coop: String?): List<String> {
+        return projectTagRepository.getAllTagsByCoop(coop ?: applicationProperties.coop.default)
+    }
 
+    @Transactional(readOnly = true)
+    override fun getProjectsByTags(
+        tags: List<String>,
+        coop: String?,
+        pageable: Pageable,
+        active: Boolean
+    ): Page<Project> =
+        projectRepository.findByTags(
+            tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, pageable
+        )
     @Transactional(readOnly = true)
     override fun getProjectWithWallet(id: UUID): FullProjectWithWallet? {
         val project = getProjectByIdWithAllData(id) ?: return null
@@ -163,12 +179,10 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsByTags(tags: List<String>, pageable: Pageable, active: Boolean): Page<Project> =
-        projectRepository.findByTags(tags, tags.size.toLong(), pageable)
-
-    @Transactional(readOnly = true)
-    override fun countActiveProjects(): Int =
-        projectRepository.countAllActiveByDate(ZonedDateTime.now(), true)
+    override fun countActiveProjects(coop: String?): Int =
+        projectRepository.countAllActiveByDate(
+            ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default
+        )
 
     @Suppress("ThrowsCount")
     private fun validateCreateProjectRequest(request: ProjectRequest) {
@@ -227,7 +241,7 @@ class ProjectServiceImpl(
         project.mainImage = link
     }
 
-    private fun createProjectFromRequest(user: UUID, organization: Organization, request: ProjectRequest) =
+    private fun createProjectFromRequest(user: UserPrincipal, organization: Organization, request: ProjectRequest) =
         Project(
             UUID.randomUUID(),
             organization,
@@ -244,11 +258,12 @@ class ProjectServiceImpl(
             null,
             null,
             null,
-            user,
+            user.uuid,
             ZonedDateTime.now(),
             request.active,
             null,
-            request.tags?.toSet()?.map { it.toLowerCase() }
+            request.tags?.toSet()?.map { it.toLowerCase() },
+            user.coop
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {
