@@ -46,7 +46,7 @@ class ProjectUpdateServiceImpl(
         }
         if (canUserWriteOrgProject(user, project.organization.uuid).not()) {
             throw InvalidRequestException(
-                ErrorCode.USER_ROLE_MISSING, "User: $user does not have a privilege to edit project: ${project.uuid}"
+                ErrorCode.USER_ROLE_INVALID, "User: $user does not have a privilege to edit project: ${project.uuid}"
             )
         }
     }
