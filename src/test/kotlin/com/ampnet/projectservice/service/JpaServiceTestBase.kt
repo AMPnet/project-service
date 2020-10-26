@@ -74,6 +74,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val walletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val defaultPageable: Pageable = PageRequest.of(0, 20)
+    protected val userEmail = "user@email.com"
 
     protected fun createOrganization(name: String, createdByUuid: UUID): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()

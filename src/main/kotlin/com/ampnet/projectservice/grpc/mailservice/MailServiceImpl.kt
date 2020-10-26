@@ -24,12 +24,13 @@ class MailServiceImpl(
         MailServiceGrpc.newStub(channel)
     }
 
-    override fun sendOrganizationInvitationMail(emails: List<String>, organizationName: String) {
+    override fun sendOrganizationInvitationMail(emails: List<String>, organizationName: String, senderEmail: String) {
         logger.debug { "Sending organization invitation mail to ${emails.joinToString()}" }
         try {
             val request = OrganizationInvitationRequest.newBuilder()
                 .addAllEmails(emails)
                 .setOrganization(organizationName)
+                .setSenderEmail(senderEmail)
                 .build()
 
             serviceWithTimeout()
