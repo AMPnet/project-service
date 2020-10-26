@@ -21,6 +21,6 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
     fun findByNameContainingIgnoreCaseAndCoop(name: String, coop: String, pageable: Pageable): Page<Organization>
 
-    @Query("SELECT org FROM Organization org LEFT JOIN FETCH org.memberships")
+    @Query("SELECT org FROM Organization org LEFT JOIN FETCH org.memberships WHERE org.uuid = :organizationUuid")
     fun findByIdWithMemberships(organizationUuid: UUID): Optional<Organization>
 }
