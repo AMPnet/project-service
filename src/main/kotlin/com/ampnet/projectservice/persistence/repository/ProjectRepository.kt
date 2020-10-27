@@ -56,4 +56,11 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
 
     fun findAllByCoop(coop: String, pageable: Pageable): Page<Project>
+
+    @Query(
+        "SELECT project FROM Project project " +
+            "INNER JOIN FETCH project.organization organization " +
+            "WHERE organization.uuid IN (:organizationUuids)"
+    )
+    fun findAllByOrganizations(organizationUuids: List<UUID>): List<Project>
 }

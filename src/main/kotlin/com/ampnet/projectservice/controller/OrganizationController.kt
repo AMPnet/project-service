@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationWithProjectCountListResponse
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -44,13 +45,12 @@ class OrganizationController(
     }
 
     @GetMapping("/organization/personal")
-    fun getPersonalOrganizations(): ResponseEntity<OrganizationListResponse> {
+    fun getPersonalOrganizations(): ResponseEntity<OrganizationWithProjectCountListResponse> {
         logger.debug { "Received request for personal organizations" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val organizations = organizationService
-            .findAllOrganizationsForUser(userPrincipal.uuid)
-            .map { OrganizationResponse(it) }
-        return ResponseEntity.ok(OrganizationListResponse(organizations))
+        val organizations =
+            organizationService.findAllOrganizationsForUser(userPrincipal.uuid)
+        return ResponseEntity.ok(OrganizationWithProjectCountListResponse(organizations))
     }
 
     @GetMapping("/organization/{uuid}")

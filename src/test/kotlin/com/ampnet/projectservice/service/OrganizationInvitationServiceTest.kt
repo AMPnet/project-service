@@ -21,7 +21,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
     private val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
     private val organizationService: OrganizationService by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl)
+        OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl, projectRepository)
     }
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
