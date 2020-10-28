@@ -63,4 +63,10 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
             "WHERE organization.uuid IN (:organizationUuids)"
     )
     fun findAllByOrganizations(organizationUuids: List<UUID>): List<Project>
+
+    @Query(
+        "SELECT COUNT(project.uuid) FROM Project project " +
+            "INNER JOIN project.organization organization WHERE organization.uuid = ?1"
+    )
+    fun countProjectsByOrganization(organizationUuid: UUID): Int
 }
