@@ -8,12 +8,12 @@ data class OrganizationInvitationWithData(
     val organizationUuid: UUID,
     val organizationName: String,
     val role: OrganizationRole,
-    val organizationHeaderImage: String
+    val organizationHeaderImage: String?
 ) {
     constructor(invite: OrganizationInvitation) : this(
         invite.organization.uuid,
         invite.organization.name,
         invite.role,
-        invite.organization.headerImage.orEmpty()
+        invite.organization.headerImage
     )
 }
