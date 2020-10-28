@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationWithProjectCountListResponse
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
@@ -144,25 +145,46 @@ class OrganizationControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfundUser
     fun mustBeAbleToGetPersonalOrganizations() {
-        suppose("Organization exists") {
+        suppose("First Organization exists and has one project") {
             databaseCleanerService.deleteAllOrganizations()
-            testContext.organization = createOrganization("test organization", userUuid)
+            testContext.organization = createOrganization("First organization", userUuid)
+            createProject("Project1", testContext.organization, userUuid)
         }
-        suppose("User is a member of organization") {
+        suppose("Second Organization exists and has two projects") {
+            testContext.secondOrganization = createOrganization("Second organization", userUuid)
+            createProject("Project2", testContext.secondOrganization, userUuid)
+            createProject("Project3", testContext.secondOrganization, userUuid)
+        }
+        suppose("User is member of both organizations") {
             addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
+            addUserToOrganization(userUuid, testContext.secondOrganization.uuid, OrganizationRole.ORG_MEMBER)
         }
-        suppose("Another organization exists") {
-            createOrganization("new organization", userUuid)
+        suppose("Another organization exists and has a project") {
+            val thirdOrganization = createOrganization("new organization", userUuid)
+            createProject("Project4", thirdOrganization, userUuid)
         }
 
-        verify("User will organization that he is a member") {
+        verify("User will get organizations that he is a member of") {
             val result = mockMvc.perform(get("$organizationPath/personal"))
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val organizationResponse: OrganizationListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(organizationResponse.organizations).hasSize(1)
-            assertThat(organizationResponse.organizations.map { it.name }).contains(testContext.organization.name)
+            val organizationResponse: OrganizationWithProjectCountListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(organizationResponse.organizations).hasSize(2)
+            val firstOrganization = organizationResponse.organizations.first()
+            val secondOrganization = organizationResponse.organizations.last()
+            assertThat(firstOrganization.projectCount).isEqualTo(1)
+            assertThat(firstOrganization.uuid).isEqualTo(testContext.organization.uuid)
+            assertThat(firstOrganization.name).isEqualTo(testContext.organization.name)
+            assertThat(secondOrganization.projectCount).isEqualTo(2)
+            assertThat(secondOrganization.name).isEqualTo(testContext.secondOrganization.name)
+            assertThat(secondOrganization.uuid).isEqualTo(testContext.secondOrganization.uuid)
+        }
+        verify("Project repository returns projects in organizations") {
+            val projects = projectRepository.findAllByOrganizations(
+                listOf(testContext.organization.uuid, testContext.secondOrganization.uuid)
+            )
+            assertThat(projects).hasSize(3)
         }
     }
 
@@ -340,6 +362,7 @@ class OrganizationControllerTest : ControllerTestBase() {
         lateinit var organizationRequest: OrganizationRequest
         lateinit var createdOrganizationUuid: UUID
         lateinit var organization: Organization
+        lateinit var secondOrganization: Organization
         val documentLink = "link"
         lateinit var document: Document
         lateinit var multipartFile: MockMultipartFile

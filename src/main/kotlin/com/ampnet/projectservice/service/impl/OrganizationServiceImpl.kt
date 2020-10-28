@@ -7,12 +7,14 @@ import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
+import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
+import com.ampnet.projectservice.service.pojo.OrganizationWitProjectCountServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -24,7 +26,8 @@ import java.util.UUID
 class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository,
     private val organizationMembershipService: OrganizationMembershipService,
-    private val storageService: StorageService
+    private val storageService: StorageService,
+    private val projectRepository: ProjectRepository
 ) : OrganizationService {
 
     companion object : KLogging()
@@ -64,8 +67,14 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findAllOrganizationsForUser(userUuid: UUID): List<Organization> {
-        return organizationRepository.findAllOrganizationsForUserUuid(userUuid)
+    override fun findAllOrganizationsForUser(userUuid: UUID): List<OrganizationWitProjectCountServiceResponse> {
+        val organizations = organizationRepository.findAllOrganizationsForUserUuid(userUuid)
+        val projectsMap = projectRepository.findAllByOrganizations(organizations.map { it.uuid })
+            .groupBy { it.organization.uuid }
+        return organizations.map { organization ->
+            val projectCount = projectsMap[organization.uuid]?.size ?: 0
+            OrganizationWitProjectCountServiceResponse(organization, projectCount)
+        }
     }
 
     override fun findByIdWithMemberships(organizationUuid: UUID): Organization? {
