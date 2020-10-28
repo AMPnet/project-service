@@ -70,9 +70,9 @@ class OrganizationServiceImpl(
     override fun findAllOrganizationsForUser(userUuid: UUID): List<OrganizationWitProjectCountServiceResponse> {
         val organizations = organizationRepository.findAllOrganizationsForUserUuid(userUuid)
         val projectsMap = projectRepository.findAllByOrganizations(organizations.map { it.uuid })
-            .groupBy { it.organization }
+            .groupBy { it.organization.uuid }
         return organizations.map { organization ->
-            val projectCount = projectsMap[organization]?.size ?: 0
+            val projectCount = projectsMap[organization.uuid]?.size ?: 0
             OrganizationWitProjectCountServiceResponse(organization, projectCount)
         }
     }
