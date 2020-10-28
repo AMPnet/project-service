@@ -68,7 +68,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service returns organization with image") {
-            val organizationWithImage = organizationService.findOrganizationById(organization.uuid)
+            val organizationWithImage = organizationService.findOrganizationWithProjectCountById(organization.uuid)
                 ?: fail("Organization must not be null")
             assertThat(organizationWithImage.uuid).isEqualTo(organization.uuid)
             assertThat(organizationWithImage.headerImage).isNotNull()
@@ -186,7 +186,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             assertThat(updatedOrganization.headerImage).isEqualTo(organization.headerImage)
         }
         verify("Organization is not updated in in database") {
-            val storedOrganization = organizationService.findOrganizationById(organization.uuid)
+            val storedOrganization = organizationService.findOrganizationWithProjectCountById(organization.uuid)
                 ?: fail("Organization must no be null")
             assertThat(storedOrganization.description).isEqualTo(organization.description)
             assertThat(storedOrganization.headerImage).isEqualTo(organization.headerImage)

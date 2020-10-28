@@ -10,6 +10,7 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationWithProjec
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import mu.KLogging
@@ -54,10 +55,10 @@ class OrganizationController(
     }
 
     @GetMapping("/organization/{uuid}")
-    fun getOrganization(@PathVariable("uuid") uuid: UUID): ResponseEntity<OrganizationWithDocumentResponse> {
+    fun getOrganization(@PathVariable("uuid") uuid: UUID): ResponseEntity<OrganizationFullServiceResponse> {
         logger.debug { "Received request for organization with uuid: $uuid" }
-        organizationService.findOrganizationById(uuid)?.let {
-            return ResponseEntity.ok(OrganizationWithDocumentResponse(it))
+        organizationService.findOrganizationWithProjectCountById(uuid)?.let {
+            return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
     }

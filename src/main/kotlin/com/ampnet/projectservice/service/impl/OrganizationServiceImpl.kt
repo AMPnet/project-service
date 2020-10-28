@@ -12,6 +12,7 @@ import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
+import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.OrganizationWitProjectCountServiceResponse
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository,
     private val organizationMembershipService: OrganizationMembershipService,
@@ -62,6 +64,12 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    override fun findOrganizationWithProjectCountById(organizationUuid: UUID): OrganizationFullServiceResponse? {
+        val organization = findOrganizationById(organizationUuid) ?: return null
+        val projectCount = projectRepository.countProjectsByOrganization(organizationUuid)
+        return OrganizationFullServiceResponse(organization, projectCount)
+    }
+
     override fun findOrganizationById(organizationUuid: UUID): Organization? {
         return ServiceUtils.wrapOptional(organizationRepository.findByIdWithDocuments(organizationUuid))
     }

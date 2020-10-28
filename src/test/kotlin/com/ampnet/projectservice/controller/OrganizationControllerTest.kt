@@ -12,6 +12,7 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.projectservice.service.OrganizationService
+import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -93,7 +94,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.createdOrganizationUuid = organizationWithDocumentResponse.uuid
         }
         verify("Organization is stored in database") {
-            val organization = organizationService.findOrganizationById(testContext.createdOrganizationUuid)
+            val organization = organizationRepository.findByIdWithDocuments(testContext.createdOrganizationUuid).get()
                 ?: fail("Organization must no be null")
             assertThat(organization.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organization.description).isEqualTo(testContext.organizationRequest.description)
@@ -198,22 +199,32 @@ class OrganizationControllerTest : ControllerTestBase() {
         suppose("Organization has document") {
             createOrganizationDocument(testContext.organization, userUuid, "name", testContext.documentLink)
         }
+        suppose("Two projects belong to the organization") {
+            createProject("Project1", testContext.organization, userUuid)
+            createProject("Project1", testContext.organization, userUuid)
+        }
+        suppose("Antoher organization exists and has projects") {
+            testContext.secondOrganization = createOrganization("test organization 2", userUuid)
+            createProject("Project1", testContext.secondOrganization, userUuid)
+            createProject("Project1", testContext.secondOrganization, userUuid)
+        }
 
         verify("User can get organization with id") {
             val result = mockMvc.perform(MockMvcRequestBuilders.get("$organizationPath/${testContext.organization.uuid}"))
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
 
-            val organizationWithDocumentResponse: OrganizationWithDocumentResponse =
+            val organizationFullServiceResponse: OrganizationFullServiceResponse =
                 objectMapper.readValue(result.response.contentAsString)
-            assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organization.name)
-            assertThat(organizationWithDocumentResponse.description).isEqualTo(testContext.organization.description)
-            assertThat(organizationWithDocumentResponse.headerImage).isEqualTo(testContext.organization.headerImage)
-            assertThat(organizationWithDocumentResponse.uuid).isEqualTo(testContext.organization.uuid)
-            assertThat(organizationWithDocumentResponse.approved).isEqualTo(testContext.organization.approved)
-            assertThat(organizationWithDocumentResponse.documents.size)
+            assertThat(organizationFullServiceResponse.name).isEqualTo(testContext.organization.name)
+            assertThat(organizationFullServiceResponse.description).isEqualTo(testContext.organization.description)
+            assertThat(organizationFullServiceResponse.headerImage).isEqualTo(testContext.organization.headerImage)
+            assertThat(organizationFullServiceResponse.uuid).isEqualTo(testContext.organization.uuid)
+            assertThat(organizationFullServiceResponse.approved).isEqualTo(testContext.organization.approved)
+            assertThat(organizationFullServiceResponse.documents.size)
                 .isEqualTo(testContext.organization.documents?.size)
-            assertThat(organizationWithDocumentResponse.createdAt).isEqualTo(testContext.organization.createdAt)
+            assertThat(organizationFullServiceResponse.createdAt).isEqualTo(testContext.organization.createdAt)
+            assertThat(organizationFullServiceResponse.projectCount).isEqualTo(2)
         }
     }
 
@@ -256,7 +267,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(documentResponse.link).isEqualTo(testContext.documentLink)
         }
         verify("Document is stored in database and connected to organization") {
-            val organizationDocuments = organizationService.findOrganizationById(testContext.organization.uuid)?.documents
+            val organizationDocuments = organizationService.findOrganizationWithProjectCountById(testContext.organization.uuid)?.documents
                 ?: fail("Organization documents must not be null")
             assertThat(organizationDocuments).hasSize(1)
 
@@ -291,8 +302,8 @@ class OrganizationControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
         }
         verify("Document is deleted") {
-            val organizationWithDocument = organizationService.findOrganizationById(testContext.organization.uuid)
-            assertThat(organizationWithDocument?.documents).hasSize(1).doesNotContain(testContext.document)
+            val organizationWithDocument = organizationRepository.findByIdWithDocuments(testContext.organization.uuid).get()
+            assertThat(organizationWithDocument.documents).hasSize(1).doesNotContain(testContext.document)
         }
     }
 
@@ -346,7 +357,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.createdOrganizationUuid = organizationResponse.uuid
         }
         verify("Organization is stored in database") {
-            val organization = organizationService.findOrganizationById(testContext.createdOrganizationUuid)
+            val organization = organizationService.findOrganizationWithProjectCountById(testContext.createdOrganizationUuid)
                 ?: fail("Organization must no be null")
             assertThat(organization.name).isEqualTo(testContext.organization.name)
             assertThat(organization.description).isEqualTo(testContext.organizationUpdateRequest.description)
