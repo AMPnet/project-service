@@ -10,7 +10,7 @@ data class OrganizationResponse(
     val createdAt: ZonedDateTime,
     val approved: Boolean,
     val description: String,
-    val headerImage: String
+    val headerImage: String?
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
@@ -18,7 +18,7 @@ data class OrganizationResponse(
         organization.createdAt,
         organization.approved,
         organization.description.orEmpty(),
-        organization.headerImage.orEmpty()
+        organization.headerImage
     )
 }
 
@@ -35,7 +35,7 @@ data class OrganizationWithDocumentResponse(
     val approved: Boolean,
     val documents: List<DocumentResponse>,
     val description: String,
-    val headerImage: String
+    val headerImage: String?
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
@@ -44,6 +44,6 @@ data class OrganizationWithDocumentResponse(
         organization.approved,
         organization.documents?.map { DocumentResponse(it) }.orEmpty(),
         organization.description.orEmpty(),
-        organization.headerImage.orEmpty()
+        organization.headerImage
     )
 }

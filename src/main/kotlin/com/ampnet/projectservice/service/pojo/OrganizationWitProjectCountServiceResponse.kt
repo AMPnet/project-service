@@ -10,7 +10,7 @@ data class OrganizationWitProjectCountServiceResponse(
     val createdAt: ZonedDateTime,
     val approved: Boolean,
     val description: String,
-    val headerImage: String,
+    val headerImage: String?,
     val projectCount: Int
 ) {
     constructor(organization: Organization, projectCount: Int) : this(
@@ -19,7 +19,7 @@ data class OrganizationWitProjectCountServiceResponse(
         organization.createdAt,
         organization.approved,
         organization.description.orEmpty(),
-        organization.headerImage.orEmpty(),
+        organization.headerImage,
         projectCount
     )
 }
