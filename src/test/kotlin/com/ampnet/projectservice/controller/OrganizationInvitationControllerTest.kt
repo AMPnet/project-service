@@ -62,6 +62,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(invite.role).isEqualTo(OrganizationRole.ORG_MEMBER)
             assertThat(invite.organizationUuid).isEqualTo(testContext.organization.uuid)
             assertThat(invite.organizationName).isEqualTo(testContext.organization.name)
+            assertThat(invite.organizationHeaderImage).isEqualTo(testContext.organization.headerImage)
         }
         verify("Hibernate fetches only required entities") {
             val invites = organizationInviteRepository.findAllByEmailAndCoop(defaultEmail, COOP)
