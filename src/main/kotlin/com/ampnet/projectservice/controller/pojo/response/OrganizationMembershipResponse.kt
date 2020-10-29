@@ -11,6 +11,7 @@ data class OrganizationMembershipResponse(
     val uuid: UUID,
     val firstName: String,
     val lastName: String,
+    val email: String,
     val role: String,
     val memberSince: ZonedDateTime
 ) {
@@ -18,6 +19,7 @@ data class OrganizationMembershipResponse(
         membership.userUuid,
         userResponse?.firstName.orEmpty(),
         userResponse?.lastName.orEmpty(),
+        userResponse?.email.orEmpty(),
         membership.role.name,
         membership.createdAt
     )
