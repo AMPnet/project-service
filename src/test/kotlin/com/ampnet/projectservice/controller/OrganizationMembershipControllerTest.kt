@@ -70,6 +70,7 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
                 .containsAll(listOf(OrganizationRole.ORG_ADMIN.name, OrganizationRole.ORG_MEMBER.name))
             assertThat(members.members.map { it.firstName }).containsAll(testContext.userResponses.map { it.firstName })
             assertThat(members.members.map { it.lastName }).containsAll(testContext.userResponses.map { it.lastName })
+            assertThat(members.members.map { it.email }).containsAll(testContext.userResponses.map { it.email })
         }
     }
 
