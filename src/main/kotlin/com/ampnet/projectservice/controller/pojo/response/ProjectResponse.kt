@@ -4,6 +4,7 @@ import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
+import com.ampnet.projectservice.service.pojo.ProjectWithWalletOptional
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -143,3 +144,5 @@ data class ProjectWithWalletListResponse(
     val page: Int = 0,
     val totalPages: Int = 1
 )
+
+data class ProjectWithWalletOptionalListResponse(val projects: List<ProjectWithWalletOptional>)

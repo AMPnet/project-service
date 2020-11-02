@@ -9,6 +9,7 @@ import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectWithWalletOptional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.util.UUID
@@ -19,7 +20,7 @@ interface ProjectService {
     fun updateProject(serviceRequest: ProjectUpdateServiceRequest): Project
 
     fun getProjectByIdWithAllData(id: UUID): Project?
-    fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<Project>
+    fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWalletOptional>
     fun getAllProjects(coop: String?, pageable: Pageable): Page<Project>
 
     fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet>

@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectLocationRespons
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletOptionalListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -305,34 +306,45 @@ class PublicProjectControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToGetListOfProjectsForOrganization() {
-        suppose("Organization has 3 projects") {
+        suppose("Organization has two projects") {
             testContext.project = createProject("Project 1", organization, userUuid)
-            createProject("Project 2", organization, userUuid)
-            createProject("Project 3", organization, userUuid)
+            testContext.secondProject = createProject("Project 2", organization, userUuid)
         }
         suppose("Second organization has project") {
             val secondOrganization = createOrganization("Second organization", userUuid)
-            testContext.secondProject = createProject("Second project", secondOrganization, userUuid)
+            testContext.thirdProject = createProject("Project 3", secondOrganization, userUuid)
+        }
+        suppose("Wallet service returns wallet for first project") {
+            testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
+            Mockito.`when`(
+                walletService.getWalletsByOwner(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+            ).thenReturn(listOf(testContext.activeWallet))
         }
 
         verify("Controller will return all projects for specified organization") {
             val result = mockMvc.perform(
                 get("$publicProjectPath/organization/${organization.uuid}")
                     .param("coop", COOP)
-                    .param("size", "10")
-                    .param("page", "0")
-                    .param("sort", "name,asc")
             )
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectListResponse: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectListResponse.projects).hasSize(3)
-            assertThat(projectListResponse.projects.map { it.uuid }).doesNotContain(testContext.secondProject.uuid)
+            val projectListResponse: ProjectWithWalletOptionalListResponse =
+                objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectListResponse.projects).hasSize(2)
+            val projects = projectListResponse.projects
+            assertThat(projects.map { it.project.uuid }).doesNotContain(testContext.thirdProject.uuid)
 
-            val filterResponse = projectListResponse.projects.filter { it.uuid == testContext.project.uuid }
-            assertThat(filterResponse).hasSize(1)
-            val projectResponse = filterResponse.first()
+            val projectWithoutWallet =
+                projectListResponse.projects.filter { it.project.uuid == testContext.secondProject.uuid }
+            assertThat(projectWithoutWallet).hasSize(1)
+            assertThat(projectWithoutWallet.first().project).isNotNull
+            assertThat(projectWithoutWallet.first().wallet).isNull()
+
+            val projectWithWallet = projectListResponse.projects.filter { it.project.uuid == testContext.project.uuid }
+            assertThat(projectWithWallet).hasSize(1)
+            val projectResponse = projectWithWallet.first().project
+            val walletResponse = projectWithWallet.first().wallet
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
             assertThat(projectResponse.description).isEqualTo(testContext.project.description)
             assertThat(projectResponse.location.lat).isEqualTo(testContext.project.location.lat)
@@ -347,6 +359,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.active).isEqualTo(testContext.project.active)
+            assertThat(walletResponse?.owner).isEqualTo(testContext.project.uuid.toString())
+            assertThat(walletResponse?.uuid.toString()).isEqualTo(testContext.activeWallet.uuid)
         }
     }
 

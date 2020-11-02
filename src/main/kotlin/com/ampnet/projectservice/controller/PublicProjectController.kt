@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletOptionalListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.controller.pojo.response.WalletResponse
@@ -94,15 +95,14 @@ class PublicProjectController(private val projectService: ProjectService) {
     fun getAllProjectsForOrganization(
         @PathVariable organizationUuid: UUID,
         @RequestParam(name = "coop", required = false) coop: String?
-    ): ResponseEntity<ProjectListResponse> {
+    ): ResponseEntity<ProjectWithWalletOptionalListResponse> {
         logger.debug {
             "Received request to get all projects for organization: $organizationUuid " +
                 "and cooperative with id: $coop"
         }
         val projects = projectService
             .getAllProjectsForOrganization(organizationUuid, coop)
-            .map { ProjectResponse(it) }
-        return ResponseEntity.ok(ProjectListResponse(projects))
+        return ResponseEntity.ok(ProjectWithWalletOptionalListResponse(projects))
     }
 
     private fun mapToProjectListResponse(page: Page<Project>): ResponseEntity<ProjectListResponse> {
