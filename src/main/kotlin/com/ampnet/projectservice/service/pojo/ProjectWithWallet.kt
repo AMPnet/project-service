@@ -7,3 +7,8 @@ data class ProjectWithWallet(
     val project: Project,
     val wallet: WalletResponse
 )
+
+data class ProjectWithWalletOptional(
+    val project: ProjectServiceResponse,
+    val wallet: WalletServiceResponse?
+)

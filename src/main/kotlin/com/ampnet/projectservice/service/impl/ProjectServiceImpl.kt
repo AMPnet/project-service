@@ -18,8 +18,11 @@ import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectWithWalletOptional
+import com.ampnet.projectservice.service.pojo.WalletServiceResponse
 import com.ampnet.walletservice.proto.WalletResponse
 import mu.KLogging
 import org.hibernate.Hibernate
@@ -62,8 +65,17 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<Project> =
-        projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
+    override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWalletOptional> {
+        val projects =
+            projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
+        val walletsMap = walletService.getWalletsByOwner(projects.map { it.uuid }).associateBy { it.owner }
+        return projects.map { project ->
+            ProjectWithWalletOptional(
+                ProjectServiceResponse(project),
+                walletsMap[project.uuid.toString()]?.let { WalletServiceResponse(it) }
+            )
+        }
+    }
 
     @Transactional(readOnly = true)
     override fun getAllProjects(coop: String?, pageable: Pageable): Page<Project> =
