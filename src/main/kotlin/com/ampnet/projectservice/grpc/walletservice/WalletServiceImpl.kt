@@ -1,11 +1,9 @@
-package com.ampnet.projectservice.grpc.walletserviceimport
+package com.ampnet.projectservice.grpc.walletservice
 
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.GrpcException
-import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
-import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
 import io.grpc.StatusRuntimeException
 import mu.KLogging
@@ -27,7 +25,7 @@ class WalletServiceImpl(
         WalletServiceGrpc.newBlockingStub(channel)
     }
 
-    override fun getWalletsByOwner(uuids: List<UUID>): List<WalletResponse> {
+    override fun getWalletsByOwner(uuids: List<UUID>): List<WalletServiceResponse> {
         logger.debug { "Fetching wallets for owners: $uuids" }
         try {
             val request = GetWalletsByOwnerRequest.newBuilder()
@@ -36,7 +34,7 @@ class WalletServiceImpl(
             val response = serviceWithTimeout()
                 .getWalletsByOwner(request).walletsList
             logger.debug { "Fetched wallets: $response" }
-            return response
+            return response.map { WalletServiceResponse(it) }
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_WALLET, "Failed to fetch wallets. ${ex.localizedMessage}")
         }

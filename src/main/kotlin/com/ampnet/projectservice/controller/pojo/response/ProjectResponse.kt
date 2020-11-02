@@ -1,10 +1,11 @@
 package com.ampnet.projectservice.controller.pojo.response
 
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
-import com.ampnet.projectservice.service.pojo.ProjectWithWalletOptional
+import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -110,9 +111,9 @@ data class ProjectWithWalletFullResponse(
     val gallery: List<String>,
     val news: List<String>,
     val documents: List<DocumentResponse>,
-    val wallet: WalletResponse?
+    val wallet: WalletServiceResponse?
 ) {
-    constructor(project: Project, wallet: com.ampnet.walletservice.proto.WalletResponse?) : this(
+    constructor(project: Project, wallet: WalletServiceResponse?) : this(
         project.uuid,
         project.name,
         project.description,
@@ -130,19 +131,12 @@ data class ProjectWithWalletFullResponse(
         project.gallery.orEmpty(),
         project.newsLinks.orEmpty(),
         project.documents.orEmpty().map { DocumentResponse(it) },
-        wallet?.let { WalletResponse(it) }
+        wallet
     )
 }
 
-data class ProjectWithWalletResponse(
-    val project: ProjectResponse,
-    val wallet: WalletResponse
-)
-
 data class ProjectWithWalletListResponse(
-    val projectsWithWallet: List<ProjectWithWalletResponse>,
+    val projectsWithWallet: List<ProjectWithWallet>,
     val page: Int = 0,
     val totalPages: Int = 1
 )
-
-data class ProjectWithWalletOptionalListResponse(val projects: List<ProjectWithWalletOptional>)

@@ -12,6 +12,7 @@ import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
@@ -158,6 +159,7 @@ abstract class ControllerTestBase : TestBase() {
         project.uuid = UUID.randomUUID()
         project.organization = organization
         project.name = name
+        project.mainImage = "main_image"
         project.description = "description"
         project.location = ProjectLocation(0.1, 1.0)
         project.roi = ProjectRoi(4.44, 9.99)
@@ -171,6 +173,7 @@ abstract class ControllerTestBase : TestBase() {
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
         project.coop = coop
+        project.tags = listOf("tag_1", "tag_2")
         return projectRepository.save(project)
     }
 
@@ -268,15 +271,8 @@ abstract class ControllerTestBase : TestBase() {
         activationData: String = "activation data",
         type: WalletResponse.Type = WalletResponse.Type.PROJECT,
         currency: String = "EUR",
-        hash: String = "walllet hash"
-    ): WalletResponse {
-        return WalletResponse.newBuilder()
-            .setUuid(uuid.toString())
-            .setOwner(owner.toString())
-            .setActivationData(activationData)
-            .setType(type)
-            .setCurrency(currency)
-            .setHash(hash)
-            .build()
+        hash: String = "wallet_hash"
+    ): WalletServiceResponse {
+        return WalletServiceResponse(uuid, owner, activationData, type.name, currency, hash)
     }
 }

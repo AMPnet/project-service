@@ -7,6 +7,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.grpc.walletservice.WalletService
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -21,9 +22,6 @@ import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
-import com.ampnet.projectservice.service.pojo.ProjectWithWalletOptional
-import com.ampnet.projectservice.service.pojo.WalletServiceResponse
-import com.ampnet.walletservice.proto.WalletResponse
 import mu.KLogging
 import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
@@ -65,14 +63,14 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWalletOptional> {
+    override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWallet> {
         val projects =
             projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
         val walletsMap = walletService.getWalletsByOwner(projects.map { it.uuid }).associateBy { it.owner }
         return projects.map { project ->
-            ProjectWithWalletOptional(
+            ProjectWithWallet(
                 ProjectServiceResponse(project),
-                walletsMap[project.uuid.toString()]?.let { WalletServiceResponse(it) }
+                walletsMap[project.uuid]
             )
         }
     }
@@ -89,8 +87,8 @@ class ProjectServiceImpl(
         val activeWallets = walletService.getWalletsByOwner(activeProjects.toList().map { it.uuid })
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
-            activeWallets[project.uuid.toString()]?.let { wallet ->
-                ProjectWithWallet(project, wallet)
+            activeWallets[project.uuid]?.let { wallet ->
+                ProjectWithWallet(ProjectServiceResponse(project), wallet)
             }
         }
         return PageImpl(projectsWithWallets, pageable, activeProjects.totalElements)
@@ -283,7 +281,7 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
-    private fun isWalletActivate(walletResponse: WalletResponse): Boolean {
+    private fun isWalletActivate(walletResponse: WalletServiceResponse): Boolean {
         return walletResponse.hash.isNotEmpty()
     }
 }

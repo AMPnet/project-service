@@ -1,14 +1,8 @@
 package com.ampnet.projectservice.service.pojo
 
-import com.ampnet.projectservice.persistence.model.Project
-import com.ampnet.walletservice.proto.WalletResponse
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 
 data class ProjectWithWallet(
-    val project: Project,
-    val wallet: WalletResponse
-)
-
-data class ProjectWithWalletOptional(
     val project: ProjectServiceResponse,
     val wallet: WalletServiceResponse?
 )
