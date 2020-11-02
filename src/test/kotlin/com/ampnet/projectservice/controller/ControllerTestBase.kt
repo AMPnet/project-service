@@ -33,12 +33,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
@@ -52,7 +52,6 @@ const val COOP = "ampnet-test"
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
-@ActiveProfiles("GrpcServiceMockConfig, CloudStorageMockConfig")
 abstract class ControllerTestBase : TestBase() {
 
     protected val defaultEmail = "user@email.com"
@@ -74,25 +73,25 @@ abstract class ControllerTestBase : TestBase() {
     protected lateinit var membershipRepository: OrganizationMembershipRepository
 
     @Autowired
-    protected lateinit var cloudStorageService: CloudStorageService
+    private lateinit var documentRepository: DocumentRepository
 
     @Autowired
     protected lateinit var organizationInviteRepository: OrganizationInviteRepository
 
     @Autowired
-    protected lateinit var userService: UserService
-
-    @Autowired
     protected lateinit var projectService: ProjectService
 
-    @Autowired
+    @MockBean
+    protected lateinit var cloudStorageService: CloudStorageService
+
+    @MockBean
+    protected lateinit var userService: UserService
+
+    @MockBean
     protected lateinit var walletService: WalletService
 
-    @Autowired
+    @MockBean
     protected lateinit var mailService: MailService
-
-    @Autowired
-    private lateinit var documentRepository: DocumentRepository
 
     protected lateinit var mockMvc: MockMvc
 
