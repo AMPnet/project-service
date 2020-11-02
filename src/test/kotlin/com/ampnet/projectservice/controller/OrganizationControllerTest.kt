@@ -95,7 +95,6 @@ class OrganizationControllerTest : ControllerTestBase() {
         }
         verify("Organization is stored in database") {
             val organization = organizationRepository.findByIdWithDocuments(testContext.createdOrganizationUuid).get()
-                ?: fail("Organization must no be null")
             assertThat(organization.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organization.description).isEqualTo(testContext.organizationRequest.description)
             assertThat(organization.headerImage).isEqualTo(testContext.imageLink)
@@ -170,7 +169,8 @@ class OrganizationControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val organizationResponse: OrganizationWithProjectCountListResponse = objectMapper.readValue(result.response.contentAsString)
+            val organizationResponse: OrganizationWithProjectCountListResponse =
+                objectMapper.readValue(result.response.contentAsString)
             assertThat(organizationResponse.organizations).hasSize(2)
             val firstOrganization = organizationResponse.organizations.first()
             val secondOrganization = organizationResponse.organizations.last()
@@ -210,9 +210,10 @@ class OrganizationControllerTest : ControllerTestBase() {
         }
 
         verify("User can get organization with id") {
-            val result = mockMvc.perform(MockMvcRequestBuilders.get("$organizationPath/${testContext.organization.uuid}"))
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andReturn()
+            val result =
+                mockMvc.perform(MockMvcRequestBuilders.get("$organizationPath/${testContext.organization.uuid}"))
+                    .andExpect(MockMvcResultMatchers.status().isOk)
+                    .andReturn()
 
             val organizationFullServiceResponse: OrganizationFullServiceResponse =
                 objectMapper.readValue(result.response.contentAsString)
@@ -267,8 +268,9 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(documentResponse.link).isEqualTo(testContext.documentLink)
         }
         verify("Document is stored in database and connected to organization") {
-            val organizationDocuments = organizationService.findOrganizationWithProjectCountById(testContext.organization.uuid)?.documents
-                ?: fail("Organization documents must not be null")
+            val organizationDocuments =
+                organizationService.findOrganizationWithProjectCountById(testContext.organization.uuid)?.documents
+                    ?: fail("Organization documents must not be null")
             assertThat(organizationDocuments).hasSize(1)
 
             val document = organizationDocuments.first()
@@ -302,7 +304,8 @@ class OrganizationControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
         }
         verify("Document is deleted") {
-            val organizationWithDocument = organizationRepository.findByIdWithDocuments(testContext.organization.uuid).get()
+            val organizationWithDocument =
+                organizationRepository.findByIdWithDocuments(testContext.organization.uuid).get()
             assertThat(organizationWithDocument.documents).hasSize(1).doesNotContain(testContext.document)
         }
     }
@@ -357,8 +360,9 @@ class OrganizationControllerTest : ControllerTestBase() {
             testContext.createdOrganizationUuid = organizationResponse.uuid
         }
         verify("Organization is stored in database") {
-            val organization = organizationService.findOrganizationWithProjectCountById(testContext.createdOrganizationUuid)
-                ?: fail("Organization must no be null")
+            val organization =
+                organizationService.findOrganizationWithProjectCountById(testContext.createdOrganizationUuid)
+                    ?: fail("Organization must no be null")
             assertThat(organization.name).isEqualTo(testContext.organization.name)
             assertThat(organization.description).isEqualTo(testContext.organizationUpdateRequest.description)
             assertThat(organization.headerImage).isEqualTo(testContext.imageLink)
