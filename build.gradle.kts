@@ -14,13 +14,13 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("org.springframework.boot") version "2.2.8.RELEASE"
-    id("io.spring.dependency-management") version "1.0.9.RELEASE"
+    id("org.springframework.boot") version "2.3.5.RELEASE"
+    id("io.spring.dependency-management") version "1.0.10.RELEASE"
     id("org.asciidoctor.convert") version "1.5.8"
-    id("com.google.cloud.tools.jib") version "2.4.0"
+    id("com.google.cloud.tools.jib") version "2.6.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.3.0"
     id("io.gitlab.arturbosch.detekt").version("1.9.0")
-    id("com.google.protobuf") version "0.8.12"
+    id("com.google.protobuf") version "0.8.13"
     idea
     jacoco
 }
@@ -48,6 +48,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -56,10 +57,10 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.micrometer:micrometer-registry-prometheus")
 
-    implementation("io.github.microutils:kotlin-logging:1.8.3")
-    implementation("net.devh:grpc-spring-boot-starter:2.9.0.RELEASE")
+    implementation("io.github.microutils:kotlin-logging:1.11.5")
+    implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
-    implementation("com.github.AMPnet:jwt:0.1.5")
+    implementation("com.github.AMPnet:jwt:0.1.6")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -79,11 +80,11 @@ tasks.test {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.12.2"
+        artifact = "com.google.protobuf:protoc:3.12.4"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.30.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.31.1"
         }
     }
     generateProtoTasks {
@@ -111,7 +112,7 @@ jib {
     }
 }
 
-jacoco.toolVersion = "0.8.5"
+jacoco.toolVersion = "0.8.6"
 tasks.jacocoTestReport {
     reports {
         xml.isEnabled = true
