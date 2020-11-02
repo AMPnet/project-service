@@ -316,8 +316,9 @@ class PublicProjectControllerTest : ControllerTestBase() {
         }
         suppose("Wallet service returns wallet for first project") {
             testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
-            Mockito.`when`(walletService.getWalletsByOwner(listOf(testContext.secondProject.uuid, testContext.project.uuid)))
-                .thenReturn(listOf(testContext.activeWallet))
+            Mockito.`when`(
+                walletService.getWalletsByOwner(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+            ).thenReturn(listOf(testContext.activeWallet))
         }
 
         verify("Controller will return all projects for specified organization") {
@@ -328,16 +329,19 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectListResponse: ProjectWithWalletOptionalListResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectListResponse: ProjectWithWalletOptionalListResponse =
+                objectMapper.readValue(result.response.contentAsString)
             assertThat(projectListResponse.projects).hasSize(2)
             val projects = projectListResponse.projects
             assertThat(projects.map { it.project.uuid }).doesNotContain(testContext.thirdProject.uuid)
 
-            val projectWithWallet = projectListResponse.projects.filter { it.project.uuid == testContext.project.uuid }
-            val projectWithoutWallet = projectListResponse.projects.filter { it.project.uuid == testContext.secondProject.uuid }
+            val projectWithoutWallet =
+                projectListResponse.projects.filter { it.project.uuid == testContext.secondProject.uuid }
             assertThat(projectWithoutWallet).hasSize(1)
             assertThat(projectWithoutWallet.first().project).isNotNull
             assertThat(projectWithoutWallet.first().wallet).isNull()
+
+            val projectWithWallet = projectListResponse.projects.filter { it.project.uuid == testContext.project.uuid }
             assertThat(projectWithWallet).hasSize(1)
             val projectResponse = projectWithWallet.first().project
             val walletResponse = projectWithWallet.first().wallet
