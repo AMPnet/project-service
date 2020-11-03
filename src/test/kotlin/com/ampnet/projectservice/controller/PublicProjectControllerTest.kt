@@ -318,6 +318,9 @@ class PublicProjectControllerTest : ControllerTestBase() {
             Mockito.`when`(
                 walletService.getWalletsByOwner(listOf(testContext.project.uuid, testContext.secondProject.uuid))
             ).thenReturn(listOf(testContext.activeWallet))
+            Mockito.`when`(
+                walletService.getWalletsByOwner(listOf(testContext.secondProject.uuid, testContext.project.uuid))
+            ).thenReturn(listOf(testContext.activeWallet))
         }
 
         verify("Controller will return all projects for specified organization") {
