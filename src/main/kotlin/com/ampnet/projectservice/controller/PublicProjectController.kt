@@ -4,7 +4,7 @@ import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCou
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.ProjectService
@@ -63,10 +63,10 @@ class PublicProjectController(private val projectService: ProjectService) {
     fun getAllActiveProjects(
         @RequestParam(name = "coop", required = false) coop: String?,
         pageable: Pageable
-    ): ResponseEntity<ProjectWithWalletListResponse> {
+    ): ResponseEntity<ProjectsWalletsListResponse> {
         logger.debug { "Received request to get all active projects for cooperative with id: $coop" }
         val projectsWithWallet = projectService.getActiveProjects(coop, pageable)
-        val response = ProjectWithWalletListResponse(
+        val response = ProjectsWalletsListResponse(
             projectsWithWallet.toList(),
             projectsWithWallet.number,
             projectsWithWallet.totalPages
@@ -96,14 +96,14 @@ class PublicProjectController(private val projectService: ProjectService) {
     fun getAllProjectsForOrganization(
         @PathVariable organizationUuid: UUID,
         @RequestParam(name = "coop", required = false) coop: String?
-    ): ResponseEntity<ProjectWithWalletListResponse> {
+    ): ResponseEntity<ProjectsWalletsListResponse> {
         logger.debug {
             "Received request to get all projects for organization: $organizationUuid " +
                 "and cooperative with id: $coop"
         }
         val projects = projectService
             .getAllProjectsForOrganization(organizationUuid, coop)
-        return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
+        return ResponseEntity.ok(ProjectsWalletsListResponse(projects))
     }
 
     private fun mapToProjectListResponse(page: Page<Project>): ResponseEntity<ProjectListResponse> {

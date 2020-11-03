@@ -135,8 +135,8 @@ data class ProjectWithWalletFullResponse(
     )
 }
 
-data class ProjectWithWalletListResponse(
-    val projectsWithWallet: List<ProjectWithWallet>,
+data class ProjectsWalletsListResponse(
+    val projectsWallets: List<ProjectWithWallet>,
     val page: Int = 0,
     val totalPages: Int = 1
 )

@@ -5,7 +5,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectLocationResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Organization
@@ -181,9 +181,9 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: ProjectWithWalletListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.projectsWithWallet).hasSize(1)
-            val projectWithWallet = response.projectsWithWallet.first()
+            val response: ProjectsWalletsListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.projectsWallets).hasSize(1)
+            val projectWithWallet = response.projectsWallets.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectWithWallet.project.name).isEqualTo(testContext.project.name)
             assertThat(projectWithWallet.project.description).isEqualTo(testContext.project.description)
@@ -328,19 +328,19 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectListResponse: ProjectWithWalletListResponse =
+            val projectListResponse: ProjectsWalletsListResponse =
                 objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectListResponse.projectsWithWallet).hasSize(2)
-            val projects = projectListResponse.projectsWithWallet
+            assertThat(projectListResponse.projectsWallets).hasSize(2)
+            val projects = projectListResponse.projectsWallets
             assertThat(projects.map { it.project.uuid }).doesNotContain(testContext.thirdProject.uuid)
 
-            val projectWithoutWallet = projectListResponse.projectsWithWallet
+            val projectWithoutWallet = projectListResponse.projectsWallets
                 .filter { it.project.uuid == testContext.secondProject.uuid }
             assertThat(projectWithoutWallet).hasSize(1)
             assertThat(projectWithoutWallet.first().project).isNotNull
             assertThat(projectWithoutWallet.first().wallet).isNull()
 
-            val projectWithWallet = projectListResponse.projectsWithWallet
+            val projectWithWallet = projectListResponse.projectsWallets
                 .filter { it.project.uuid == testContext.project.uuid }
             assertThat(projectWithWallet).hasSize(1)
             val projectResponse = projectWithWallet.first().project
