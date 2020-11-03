@@ -1,11 +1,11 @@
-package com.ampnet.projectservice.service.pojo
+package com.ampnet.projectservice.grpc.walletservice
 
 import com.ampnet.walletservice.proto.WalletResponse
 import java.util.UUID
 
 data class WalletServiceResponse(
     val uuid: UUID,
-    val owner: String,
+    val owner: UUID,
     val activationData: String,
     val type: String,
     val currency: String,
@@ -13,7 +13,7 @@ data class WalletServiceResponse(
 ) {
     constructor(walletResponse: WalletResponse) : this(
         UUID.fromString(walletResponse.uuid),
-        walletResponse.owner,
+        UUID.fromString(walletResponse.owner),
         walletResponse.activationData,
         walletResponse.type.name,
         walletResponse.currency,

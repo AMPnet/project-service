@@ -275,6 +275,7 @@ include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndP
 include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
 
 === Get all projects for organization
+Field `wallet` is nullable because the project can exist without a wallet.
 
 .Request
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-request.adoc[]

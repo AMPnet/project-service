@@ -5,12 +5,11 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectLocationResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletListResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletOptionalListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
-import com.ampnet.walletservice.proto.WalletResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -69,10 +68,10 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.gallery).isEqualTo(testContext.project.gallery.orEmpty())
             assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
-            assertThat(projectResponse.wallet?.uuid).isEqualTo(UUID.fromString(testContext.activeWallet.uuid))
+            assertThat(projectResponse.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectResponse.wallet?.owner).isEqualTo(testContext.activeWallet.owner)
             assertThat(projectResponse.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)
-            assertThat(projectResponse.wallet?.type).isEqualTo(testContext.activeWallet.type.name)
+            assertThat(projectResponse.wallet?.type).isEqualTo(testContext.activeWallet.type)
             assertThat(projectResponse.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
             assertThat(projectResponse.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
         }
@@ -182,9 +181,9 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: ProjectWithWalletListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.projectsWithWallet).hasSize(1)
-            val projectWithWallet = response.projectsWithWallet.first()
+            val response: ProjectsWalletsListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.projectsWallets).hasSize(1)
+            val projectWithWallet = response.projectsWallets.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectWithWallet.project.name).isEqualTo(testContext.project.name)
             assertThat(projectWithWallet.project.description).isEqualTo(testContext.project.description)
@@ -196,15 +195,15 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.project.currency).isEqualTo(testContext.project.currency)
             assertThat(projectWithWallet.project.minPerUser).isEqualTo(testContext.project.minPerUser)
             assertThat(projectWithWallet.project.maxPerUser).isEqualTo(testContext.project.maxPerUser)
-            assertThat(projectWithWallet.project.mainImage).isIn(testContext.project.mainImage, "")
+            assertThat(projectWithWallet.project.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectWithWallet.project.active).isEqualTo(testContext.project.active)
-            assertThat(projectWithWallet.project.tags).isIn(testContext.project.tags, arrayListOf<String>())
-            assertThat(projectWithWallet.wallet.uuid).isEqualTo(UUID.fromString(testContext.activeWallet.uuid))
-            assertThat(projectWithWallet.wallet.owner).isEqualTo(testContext.project.uuid.toString())
-            assertThat(projectWithWallet.wallet.activationData).isEqualTo(testContext.activeWallet.activationData)
-            assertThat(projectWithWallet.wallet.type).isEqualTo(testContext.activeWallet.type.name)
-            assertThat(projectWithWallet.wallet.currency).isEqualTo(testContext.activeWallet.currency)
-            assertThat(projectWithWallet.wallet.hash).isEqualTo(testContext.activeWallet.hash)
+            assertThat(projectWithWallet.project.tags).containsAll(testContext.project.tags)
+            assertThat(projectWithWallet.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
+            assertThat(projectWithWallet.wallet?.owner).isEqualTo(testContext.project.uuid)
+            assertThat(projectWithWallet.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)
+            assertThat(projectWithWallet.wallet?.type).isEqualTo(testContext.activeWallet.type)
+            assertThat(projectWithWallet.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
+            assertThat(projectWithWallet.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
         }
     }
 
@@ -319,6 +318,9 @@ class PublicProjectControllerTest : ControllerTestBase() {
             Mockito.`when`(
                 walletService.getWalletsByOwner(listOf(testContext.project.uuid, testContext.secondProject.uuid))
             ).thenReturn(listOf(testContext.activeWallet))
+            Mockito.`when`(
+                walletService.getWalletsByOwner(listOf(testContext.secondProject.uuid, testContext.project.uuid))
+            ).thenReturn(listOf(testContext.activeWallet))
         }
 
         verify("Controller will return all projects for specified organization") {
@@ -329,19 +331,20 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectListResponse: ProjectWithWalletOptionalListResponse =
+            val projectListResponse: ProjectsWalletsListResponse =
                 objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectListResponse.projects).hasSize(2)
-            val projects = projectListResponse.projects
+            assertThat(projectListResponse.projectsWallets).hasSize(2)
+            val projects = projectListResponse.projectsWallets
             assertThat(projects.map { it.project.uuid }).doesNotContain(testContext.thirdProject.uuid)
 
-            val projectWithoutWallet =
-                projectListResponse.projects.filter { it.project.uuid == testContext.secondProject.uuid }
+            val projectWithoutWallet = projectListResponse.projectsWallets
+                .filter { it.project.uuid == testContext.secondProject.uuid }
             assertThat(projectWithoutWallet).hasSize(1)
             assertThat(projectWithoutWallet.first().project).isNotNull
             assertThat(projectWithoutWallet.first().wallet).isNull()
 
-            val projectWithWallet = projectListResponse.projects.filter { it.project.uuid == testContext.project.uuid }
+            val projectWithWallet = projectListResponse.projectsWallets
+                .filter { it.project.uuid == testContext.project.uuid }
             assertThat(projectWithWallet).hasSize(1)
             val projectResponse = projectWithWallet.first().project
             val walletResponse = projectWithWallet.first().wallet
@@ -359,8 +362,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.active).isEqualTo(testContext.project.active)
-            assertThat(walletResponse?.owner).isEqualTo(testContext.project.uuid.toString())
-            assertThat(walletResponse?.uuid.toString()).isEqualTo(testContext.activeWallet.uuid)
+            assertThat(walletResponse?.owner).isEqualTo(testContext.project.uuid)
+            assertThat(walletResponse?.uuid).isEqualTo(testContext.activeWallet.uuid)
         }
     }
 
@@ -373,7 +376,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         lateinit var project: Project
         lateinit var secondProject: Project
         lateinit var thirdProject: Project
-        lateinit var activeWallet: WalletResponse
-        lateinit var inactiveWallet: WalletResponse
+        lateinit var activeWallet: WalletServiceResponse
+        lateinit var inactiveWallet: WalletServiceResponse
     }
 }
