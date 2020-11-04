@@ -90,6 +90,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationWithDocumentResponse.approved).isTrue()
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
             assertThat(organizationWithDocumentResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(organizationWithDocumentResponse.coop).isEqualTo(COOP)
 
             testContext.createdOrganizationUuid = organizationWithDocumentResponse.uuid
         }
@@ -177,9 +178,11 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(firstOrganization.projectCount).isEqualTo(1)
             assertThat(firstOrganization.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(firstOrganization.name).isEqualTo(testContext.organization.name)
+            assertThat(firstOrganization.coop).isEqualTo(COOP)
             assertThat(secondOrganization.projectCount).isEqualTo(2)
             assertThat(secondOrganization.name).isEqualTo(testContext.secondOrganization.name)
             assertThat(secondOrganization.uuid).isEqualTo(testContext.secondOrganization.uuid)
+            assertThat(secondOrganization.coop).isEqualTo(COOP)
         }
         verify("Project repository returns projects in organizations") {
             val projects = projectRepository.findAllByOrganizations(
@@ -226,6 +229,7 @@ class OrganizationControllerTest : ControllerTestBase() {
                 .isEqualTo(testContext.organization.documents?.size)
             assertThat(organizationFullServiceResponse.createdAt).isEqualTo(testContext.organization.createdAt)
             assertThat(organizationFullServiceResponse.projectCount).isEqualTo(2)
+            assertThat(organizationFullServiceResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -356,6 +360,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationResponse.uuid).isNotNull()
             assertThat(organizationResponse.approved).isTrue()
             assertThat(organizationResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(organizationResponse.coop).isEqualTo(COOP)
 
             testContext.createdOrganizationUuid = organizationResponse.uuid
         }

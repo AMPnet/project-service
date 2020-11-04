@@ -21,7 +21,8 @@ data class ProjectServiceResponse(
     val maxPerUser: Long,
     val mainImage: String?,
     val active: Boolean,
-    val tags: List<String>
+    val tags: List<String>,
+    val coop: String
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -37,6 +38,7 @@ data class ProjectServiceResponse(
         project.maxPerUser,
         project.mainImage,
         project.active,
-        project.tags.orEmpty()
+        project.tags.orEmpty(),
+        project.coop
     )
 }
