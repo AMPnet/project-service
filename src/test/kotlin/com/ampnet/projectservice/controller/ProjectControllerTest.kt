@@ -126,6 +126,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.projectRequest.maxPerUser)
             assertThat(projectResponse.active).isEqualTo(testContext.projectRequest.active)
             assertThat(projectResponse.mainImage).isNullOrEmpty()
+            assertThat(projectResponse.coop).isEqualTo(COOP)
 
             testContext.projectUuid = projectResponse.uuid
         }
@@ -254,6 +255,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.mainImage).contains(testContext.imageLink)
             assertThat(projectResponse.documents).hasSize(2)
+            assertThat(projectResponse.coop).isEqualTo(COOP)
             val documents = projectResponse.documents.sortedByDescending { it.size }
             val document = documents.first()
             assertThat(document.id).isNotNull()
@@ -335,6 +337,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.active).isNotEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.mainImage).contains(testContext.imageLink)
+            assertThat(projectResponse.coop).isEqualTo(COOP)
         }
         verify("Only project image is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)

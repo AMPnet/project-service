@@ -68,6 +68,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.gallery).isEqualTo(testContext.project.gallery.orEmpty())
             assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
+            assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectResponse.wallet?.owner).isEqualTo(testContext.activeWallet.owner)
             assertThat(projectResponse.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)
@@ -198,6 +199,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.project.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectWithWallet.project.active).isEqualTo(testContext.project.active)
             assertThat(projectWithWallet.project.tags).containsAll(testContext.project.tags)
+            assertThat(projectWithWallet.project.coop).isEqualTo(COOP)
             assertThat(projectWithWallet.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectWithWallet.wallet?.owner).isEqualTo(testContext.project.uuid)
             assertThat(projectWithWallet.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)
@@ -362,6 +364,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
             assertThat(projectResponse.active).isEqualTo(testContext.project.active)
+            assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(walletResponse?.owner).isEqualTo(testContext.project.uuid)
             assertThat(walletResponse?.uuid).isEqualTo(testContext.activeWallet.uuid)
         }

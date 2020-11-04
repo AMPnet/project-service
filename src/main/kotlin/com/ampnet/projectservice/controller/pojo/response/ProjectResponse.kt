@@ -23,7 +23,8 @@ data class ProjectResponse(
     val maxPerUser: Long,
     val mainImage: String?,
     val active: Boolean,
-    val tags: List<String>
+    val tags: List<String>,
+    val coop: String
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -39,7 +40,8 @@ data class ProjectResponse(
         project.maxPerUser,
         project.mainImage,
         project.active,
-        project.tags.orEmpty()
+        project.tags.orEmpty(),
+        project.coop
     )
 }
 
@@ -70,7 +72,8 @@ data class ProjectFullResponse(
     val tags: List<String>,
     val gallery: List<String>,
     val news: List<String>,
-    val documents: List<DocumentResponse>
+    val documents: List<DocumentResponse>,
+    val coop: String
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -89,7 +92,8 @@ data class ProjectFullResponse(
         project.tags.orEmpty(),
         project.gallery.orEmpty(),
         project.newsLinks.orEmpty(),
-        project.documents.orEmpty().map { DocumentResponse(it) }
+        project.documents.orEmpty().map { DocumentResponse(it) },
+        project.coop
     )
 }
 
@@ -111,7 +115,8 @@ data class ProjectWithWalletFullResponse(
     val gallery: List<String>,
     val news: List<String>,
     val documents: List<DocumentResponse>,
-    val wallet: WalletServiceResponse?
+    val wallet: WalletServiceResponse?,
+    val coop: String
 ) {
     constructor(project: Project, wallet: WalletServiceResponse?) : this(
         project.uuid,
@@ -131,7 +136,8 @@ data class ProjectWithWalletFullResponse(
         project.gallery.orEmpty(),
         project.newsLinks.orEmpty(),
         project.documents.orEmpty().map { DocumentResponse(it) },
-        wallet
+        wallet,
+        project.coop
     )
 }
 

@@ -12,7 +12,8 @@ data class OrganizationWitProjectCountServiceResponse(
     val approved: Boolean,
     val description: String,
     val headerImage: String?,
-    val projectCount: Int
+    val projectCount: Int,
+    val coop: String
 ) {
     constructor(organization: Organization, projectCount: Int) : this(
         organization.uuid,
@@ -21,7 +22,8 @@ data class OrganizationWitProjectCountServiceResponse(
         organization.approved,
         organization.description.orEmpty(),
         organization.headerImage,
-        projectCount
+        projectCount,
+        organization.coop
     )
 }
 
@@ -33,7 +35,8 @@ data class OrganizationFullServiceResponse(
     val documents: List<DocumentResponse>,
     val description: String,
     val headerImage: String?,
-    val projectCount: Int
+    val projectCount: Int,
+    val coop: String
 ) {
     constructor(organization: Organization, projectCount: Int) : this(
         organization.uuid,
@@ -43,6 +46,7 @@ data class OrganizationFullServiceResponse(
         organization.documents?.map { DocumentResponse(it) }.orEmpty(),
         organization.description.orEmpty(),
         organization.headerImage,
-        projectCount
+        projectCount,
+        organization.coop
     )
 }
