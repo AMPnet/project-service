@@ -177,10 +177,10 @@ class ProjectServiceImpl(
         coop: String?,
         pageable: Pageable,
         active: Boolean
-    ): Page<Project> =
-        projectRepository.findByTags(
-            tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, pageable
-        )
+    ): Page<Project> = projectRepository.findByTags(
+        tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, pageable
+    )
+
     @Transactional(readOnly = true)
     override fun getProjectWithWallet(id: UUID): FullProjectWithWallet? {
         val project = getProjectByIdWithAllData(id) ?: return null
