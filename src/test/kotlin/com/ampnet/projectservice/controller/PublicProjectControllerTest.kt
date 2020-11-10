@@ -36,7 +36,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToGetSpecificProjectWithWallet() {
+    fun mustBeAbleToGetSpecificProjectWithWalletAndOrganization() {
         suppose("Project will wallet exists") {
             testContext.project = createProject("My project", organization, userUuid)
             testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
@@ -75,6 +75,10 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.wallet?.type).isEqualTo(testContext.activeWallet.type)
             assertThat(projectResponse.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
             assertThat(projectResponse.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
+            val organizationResponse = projectResponse.organization
+            assertThat(organizationResponse.coop).isEqualTo(organization.coop)
+            assertThat(organizationResponse.uuid).isEqualTo(organization.uuid)
+            assertThat(organizationResponse.name).isEqualTo(organization.name)
         }
     }
 

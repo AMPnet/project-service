@@ -116,7 +116,8 @@ data class ProjectWithWalletFullResponse(
     val news: List<String>,
     val documents: List<DocumentResponse>,
     val wallet: WalletServiceResponse?,
-    val coop: String
+    val coop: String,
+    val organization: OrganizationResponse
 ) {
     constructor(project: Project, wallet: WalletServiceResponse?) : this(
         project.uuid,
@@ -137,7 +138,8 @@ data class ProjectWithWalletFullResponse(
         project.newsLinks.orEmpty(),
         project.documents.orEmpty().map { DocumentResponse(it) },
         wallet,
-        project.coop
+        project.coop,
+        OrganizationResponse(project.organization)
     )
 }
 
