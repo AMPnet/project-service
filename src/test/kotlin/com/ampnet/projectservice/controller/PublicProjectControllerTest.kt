@@ -69,16 +69,20 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.gallery).isEqualTo(testContext.project.gallery.orEmpty())
             assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
             assertThat(projectResponse.coop).isEqualTo(COOP)
+
             assertThat(projectResponse.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectResponse.wallet?.owner).isEqualTo(testContext.activeWallet.owner)
             assertThat(projectResponse.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)
             assertThat(projectResponse.wallet?.type).isEqualTo(testContext.activeWallet.type)
             assertThat(projectResponse.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
             assertThat(projectResponse.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
-            val organizationResponse = projectResponse.organization
-            assertThat(organizationResponse.coop).isEqualTo(organization.coop)
-            assertThat(organizationResponse.uuid).isEqualTo(organization.uuid)
-            assertThat(organizationResponse.name).isEqualTo(organization.name)
+
+            assertThat(projectResponse.organization.coop).isEqualTo(organization.coop)
+            assertThat(projectResponse.organization.uuid).isEqualTo(organization.uuid)
+            assertThat(projectResponse.organization.name).isEqualTo(organization.name)
+            assertThat(projectResponse.organization.headerImage).isEqualTo(organization.headerImage)
+            assertThat(projectResponse.organization.description).isEqualTo(organization.description)
+            assertThat(projectResponse.organization.approved).isEqualTo(organization.approved)
         }
     }
 
@@ -204,6 +208,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.project.active).isEqualTo(testContext.project.active)
             assertThat(projectWithWallet.project.tags).containsAll(testContext.project.tags)
             assertThat(projectWithWallet.project.coop).isEqualTo(COOP)
+
             assertThat(projectWithWallet.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectWithWallet.wallet?.owner).isEqualTo(testContext.project.uuid)
             assertThat(projectWithWallet.wallet?.activationData).isEqualTo(testContext.activeWallet.activationData)

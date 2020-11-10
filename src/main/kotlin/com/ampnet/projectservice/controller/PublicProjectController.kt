@@ -19,9 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class PublicProjectController(
-    private val projectService: ProjectService
-) {
+class PublicProjectController(private val projectService: ProjectService) {
 
     companion object : KLogging()
 
