@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.repository
 
 import com.ampnet.projectservice.TestBase
+import com.ampnet.projectservice.config.CacheConfig
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.enums.OrganizationRole
@@ -19,7 +20,9 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Import
+import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -29,7 +32,7 @@ import java.util.UUID
 @ExtendWith(value = [SpringExtension::class])
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
-@Import(DatabaseCleanerService::class)
+@Import(DatabaseCleanerService::class, CacheConfig::class)
 class RepositoryTestBase : TestBase() {
 
     @Autowired
@@ -50,9 +53,13 @@ class RepositoryTestBase : TestBase() {
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
 
+    @Autowired
+    protected lateinit var cacheManager: CacheManager
+
     protected val defaultEmail = "user@email.com"
     protected val userUuid: UUID = UUID.fromString("89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4")
     protected val coop = "ampnet-test"
+    protected val defaultPageable = PageRequest.of(0, 5)
 
     protected fun createOrganization(name: String, userUuid: UUID): Organization {
         val organization = Organization(

@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.repository
 
+import com.ampnet.projectservice.config.PROJECT_CACHE
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -7,6 +8,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.hibernate.Hibernate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import java.util.UUID
 
 class ProjectRepositoryTest : RepositoryTestBase() {
@@ -53,10 +56,26 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         }
     }
 
-    private class TestContext {
-        lateinit var organization: Organization
-        lateinit var project: Project
-        val uuid: UUID = UUID.randomUUID()
+    @Test
+    fun mustSaveProjectsInCacheWhenFindAllByCoop() {
+        suppose("Jpa query returns list of projects and saves it in cache") {
+            projectRepository.findAllByCoop(coop, defaultPageable)
+        }
+        suppose("Another project is created") {
+            createProject("project2", testContext.organization, userUuid)
+        }
+
+        verify("On second call to project repository projects are returned from cache") {
+            val key = coop + defaultPageable.hashCode()
+            val pageImpl = cacheManager.getCache(PROJECT_CACHE)?.get(key)?.get() as PageImpl<*>
+            val projects = pageImpl.content as List<*>
+            assertThat(projects).hasSize(1)
+        }
+        verify("When calling project repository with different page size query hits the database") {
+            val pageable = PageRequest.of(0, 10)
+            val projects = projectRepository.findAllByCoop(coop, pageable)
+            assertThat(projects).hasSize(2)
+        }
     }
 
     private fun fillProjectAndOrganization() {
@@ -67,5 +86,11 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         testContext.project = createProject("project1", testContext.organization, userUuid)
         createProjectDocument(testContext.project, userUuid)
+    }
+
+    private class TestContext {
+        lateinit var organization: Organization
+        lateinit var project: Project
+        val uuid: UUID = UUID.randomUUID()
     }
 }

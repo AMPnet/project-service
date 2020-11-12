@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.projectservice.config.PROJECT_CACHE
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
@@ -18,6 +19,7 @@ import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import mu.KLogging
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -42,6 +44,7 @@ class ProjectController(
     companion object : KLogging()
 
     @PostMapping("/project")
+    @CacheEvict(value = [PROJECT_CACHE], allEntries = true)
     fun createProject(@RequestBody @Valid request: ProjectRequest): ResponseEntity<ProjectResponse> {
         logger.debug { "Received request to create project: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -52,6 +55,7 @@ class ProjectController(
     }
 
     @PutMapping("/project/{projectUuid}", consumes = ["multipart/form-data"])
+    @CacheEvict(value = [PROJECT_CACHE], allEntries = true)
     fun updateProject(
         @PathVariable("projectUuid") projectUuid: UUID,
         @RequestPart("request", required = false) request: ProjectUpdateRequest?,

@@ -1,6 +1,8 @@
 package com.ampnet.projectservice.persistence.repository
 
+import com.ampnet.projectservice.config.PROJECT_CACHE
 import com.ampnet.projectservice.persistence.model.Project
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -55,6 +57,7 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     )
     fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
 
+    @Cacheable(value = [PROJECT_CACHE], key = "#coop + #pageable.hashCode()")
     fun findAllByCoop(coop: String, pageable: Pageable): Page<Project>
 
     @Query(

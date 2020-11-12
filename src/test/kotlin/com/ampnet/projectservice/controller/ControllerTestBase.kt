@@ -35,6 +35,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.cache.CacheManager
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
@@ -94,7 +97,11 @@ abstract class ControllerTestBase : TestBase() {
     @MockBean
     protected lateinit var mailService: MailService
 
+    @Autowired
+    protected lateinit var cacheManager: CacheManager
+
     protected lateinit var mockMvc: MockMvc
+    protected val defaultPageable: Pageable = PageRequest.of(0, 20)
 
     @BeforeEach
     fun init(wac: WebApplicationContext, restDocumentation: RestDocumentationContextProvider) {

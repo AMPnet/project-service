@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.controller
 
+import com.ampnet.projectservice.config.PROJECT_CACHE
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
@@ -768,6 +769,72 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andReturn()
 
             verifyResponseErrorCode(result, ErrorCode.INT_DB)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustDeleteCacheOnUpdateProject() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
+        suppose("Project exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+        suppose("List of projects is cached") {
+            projectRepository.findAllByCoop(COOP, defaultPageable)
+        }
+        suppose("Project is updated") {
+            testContext.projectUpdateRequest = ProjectUpdateRequest(
+                "new name", "description",
+                ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag")
+            )
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
+            mockMvc.perform(
+                builder.file(requestJson)
+            )
+                .andExpect(status().isOk)
+        }
+
+        verify("Cache is deleted on update project request") {
+            val key = COOP + defaultPageable.hashCode()
+            val pageImpl = cacheManager.getCache(PROJECT_CACHE)?.get(key)?.get()
+            assertThat(pageImpl).isNull()
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustDeleteCacheOnNewProjectCreated() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
+        suppose("Project exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+        suppose("List of projects is cached") {
+            projectRepository.findAllByCoop(COOP, defaultPageable)
+        }
+        suppose("New project is created") {
+            testContext.projectRequest = createProjectRequest(organization.uuid, "Das project")
+            mockMvc.perform(
+                post(projectPath)
+                    .content(objectMapper.writeValueAsString(testContext.projectRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+        }
+
+        verify("Cache is deleted on create project request") {
+            val key = COOP + defaultPageable.hashCode()
+            val cache = cacheManager.getCache(PROJECT_CACHE)?.get(key)?.get()
+            assertThat(cache).isNull()
         }
     }
 
