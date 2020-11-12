@@ -17,7 +17,6 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
-import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
@@ -123,13 +122,6 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    override fun addMainImage(project: Project, name: String, content: ByteArray) {
-        val link = storageService.saveImage(name, content)
-        project.mainImage = link
-        projectRepository.save(project)
-    }
-
-    @Transactional
     override fun addImageToGallery(project: Project, name: String, content: ByteArray) {
         val gallery = project.gallery.orEmpty().toMutableList()
         val link = storageService.saveImage(name, content)
@@ -146,14 +138,6 @@ class ProjectServiceImpl(
             }
         }
         setProjectGallery(project, gallery)
-    }
-
-    @Transactional
-    override fun addDocument(project: Project, request: DocumentSaveRequest): Document {
-        val document = storageService.saveDocument(request)
-        val updatedProject = addDocumentToProject(project, document)
-        projectRepository.save(updatedProject)
-        return document
     }
 
     @Transactional

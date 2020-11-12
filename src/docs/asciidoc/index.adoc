@@ -163,12 +163,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToUpdateProject/http-respons
 
 === Documents
 
-==== Add document for project
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddDocumentForProject/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddDocumentForProject/http-response.adoc[]
-
 ==== Remove project document
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveProjectDocument/http-request.adoc[]
@@ -176,12 +170,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveProjectDocument/http
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveProjectDocument/http-response.adoc[]
 
 === Images
-
-==== Add main image
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddMainImage/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToAddMainImage/http-response.adoc[]
 
 ==== Add gallery image
 .Request

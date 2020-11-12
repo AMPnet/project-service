@@ -5,7 +5,6 @@ import com.ampnet.projectservice.config.PROJECT_CACHE
 import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
-import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.exception.ErrorCode
@@ -74,22 +73,6 @@ class ProjectController(
         }
     }
 
-    @PostMapping("/project/{projectUuid}/document")
-    fun addDocument(
-        @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestParam("file") file: MultipartFile
-    ): ResponseEntity<DocumentResponse> {
-        logger.debug { "Received request to add document to project: $projectUuid" }
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val request = DocumentSaveRequest(file, userPrincipal.uuid)
-            val document = projectService.addDocument(project, request)
-            DocumentResponse(document)
-        }
-    }
-
     @DeleteMapping("/project/{projectUuid}/document/{documentId}")
     fun removeDocument(
         @PathVariable("projectUuid") projectUuid: UUID,
@@ -101,21 +84,6 @@ class ProjectController(
 
         return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
             projectService.removeDocument(project, documentId)
-        }
-    }
-
-    @PostMapping("/project/{projectUuid}/image/main")
-    fun addMainImage(
-        @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestParam("image") image: MultipartFile
-    ): ResponseEntity<Unit> {
-        logger.debug { "Received request to add main image to project: $projectUuid" }
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val imageName = getImageNameFromMultipartFile(image)
-            projectService.addMainImage(project, imageName, image.bytes)
         }
     }
 

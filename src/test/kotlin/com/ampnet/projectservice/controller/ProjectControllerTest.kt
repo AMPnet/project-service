@@ -6,7 +6,6 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
-import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.enums.OrganizationRole
@@ -520,58 +519,6 @@ class ProjectControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfundUser
-    fun mustBeAbleToAddDocumentForProject() {
-        suppose("Project exists") {
-            testContext.project = createProject("Project", organization, userUuid)
-        }
-        suppose("User is an admin of organization") {
-            databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
-        }
-        suppose("File service will store document") {
-            testContext.documentMock1 = MockMultipartFile(
-                "file", "test.txt",
-                "text/plain", "Some document data".toByteArray()
-            )
-            Mockito.`when`(
-                cloudStorageService.saveFile(
-                    testContext.documentMock1.originalFilename,
-                    testContext.documentMock1.bytes
-                )
-            ).thenReturn(testContext.documentLink1)
-        }
-
-        verify("User can add document") {
-            val result = mockMvc.perform(
-                RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/document")
-                    .file(testContext.documentMock1)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val documentResponse: DocumentResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(documentResponse.id).isNotNull()
-            assertThat(documentResponse.name).isEqualTo(testContext.documentMock1.originalFilename)
-            assertThat(documentResponse.size).isEqualTo(testContext.documentMock1.size)
-            assertThat(documentResponse.type).isEqualTo(testContext.documentMock1.contentType)
-            assertThat(documentResponse.link).isEqualTo(testContext.documentLink1)
-        }
-        verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            val projectDocuments = optionalProject.get().documents ?: fail("Project documents must not be null")
-            assertThat(projectDocuments).hasSize(1)
-
-            val document = projectDocuments[0]
-            assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
-            assertThat(document.size).isEqualTo(testContext.documentMock1.size)
-            assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink1)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfundUser
     fun mustBeAbleToRemoveProjectDocument() {
         suppose("Project exists") {
             testContext.project = createProject("Project", organization, userUuid)
@@ -597,43 +544,6 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(project).isPresent
             val documents = project.get().documents
             assertThat(documents).hasSize(1).doesNotContain(testContext.document)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfundUser
-    fun mustBeAbleToAddMainImage() {
-        suppose("Project exists") {
-            testContext.project = createProject("Project", organization, userUuid)
-        }
-        suppose("User is an admin of organization") {
-            databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
-        }
-        suppose("File service will store image") {
-            testContext.imageMock = MockMultipartFile(
-                "image", "image.png",
-                "image/png", "ImageData".toByteArray()
-            )
-            Mockito.`when`(
-                cloudStorageService.saveFile(
-                    testContext.imageMock.originalFilename,
-                    testContext.imageMock.bytes
-                )
-            ).thenReturn(testContext.imageLink)
-        }
-
-        verify("User can add main image") {
-            mockMvc.perform(
-                RestDocumentationRequestBuilders.fileUpload("$projectPath/${testContext.project.uuid}/image/main")
-                    .file(testContext.imageMock)
-            )
-                .andExpect(status().isOk)
-        }
-        verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().mainImage).isEqualTo(testContext.imageLink)
         }
     }
 

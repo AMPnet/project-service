@@ -106,30 +106,6 @@ class ProjectServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustBeAbleToAddMainImage() {
-        suppose("Project exists") {
-            databaseCleanerService.deleteAllProjects()
-            testContext.createProjectRequest = createProjectRequest("Image")
-            testContext.project = projectService.createProject(
-                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
-            )
-        }
-        suppose("Main image is added to project") {
-            testContext.imageLink = "link-main-image"
-            Mockito.`when`(
-                cloudStorageService.saveFile(testContext.imageLink, imageContent)
-            ).thenReturn(testContext.imageLink)
-            projectService.addMainImage(testContext.project, testContext.imageLink, imageContent)
-        }
-
-        verify("Image is stored in project") {
-            val optionalProject = projectRepository.findById(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().mainImage).isEqualTo(testContext.imageLink)
-        }
-    }
-
-    @Test
     fun mustBeAbleToAddImagesToGallery() {
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
