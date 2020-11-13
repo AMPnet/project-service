@@ -6,7 +6,7 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import java.util.UUID
 
 data class ProjectResponse(
@@ -15,8 +15,8 @@ data class ProjectResponse(
     val description: String,
     val location: ProjectLocationResponse,
     val roi: ProjectRoiResponse,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
     val expectedFunding: Long,
     val currency: Currency,
     val minPerUser: Long,
@@ -61,8 +61,8 @@ data class ProjectFullResponse(
     val description: String,
     val location: ProjectLocationResponse,
     val roi: ProjectRoiResponse,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
     val expectedFunding: Long,
     val currency: Currency,
     val minPerUser: Long,
@@ -103,8 +103,8 @@ data class ProjectWithWalletFullResponse(
     val description: String,
     val location: ProjectLocationResponse,
     val roi: ProjectRoiResponse,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
     val expectedFunding: Long,
     val currency: Currency,
     val minPerUser: Long,

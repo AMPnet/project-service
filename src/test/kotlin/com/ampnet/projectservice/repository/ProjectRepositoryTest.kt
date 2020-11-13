@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import java.time.LocalDate
 import java.util.UUID
 
 class ProjectRepositoryTest : RepositoryTestBase() {
@@ -78,6 +79,29 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         }
     }
 
+    @Test
+    fun mustSaveProjectsInCacheWhenFindByActive() {
+        suppose("Jpa query returns list of projects and saves it in cache") {
+            testContext.date = LocalDate.now()
+            projectRepository.findByActive(testContext.date, true, coop, defaultPageable)
+        }
+        suppose("Another project is created") {
+            createProject("project2", testContext.organization, userUuid)
+        }
+
+        verify("On second call to project repository projects are returned from cache") {
+            val key = testContext.date.hashCode().toString() + true + coop + defaultPageable.hashCode()
+            val pageImpl = cacheManager.getCache(PROJECT_CACHE)?.get(key)?.get() as PageImpl<*>
+            val projects = pageImpl.content as List<*>
+            assertThat(projects).hasSize(1)
+        }
+        verify("When calling project repository with different page size query hits the database") {
+            val pageable = PageRequest.of(0, 10)
+            val projects = projectRepository.findByActive(testContext.date, true, coop, pageable)
+            assertThat(projects).hasSize(2)
+        }
+    }
+
     private fun fillProjectAndOrganization() {
         databaseCleanerService.deleteAllProjects()
         databaseCleanerService.deleteAllOrganizations()
@@ -92,5 +116,6 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         lateinit var organization: Organization
         lateinit var project: Project
         val uuid: UUID = UUID.randomUUID()
+        lateinit var date: LocalDate
     }
 }

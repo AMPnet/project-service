@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.grpc
 
+import com.ampnet.projectservice.controller.ControllerUtils.toEpochMili
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
@@ -13,6 +14,7 @@ import com.ampnet.projectservice.proto.ProjectsResponse
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
+import java.time.LocalTime
 import java.util.UUID
 
 @GrpcService
@@ -79,8 +81,8 @@ class GrpcProjectServer(
             .setUuid(project.uuid.toString())
             .setName(project.name)
             .setCreatedByUser(project.createdByUserUuid.toString())
-            .setStartDate(project.startDate.toInstant().toEpochMilli())
-            .setEndDate(project.endDate.toInstant().toEpochMilli())
+            .setStartDate(project.startDate.toEpochMili(LocalTime.MIN))
+            .setEndDate(project.endDate.toEpochMili(LocalTime.MAX))
             .setMinPerUser(project.minPerUser)
             .setMaxPerUser(project.maxPerUser)
             .setExpectedFunding(project.expectedFunding)

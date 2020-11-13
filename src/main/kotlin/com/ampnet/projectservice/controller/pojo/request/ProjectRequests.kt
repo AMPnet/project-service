@@ -1,7 +1,7 @@
 package com.ampnet.projectservice.controller.pojo.request
 
 import com.ampnet.projectservice.enums.Currency
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import java.util.UUID
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -13,8 +13,8 @@ data class ProjectRequest(
     val description: String,
     val location: ProjectLocationRequest,
     val roi: ProjectRoiRequest,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
     @field:Positive
     val expectedFunding: Long,
     val currency: Currency,

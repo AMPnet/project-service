@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import java.time.ZonedDateTime
+import java.time.LocalDate
 
 class ProjectServiceTest : JpaServiceTestBase() {
 
@@ -86,8 +86,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 "Description",
                 ProjectLocationRequest(12.34, 3.1324),
                 ProjectRoiRequest(2.22, 4.44),
-                ZonedDateTime.now(),
-                ZonedDateTime.now().minusDays(1),
+                LocalDate.now(),
+                LocalDate.now().minusDays(1),
                 1000000,
                 Currency.EUR,
                 100,
@@ -188,7 +188,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToSetEndDateBeforePresent() {
         suppose("Request has end date before present date") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid end date",
@@ -217,7 +217,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToSetMinPerUserAboveMaxPerUser() {
         suppose("Request has min per user value above max per user") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid end date",
@@ -246,7 +246,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToSetMaxPerUserAboveExpectedFunding() {
         suppose("Request has max per user above expected funding") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid end date",
@@ -275,7 +275,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToSetMaxPerUserAboveSystemMax() {
         suppose("Request has max per user value above system max") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid end date",
@@ -304,7 +304,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleToSetExpectedFundingAboveSystemMax() {
         suppose("Request has max per user value above system max") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid end date",
@@ -410,7 +410,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustValidateProjectRoiOnProjectCreate() {
         suppose("Request has roi from higher than roi to") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid roi",
@@ -439,7 +439,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
     @Test
     fun mustValidateProjectRoiOnProjectUpdate() {
         suppose("Update request has roi from higher than roi to") {
-            val currentTime = ZonedDateTime.now()
+            val currentTime = LocalDate.now()
             testContext.createProjectRequest = ProjectRequest(
                 organization.uuid,
                 "Invalid roi update",
@@ -472,8 +472,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
             "Description",
             ProjectLocationRequest(12.34, 3.1324),
             ProjectRoiRequest(1.23, 12.44),
-            ZonedDateTime.now(),
-            ZonedDateTime.now().plusDays(30),
+            LocalDate.now(),
+            LocalDate.now().plusDays(30),
             1000000,
             Currency.EUR,
             100,

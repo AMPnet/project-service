@@ -1,7 +1,8 @@
 package com.ampnet.projectservice.persistence.model
 
 import com.ampnet.projectservice.enums.Currency
-import java.time.ZonedDateTime
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.CollectionTable
 import javax.persistence.Column
@@ -41,10 +42,10 @@ class Project(
     var roi: ProjectRoi,
 
     @Column(nullable = false)
-    var startDate: ZonedDateTime,
+    var startDate: LocalDate,
 
     @Column(nullable = false)
-    var endDate: ZonedDateTime,
+    var endDate: LocalDate,
 
     @Column(nullable = false)
     var expectedFunding: Long,
@@ -76,7 +77,7 @@ class Project(
     var createdByUserUuid: UUID,
 
     @Column(nullable = false)
-    var createdAt: ZonedDateTime,
+    var createdAt: LocalDateTime,
 
     @Column(nullable = false)
     var active: Boolean,

@@ -49,6 +49,9 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -155,8 +158,8 @@ abstract class ControllerTestBase : TestBase() {
         organization: Organization,
         createdByUserUuid: UUID,
         active: Boolean = true,
-        startDate: ZonedDateTime = ZonedDateTime.now(),
-        endDate: ZonedDateTime = ZonedDateTime.now().plusDays(30),
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now().plusDays(30),
         expectedFunding: Long = 10_000_000,
         minPerUser: Long = 10,
         maxPerUser: Long = 10_000,
@@ -178,7 +181,7 @@ abstract class ControllerTestBase : TestBase() {
         project.maxPerUser = maxPerUser
         project.createdByUserUuid = createdByUserUuid
         project.active = active
-        project.createdAt = startDate.minusMinutes(1)
+        project.createdAt = LocalDateTime.of(startDate, LocalTime.MIN)
         project.coop = coop
         project.tags = listOf("tag_1", "tag_2")
         return projectRepository.save(project)
@@ -223,7 +226,7 @@ abstract class ControllerTestBase : TestBase() {
         minPerUser: Long = 1,
         maxPerUser: Long = 1_000_000
     ): ProjectRequest {
-        val time = ZonedDateTime.now()
+        val time = LocalDate.now()
         return ProjectRequest(
             organizationUuid,
             name,

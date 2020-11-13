@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
 
@@ -45,17 +45,18 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
 
     @Query(
         "SELECT project FROM Project project " +
-            "WHERE project.startDate < :time AND project.endDate > :time " +
+            "WHERE project.startDate <= :date AND project.endDate >= :date " +
             "AND project.active = :active AND project.coop = :coop"
     )
-    fun findByActive(time: ZonedDateTime, active: Boolean, coop: String, pageable: Pageable): Page<Project>
+    @Cacheable(value = [PROJECT_CACHE], key = "#date.hashCode().toString() + #active + #coop + #pageable.hashCode()")
+    fun findByActive(date: LocalDate, active: Boolean, coop: String, pageable: Pageable): Page<Project>
 
     @Query(
         "SELECT COUNT(project.uuid) FROM Project project " +
-            "WHERE project.startDate < :time AND project.endDate > :time AND project.active = :active " +
+            "WHERE project.startDate <= :date AND project.endDate >= :date AND project.active = :active " +
             "AND project.coop = :coop"
     )
-    fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
+    fun countAllActiveByDate(date: LocalDate, active: Boolean, coop: String): Int
 
     @Cacheable(value = [PROJECT_CACHE], key = "#coop + #pageable.hashCode()")
     fun findAllByCoop(coop: String, pageable: Pageable): Page<Project>

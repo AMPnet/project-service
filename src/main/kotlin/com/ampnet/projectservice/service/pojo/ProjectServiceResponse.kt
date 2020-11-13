@@ -4,7 +4,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectLocationRespons
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
 import com.ampnet.projectservice.enums.Currency
 import com.ampnet.projectservice.persistence.model.Project
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import java.util.UUID
 
 data class ProjectServiceResponse(
@@ -13,8 +13,8 @@ data class ProjectServiceResponse(
     val description: String,
     val location: ProjectLocationResponse,
     val roi: ProjectRoiResponse,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
     val expectedFunding: Long,
     val currency: Currency,
     val minPerUser: Long,

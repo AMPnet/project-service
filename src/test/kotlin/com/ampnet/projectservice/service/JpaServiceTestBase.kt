@@ -35,6 +35,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -97,8 +100,8 @@ abstract class JpaServiceTestBase : TestBase() {
         organization: Organization,
         createdByUserUuid: UUID,
         active: Boolean = true,
-        startDate: ZonedDateTime = ZonedDateTime.now(),
-        endDate: ZonedDateTime = ZonedDateTime.now().plusDays(30),
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now().plusDays(30),
         expectedFunding: Long = 10_000_000,
         minPerUser: Long = 10,
         maxPerUser: Long = 10_000
@@ -118,7 +121,7 @@ abstract class JpaServiceTestBase : TestBase() {
         project.maxPerUser = maxPerUser
         project.createdByUserUuid = createdByUserUuid
         project.active = active
-        project.createdAt = startDate.minusMinutes(1)
+        project.createdAt = LocalDateTime.of(startDate, LocalTime.MIN)
         project.coop = COOP
         return projectRepository.save(project)
     }

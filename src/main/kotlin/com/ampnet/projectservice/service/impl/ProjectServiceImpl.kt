@@ -29,7 +29,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.time.ZonedDateTime
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -48,7 +49,7 @@ class ProjectServiceImpl(
         validateCreateProjectRequest(request)
         logger.debug { "Creating project: ${request.name}" }
         val project = createProjectFromRequest(user, organization, request)
-        project.createdAt = ZonedDateTime.now()
+        project.createdAt = LocalDateTime.now()
         return projectRepository.save(project)
     }
 
@@ -81,7 +82,7 @@ class ProjectServiceImpl(
     @Transactional(readOnly = true)
     override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
         val activeProjects = projectRepository.findByActive(
-            ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default, pageable
+            LocalDate.now(), true, coop ?: applicationProperties.coop.default, pageable
         )
         val activeWallets = walletService.getWalletsByOwner(activeProjects.toList().map { it.uuid })
             .filter { isWalletActivate(it) }.associateBy { it.owner }
@@ -175,7 +176,7 @@ class ProjectServiceImpl(
     @Transactional(readOnly = true)
     override fun countActiveProjects(coop: String?): Int =
         projectRepository.countAllActiveByDate(
-            ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default
+            LocalDate.now(), true, coop ?: applicationProperties.coop.default
         )
 
     @Suppress("ThrowsCount")
@@ -183,7 +184,7 @@ class ProjectServiceImpl(
         if (request.endDate.isBefore(request.startDate)) {
             throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before start date")
         }
-        if (request.endDate.isBefore(ZonedDateTime.now())) {
+        if (request.endDate.isBefore(LocalDate.now())) {
             throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before present date")
         }
         if (request.minPerUser > request.maxPerUser) {
@@ -253,7 +254,7 @@ class ProjectServiceImpl(
             null,
             null,
             user.uuid,
-            ZonedDateTime.now(),
+            LocalDateTime.now(),
             request.active,
             null,
             request.tags?.toSet()?.map { it.toLowerCase() },

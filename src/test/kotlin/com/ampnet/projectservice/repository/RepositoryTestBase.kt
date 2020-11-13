@@ -26,6 +26,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -119,8 +122,8 @@ class RepositoryTestBase : TestBase() {
         organization: Organization,
         createdByUserUuid: UUID,
         active: Boolean = true,
-        startDate: ZonedDateTime = ZonedDateTime.now(),
-        endDate: ZonedDateTime = ZonedDateTime.now().plusDays(30),
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now().plusDays(30),
         expectedFunding: Long = 10_000_000,
         minPerUser: Long = 10,
         maxPerUser: Long = 10_000
@@ -129,7 +132,7 @@ class RepositoryTestBase : TestBase() {
             UUID.randomUUID(), organization, name, "description", ProjectLocation(0.1, 1.0),
             ProjectRoi(4.44, 9.99), startDate, endDate, expectedFunding, Currency.EUR, minPerUser, maxPerUser,
             null, listOf("gallery1", "gallery2"), listOf("news1", "news2"), createdByUserUuid,
-            startDate.minusMinutes(1), active, null, listOf("blue", "yellow", "green"), coop
+            LocalDateTime.of(startDate, LocalTime.MIN), active, null, listOf("blue", "yellow", "green"), coop
         )
         return projectRepository.save(project)
     }

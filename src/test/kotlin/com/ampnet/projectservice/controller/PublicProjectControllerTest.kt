@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import java.util.UUID
 
 class PublicProjectControllerTest : ControllerTestBase() {
@@ -147,22 +147,22 @@ class PublicProjectControllerTest : ControllerTestBase() {
         suppose("Active project has active wallet") {
             testContext.project = createProject(
                 "Active project", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1)
+                startDate = LocalDate.now().minusDays(1)
             )
             testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
         }
         suppose("Another active project has inactive wallet") {
             testContext.secondProject = createProject(
                 "Second active project", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1)
+                startDate = LocalDate.now().minusDays(1)
             )
             testContext.inactiveWallet = createWalletResponse(userUuid, testContext.secondProject.uuid)
         }
         suppose("Another organization has active project") {
             val secondOrganization = createOrganization("Second organization", userUuid)
             testContext.thirdProject = createProject(
-                "Second active project", secondOrganization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1)
+                "Active project another org", secondOrganization, userUuid,
+                startDate = LocalDate.now().minusDays(1)
             )
         }
         suppose("One project is not active") {
@@ -172,7 +172,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             Mockito.`when`(
                 walletService.getWalletsByOwner(
                     listOf(
-                        testContext.thirdProject.uuid, testContext.secondProject.uuid, testContext.project.uuid
+                        testContext.project.uuid, testContext.secondProject.uuid, testContext.thirdProject.uuid
                     )
                 )
             )
@@ -223,7 +223,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         suppose("There is active project") {
             testContext.project = createProject(
                 "Active project", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(1)
+                startDate = LocalDate.now().minusDays(1)
             )
         }
         suppose("There is inactive project") {
@@ -232,13 +232,13 @@ class PublicProjectControllerTest : ControllerTestBase() {
         suppose("There is ended project") {
             createProject(
                 "Ended", organization, userUuid,
-                startDate = ZonedDateTime.now().minusDays(30), endDate = ZonedDateTime.now().minusDays(1)
+                startDate = LocalDate.now().minusDays(30), endDate = LocalDate.now().minusDays(1)
             )
         }
         suppose("There is project in future") {
             createProject(
                 "Not active", organization, userUuid,
-                startDate = ZonedDateTime.now().plusDays(1), endDate = ZonedDateTime.now().plusDays(30)
+                startDate = LocalDate.now().plusDays(1), endDate = LocalDate.now().plusDays(30)
             )
         }
 
