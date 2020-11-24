@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.8.10"
+version = "0.8.11"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -65,6 +65,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 }
 
 tasks.withType<KotlinCompile> {

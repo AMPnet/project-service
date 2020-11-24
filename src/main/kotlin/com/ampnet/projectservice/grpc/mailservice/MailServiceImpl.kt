@@ -4,6 +4,7 @@ import com.ampnet.mailservice.proto.Empty
 import com.ampnet.mailservice.proto.MailServiceGrpc
 import com.ampnet.mailservice.proto.OrganizationInvitationRequest
 import com.ampnet.projectservice.config.ApplicationProperties
+import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import mu.KLogging
@@ -24,13 +25,15 @@ class MailServiceImpl(
         MailServiceGrpc.newStub(channel)
     }
 
-    override fun sendOrganizationInvitationMail(emails: List<String>, organizationName: String, senderEmail: String) {
+    override fun sendOrganizationInvitationMail(serviceRequest: OrganizationInvitationMailRequest) {
+        val emails = serviceRequest.emails
         logger.debug { "Sending organization invitation mail to ${emails.joinToString()}" }
         try {
             val request = OrganizationInvitationRequest.newBuilder()
                 .addAllEmails(emails)
-                .setOrganization(organizationName)
-                .setSenderEmail(senderEmail)
+                .setOrganization(serviceRequest.organizationName)
+                .setSenderEmail(serviceRequest.senderEmail)
+                .setCoop(serviceRequest.coop)
                 .build()
 
             serviceWithTimeout()

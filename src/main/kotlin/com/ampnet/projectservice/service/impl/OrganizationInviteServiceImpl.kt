@@ -15,6 +15,7 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
+import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInvitationWithData
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
@@ -54,9 +55,10 @@ class OrganizationInviteServiceImpl(
             )
         }
         inviteRepository.saveAll(invites)
-        mailService.sendOrganizationInvitationMail(
-            request.emails, invitedToOrganization.name, request.invitedByUser.email
+        val serviceRequest = OrganizationInvitationMailRequest(
+            request.emails, invitedToOrganization.name, request.invitedByUser.email, request.invitedByUser.coop
         )
+        mailService.sendOrganizationInvitationMail(serviceRequest)
         logger.debug { "Users: ${request.emails.joinToString()} invited to organization: ${request.organizationUuid}" }
     }
 
