@@ -9,7 +9,9 @@ import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
+import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
+import com.nhaarman.mockitokotlin2.argumentCaptor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -107,13 +109,16 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             assertThat(firstInvitation.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(secondInvitation.email).isEqualTo(invitedUsers.last())
         }
-//        verify("Sending mail invitation is called") {
-//            val request = OrganizationInvitationMailRequest(
-//                invitedUsers, organization.name, userEmail, COOP
-//            )
-//            Mockito.verify(mailService, Mockito.times(1))
-//                .sendOrganizationInvitationMail(request)
-//        }
+        verify("Sending mail invitation is called") {
+            val captor = argumentCaptor<OrganizationInvitationMailRequest>()
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendOrganizationInvitationMail(captor.capture())
+            val mailRequest = captor.firstValue
+            assertThat(mailRequest.emails).containsAll(invitedUsers)
+            assertThat(mailRequest.organizationName).isEqualTo(organization.name)
+            assertThat(mailRequest.senderEmail).isEqualTo(userEmail)
+            assertThat(mailRequest.coop).isEqualTo(COOP)
+        }
     }
 
     @Test

@@ -11,13 +11,13 @@ import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.nhaarman.mockitokotlin2.argumentCaptor
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.hibernate.Hibernate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
+import org.mockito.Mockito
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -31,9 +31,6 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
     private val pathOrganization = "/invites/organization/"
 
     private lateinit var testContext: TestContext
-
-    @Captor
-    private lateinit var captor: ArgumentCaptor<OrganizationInvitationMailRequest>
 
     @BeforeEach
     fun initTestData() {
@@ -168,17 +165,16 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(firstInvite.role.id).isEqualTo(OrganizationRole.ORG_MEMBER.id)
             assertThat(secondInvite.email).isEqualTo(testContext.emails.last())
         }
-//        verify("Sending mail invitation is called") {
-//            //captor = ArgumentCaptor.forClass(OrganizationInvitationMailRequest::class.java)
-//            val request = OrganizationInvitationMailRequest(
-//                testContext.emails, testContext.organization.name,
-//                "user@email.com", testContext.organization.coop
-//            )
-//            Mockito.verify(mailService)
-//                .sendOrganizationInvitationMail(request)
-//            //val captor = captor.capture()
-//            // assertThat(request).isEqualTo(captor.value)
-//        }
+        verify("Sending mail invitation is called") {
+            val captor = argumentCaptor<OrganizationInvitationMailRequest>()
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendOrganizationInvitationMail(captor.capture())
+            val mailRequest = captor.firstValue
+            assertThat(mailRequest.emails).containsAll(testContext.emails)
+            assertThat(mailRequest.organizationName).isEqualTo(testContext.organization.name)
+            assertThat(mailRequest.senderEmail).isEqualTo("user@email.com")
+            assertThat(mailRequest.coop).isEqualTo(testContext.organization.coop)
+        }
     }
 
     @Test
