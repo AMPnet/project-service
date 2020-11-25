@@ -1,12 +1,17 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsInfoResponse
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
+import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.util.UUID
@@ -95,9 +100,50 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    fun mustBeAbleToGetOrganizationMembers() {
+        suppose("Organization exists") {
+            databaseCleanerService.deleteAllOrganizations()
+            testContext.organization = createOrganization("test organization", userUuid)
+        }
+        suppose("User is a admin of organization") {
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
+        suppose("Organization has one member") {
+            testContext.member = UUID.randomUUID()
+            addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+        suppose("User service will return user data") {
+            testContext.adminResponse = createUserResponse(userUuid, "admin@mail.com", "admin", "admin", true)
+            testContext.memberResponse = createUserResponse(testContext.member, "email@mail.com", "ss", "ll", true)
+            testContext.userResponses = listOf(testContext.adminResponse, testContext.memberResponse)
+            Mockito.`when`(userService.getUsers(listOf(userUuid, testContext.member)))
+                .thenReturn(testContext.userResponses)
+            Mockito.`when`(userService.getUsers(listOf(testContext.member, userUuid)))
+                .thenReturn(testContext.userResponses)
+        }
+
+        verify("Controller returns all organization members") {
+            val result = mockMvc.perform(RestDocumentationRequestBuilders.get("$organizationPath/${testContext.organization.uuid}/members"))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+
+            val members: OrganizationMembershipsInfoResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(members.members).hasSize(2)
+            assertThat(members.members.map { it.role }).hasSize(2)
+                .containsAll(listOf(OrganizationRole.ORG_ADMIN.name, OrganizationRole.ORG_MEMBER.name))
+            assertThat(members.members.map { it.firstName }).containsAll(testContext.userResponses.map { it.firstName })
+            assertThat(members.members.map { it.lastName }).containsAll(testContext.userResponses.map { it.lastName })
+        }
+    }
+
     private class TestContext {
         lateinit var organization: Organization
         lateinit var secondOrganization: Organization
         val documentLink = "link"
+        lateinit var member: UUID
+        var userResponses: List<UserResponse> = emptyList()
+        lateinit var adminResponse: UserResponse
+        lateinit var memberResponse: UserResponse
     }
 }

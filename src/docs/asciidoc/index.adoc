@@ -296,3 +296,10 @@ List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 include::{snippets}/PublicOrganizationControllerTest/mustReturnListOfOrganizations/http-request.adoc[]
 .Response
 include::{snippets}/PublicOrganizationControllerTest/mustReturnListOfOrganizations/http-response.adoc[]
+
+==== List all members
+.Request
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
+.Response
+include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
+
