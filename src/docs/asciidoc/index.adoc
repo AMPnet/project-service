@@ -281,3 +281,18 @@ Field `wallet` is nullable because the project can exist without a wallet.
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-request.adoc[]
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
+
+=== Get organization by id
+.Request
+include::{snippets}/PublicOrganizationControllerTest/mustBeAbleToGetOrganization/http-request.adoc[]
+.Response
+include::{snippets}/PublicOrganizationControllerTest/mustBeAbleToGetOrganization/http-response.adoc[]
+
+=== Get all organizations
+List of all organizations is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
+
+.Request
+include::{snippets}/PublicOrganizationControllerTest/mustReturnListOfOrganizations/http-request.adoc[]
+.Response
+include::{snippets}/PublicOrganizationControllerTest/mustReturnListOfOrganizations/http-response.adoc[]
