@@ -43,6 +43,7 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
 
     @Query(
         "SELECT project FROM Project project " +
+            "INNER JOIN project.organization organization " +
             "WHERE project.startDate < :time AND project.endDate > :time " +
             "AND project.active = :active AND project.coop = :coop"
     )
