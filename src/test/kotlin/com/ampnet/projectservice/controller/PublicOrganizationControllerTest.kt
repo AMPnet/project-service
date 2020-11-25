@@ -1,7 +1,7 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
-import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsInfoResponse
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
@@ -114,9 +114,9 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
             addUserToOrganization(testContext.member, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
         suppose("User service will return user data") {
-            val adminResponse = createUserResponse(userUuid, "admin@mail.com", "admin", "admin", true)
-            val memberResponse = createUserResponse(testContext.member, "email@mail.com", "ss", "ll", true)
-            testContext.userResponses = listOf(adminResponse, memberResponse)
+            testContext.adminResponse = createUserResponse(userUuid, "admin@mail.com", "admin", "admin", true)
+            testContext.memberResponse = createUserResponse(testContext.member, "email@mail.com", "ss", "ll", true)
+            testContext.userResponses = listOf(testContext.adminResponse, testContext.memberResponse)
             Mockito.`when`(userService.getUsers(listOf(userUuid, testContext.member)))
                 .thenReturn(testContext.userResponses)
             Mockito.`when`(userService.getUsers(listOf(testContext.member, userUuid)))
@@ -128,14 +128,13 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
 
-            val members: OrganizationMembershipsResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(members.members.map { it.uuid }).hasSize(2)
-                .containsAll(listOf(userUuid, testContext.member))
+            val members: OrganizationMembershipsInfoResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(members.members.map { it.firstName }).hasSize(2)
+                .containsAll(listOf(testContext.adminResponse.firstName, testContext.memberResponse.firstName))
             assertThat(members.members.map { it.role }).hasSize(2)
                 .containsAll(listOf(OrganizationRole.ORG_ADMIN.name, OrganizationRole.ORG_MEMBER.name))
             assertThat(members.members.map { it.firstName }).containsAll(testContext.userResponses.map { it.firstName })
             assertThat(members.members.map { it.lastName }).containsAll(testContext.userResponses.map { it.lastName })
-            assertThat(members.members.map { it.email }).containsAll(testContext.userResponses.map { it.email })
         }
     }
 
@@ -145,5 +144,7 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
         val documentLink = "link"
         lateinit var member: UUID
         var userResponses: List<UserResponse> = emptyList()
+        lateinit var adminResponse: UserResponse
+        lateinit var memberResponse: UserResponse
     }
 }

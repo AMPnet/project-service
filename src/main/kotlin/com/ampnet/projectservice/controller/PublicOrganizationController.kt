@@ -1,8 +1,8 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
-import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipResponse
-import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipInfoResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsInfoResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.service.OrganizationMembershipService
@@ -46,13 +46,13 @@ class PublicOrganizationController(
     @GetMapping("/public/organization/{uuid}/members")
     fun getOrganizationMembers(
         @PathVariable("uuid") uuid: UUID
-    ): ResponseEntity<OrganizationMembershipsResponse> {
+    ): ResponseEntity<OrganizationMembershipsInfoResponse> {
         logger.debug { "Received request to get members for organization: $uuid" }
         val members = organizationMembershipService.getOrganizationMemberships(uuid)
         val users = userService.getUsers(members.map { it.userUuid })
         val membersResponse = members.map {
-            OrganizationMembershipResponse(it, users.firstOrNull { user -> user.uuid == it.userUuid.toString() })
+            OrganizationMembershipInfoResponse(it, users.firstOrNull { user -> user.uuid == it.userUuid.toString() })
         }
-        return ResponseEntity.ok(OrganizationMembershipsResponse(membersResponse))
+        return ResponseEntity.ok(OrganizationMembershipsInfoResponse(membersResponse))
     }
 }
