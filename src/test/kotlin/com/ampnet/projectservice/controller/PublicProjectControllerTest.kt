@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectLocationRespons
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectsWithWalletAndOrgListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Organization
@@ -190,7 +191,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: ProjectsWalletsListResponse = objectMapper.readValue(result.response.contentAsString)
+            val response: ProjectsWithWalletAndOrgListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.projectsWallets).hasSize(1)
             val projectWithWallet = response.projectsWallets.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(testContext.project.uuid)
@@ -215,6 +216,14 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.wallet?.type).isEqualTo(testContext.activeWallet.type)
             assertThat(projectWithWallet.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
             assertThat(projectWithWallet.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
+
+            assertThat(projectWithWallet.organization.uuid).isEqualTo(organization.uuid)
+            assertThat(projectWithWallet.organization.name).isEqualTo(organization.name)
+            assertThat(projectWithWallet.organization.createdAt).isEqualTo(organization.createdAt)
+            assertThat(projectWithWallet.organization.approved).isEqualTo(organization.approved)
+            assertThat(projectWithWallet.organization.description).isEqualTo(organization.description)
+            assertThat(projectWithWallet.organization.headerImage).isEqualTo(organization.headerImage)
+            assertThat(projectWithWallet.organization.coop).isEqualTo(organization.coop)
         }
     }
 

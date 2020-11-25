@@ -4,7 +4,6 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationListRespon
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.security.WithMockCrowdfundUser
 import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.fasterxml.jackson.module.kotlin.readValue

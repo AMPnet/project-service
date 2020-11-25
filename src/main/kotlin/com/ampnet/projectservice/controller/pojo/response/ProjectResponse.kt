@@ -6,6 +6,7 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectWithWalletAndOrganization
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -145,6 +146,12 @@ data class ProjectWithWalletFullResponse(
 
 data class ProjectsWalletsListResponse(
     val projectsWallets: List<ProjectWithWallet>,
+    val page: Int = 0,
+    val totalPages: Int = 1
+)
+
+data class ProjectsWithWalletAndOrgListResponse(
+    val projectsWallets: List<ProjectWithWalletAndOrganization>,
     val page: Int = 0,
     val totalPages: Int = 1
 )

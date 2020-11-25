@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectsWithWalletAndOrgListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.ProjectService
@@ -63,13 +64,13 @@ class PublicProjectController(private val projectService: ProjectService) {
     fun getAllActiveProjects(
         @RequestParam(name = "coop", required = false) coop: String?,
         pageable: Pageable
-    ): ResponseEntity<ProjectsWalletsListResponse> {
+    ): ResponseEntity<ProjectsWithWalletAndOrgListResponse> {
         logger.debug { "Received request to get all active projects for cooperative with id: $coop" }
-        val projectsWithWallet = projectService.getActiveProjects(coop, pageable)
-        val response = ProjectsWalletsListResponse(
-            projectsWithWallet.toList(),
-            projectsWithWallet.number,
-            projectsWithWallet.totalPages
+        val projectsWithWalletAndOrg = projectService.getActiveProjects(coop, pageable)
+        val response = ProjectsWithWalletAndOrgListResponse(
+            projectsWithWalletAndOrg.toList(),
+            projectsWithWalletAndOrg.number,
+            projectsWithWalletAndOrg.totalPages
         )
         return ResponseEntity.ok(response)
     }

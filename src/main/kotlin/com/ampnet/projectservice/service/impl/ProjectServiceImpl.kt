@@ -19,9 +19,11 @@ import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
+import com.ampnet.projectservice.service.pojo.OrganizationServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectWithWalletAndOrganization
 import mu.KLogging
 import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
@@ -80,7 +82,7 @@ class ProjectServiceImpl(
         projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
 
     @Transactional(readOnly = true)
-    override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
+    override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWalletAndOrganization> {
         val activeProjects = projectRepository.findByActive(
             ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default, pageable
         )
@@ -88,7 +90,9 @@ class ProjectServiceImpl(
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
             activeWallets[project.uuid]?.let { wallet ->
-                ProjectWithWallet(ProjectServiceResponse(project), wallet)
+                ProjectWithWalletAndOrganization(
+                    ProjectServiceResponse(project), wallet, OrganizationServiceResponse(project.organization)
+                )
             }
         }
         return PageImpl(projectsWithWallets, pageable, activeProjects.totalElements)
