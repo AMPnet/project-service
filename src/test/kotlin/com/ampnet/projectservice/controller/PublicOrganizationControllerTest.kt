@@ -129,8 +129,7 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val members: OrganizationMembershipsInfoResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(members.members.map { it.firstName }).hasSize(2)
-                .containsAll(listOf(testContext.adminResponse.firstName, testContext.memberResponse.firstName))
+            assertThat(members.members).hasSize(2)
             assertThat(members.members.map { it.role }).hasSize(2)
                 .containsAll(listOf(OrganizationRole.ORG_ADMIN.name, OrganizationRole.ORG_MEMBER.name))
             assertThat(members.members.map { it.firstName }).containsAll(testContext.userResponses.map { it.firstName })
