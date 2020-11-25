@@ -1,7 +1,11 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipResponse
+import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
+import com.ampnet.projectservice.grpc.userservice.UserService
+import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
 import mu.KLogging
@@ -13,7 +17,11 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class PublicOrganizationController(private val organizationService: OrganizationService) {
+class PublicOrganizationController(
+    private val organizationService: OrganizationService,
+    private val organizationMembershipService: OrganizationMembershipService,
+    private val userService: UserService
+) {
 
     companion object : KLogging()
 
@@ -33,5 +41,18 @@ class PublicOrganizationController(private val organizationService: Organization
             return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
+    }
+
+    @GetMapping("/public/organization/{uuid}/members")
+    fun getOrganizationMembers(
+        @PathVariable("uuid") uuid: UUID
+    ): ResponseEntity<OrganizationMembershipsResponse> {
+        logger.debug { "Received request to get members for organization: $uuid" }
+        val members = organizationMembershipService.getOrganizationMemberships(uuid)
+        val users = userService.getUsers(members.map { it.userUuid })
+        val membersResponse = members.map {
+            OrganizationMembershipResponse(it, users.firstOrNull { user -> user.uuid == it.userUuid.toString() })
+        }
+        return ResponseEntity.ok(OrganizationMembershipsResponse(membersResponse))
     }
 }
