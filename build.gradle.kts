@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.8.14"
+version = "0.8.15"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -60,7 +60,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.11.5")
     implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
-    implementation("com.github.AMPnet:jwt:0.1.6")
+    implementation("com.github.AMPnet:jwt:0.2.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
