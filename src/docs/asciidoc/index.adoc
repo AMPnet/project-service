@@ -217,13 +217,15 @@ include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/
 
 == Public API
 
-=== Get project
+=== Project
+
+==== Get project
 .Request
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProjectWithWalletAndOrganization/http-request.adoc[]
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetSpecificProjectWithWalletAndOrganization/http-response.adoc[]
 
-=== Get all projects
+==== Get all projects
 List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
 List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 
@@ -232,7 +234,7 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjects/http-
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjects/http-response.adoc[]
 
-=== Get active projects
+==== Get active projects
 List of active projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
 List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 
@@ -241,13 +243,13 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetActiveProjects/ht
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetActiveProjects/http-response.adoc[]
 
-=== Count all active projects
+==== Count all active projects
 .Request
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToCountActiveProjects/http-request.adoc[]
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToCountActiveProjects/http-response.adoc[]
 
-=== Get projects by tags
+==== Get projects by tags
 List of all projects is pageable. Define size of the list using param: `size` and page number with param: `page`.
 List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 
@@ -256,25 +258,21 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToQueryProjectsByTags/
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToQueryProjectsByTags/http-response.adoc[]
 
-=== Get all project tags
+==== Get all project tags
 .Request
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-request.adoc[]
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetAllProjectTags/http-response.adoc[]
 
-=== Get Project Updates
+==== Get Project Updates
 .Request
 include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToGetProjectUpdates/http-request.adoc[]
 .Response
 include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToGetProjectUpdates/http-response.adoc[]
 
-=== Search organizations and projects by name
-.Request
-include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
-.Response
-include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
+=== Organization
 
-=== Get all projects for organization
+==== Get all projects for organization
 Field `wallet` is nullable because the project can exist without a wallet.
 
 .Request
@@ -282,13 +280,13 @@ include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsFor
 .Response
 include::{snippets}/PublicProjectControllerTest/mustBeAbleToGetListOfProjectsForOrganization/http-response.adoc[]
 
-=== Get organization by id
+==== Get organization by id
 .Request
 include::{snippets}/PublicOrganizationControllerTest/mustBeAbleToGetOrganization/http-request.adoc[]
 .Response
 include::{snippets}/PublicOrganizationControllerTest/mustBeAbleToGetOrganization/http-response.adoc[]
 
-=== Get all organizations
+==== Get all organizations
 List of all organizations is pageable. Define size of the list using param: `size` and page number with param: `page`.
 List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 
@@ -297,9 +295,14 @@ include::{snippets}/PublicOrganizationControllerTest/mustReturnListOfOrganizatio
 .Response
 include::{snippets}/PublicOrganizationControllerTest/mustReturnListOfOrganizations/http-response.adoc[]
 
-==== List all members
+==== List all public members
 .Request
-include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
+include::{snippets}/PublicOrganizationControllerTest/mustBeAbleToGetOrganizationMembers/http-request.adoc[]
 .Response
-include::{snippets}/OrganizationMembershipControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
+include::{snippets}/PublicOrganizationControllerTest/mustBeAbleToGetOrganizationMembers/http-response.adoc[]
 
+=== Search organizations and projects by name
+.Request
+include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-request.adoc[]
+.Response
+include::{snippets}/PublicSearchControllerTest/mustReturnListOfOrganizationsAndProjects/http-response.adoc[]
