@@ -1,15 +1,22 @@
 package com.ampnet.projectservice.grpc
 
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
+import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.proto.GetByUuid
 import com.ampnet.projectservice.proto.GetByUuids
+import com.ampnet.projectservice.proto.OrganizationMembershipResponse
+import com.ampnet.projectservice.proto.OrganizationMembershipsResponse
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.projectservice.proto.OrganizationsResponse
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
 import com.ampnet.projectservice.proto.ProjectsResponse
+import com.ampnet.projectservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -18,7 +25,8 @@ import java.util.UUID
 @GrpcService
 class GrpcProjectServer(
     private val projectRepository: ProjectRepository,
-    private val organizationRepository: OrganizationRepository
+    private val organizationRepository: OrganizationRepository,
+    private val organizationMembershipRepository: OrganizationMembershipRepository
 ) : ProjectServiceGrpc.ProjectServiceImplBase() {
 
     companion object : KLogging()
@@ -34,7 +42,7 @@ class GrpcProjectServer(
             }
         }
         val organizationResponses = organizationRepository.findAllById(uuids)
-            .mapNotNull { organizationToGprcResponse(it) }
+            .mapNotNull { organizationToGrpcResponse(it) }
         val response = OrganizationsResponse.newBuilder()
             .addAllOrganizations(organizationResponses)
             .build()
@@ -61,7 +69,22 @@ class GrpcProjectServer(
         responseObserver.onCompleted()
     }
 
-    private fun organizationToGprcResponse(organization: Organization): OrganizationResponse {
+    override fun getOrganizationMembers(
+        request: GetByUuid,
+        responseObserver: StreamObserver<OrganizationMembershipsResponse>
+    ) {
+        logger.debug { "Received gRPC request getOrganizationMembers for project: ${request.projectUuid}" }
+        val project = ServiceUtils.wrapOptional(projectRepository.findById(UUID.fromString(request.projectUuid)))
+        val organizationMembers = project?.let {
+            organizationMembershipRepository.findByOrganizationUuid(it.organization.uuid)
+        } ?: emptyList()
+        val response = OrganizationMembershipsResponse.newBuilder()
+            .addAllMemberships(organizationMembers.map { membershipToGrpcResponse(it) }).build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+    private fun organizationToGrpcResponse(organization: Organization): OrganizationResponse {
         val builder = OrganizationResponse.newBuilder()
             .setUuid(organization.uuid.toString())
             .setName(organization.name)
@@ -92,4 +115,18 @@ class GrpcProjectServer(
         project.mainImage?.let { builder.setImageUrl(it) }
         return builder.build()
     }
+
+    private fun membershipToGrpcResponse(membership: OrganizationMembership): OrganizationMembershipResponse =
+        OrganizationMembershipResponse.newBuilder()
+            .setUserUuid(membership.userUuid.toString())
+            .setOrganizationUuid(membership.organizationUuid.toString())
+            .setRole(getOrganizationRole(membership.role))
+            .setMemberSince(membership.createdAt.toInstant().toEpochMilli())
+            .build()
+
+    private fun getOrganizationRole(type: OrganizationRole): OrganizationMembershipResponse.Role =
+        when (type) {
+            OrganizationRole.ORG_ADMIN -> OrganizationMembershipResponse.Role.ORG_ADMIN
+            OrganizationRole.ORG_MEMBER -> OrganizationMembershipResponse.Role.ORG_MEMBER
+        }
 }
