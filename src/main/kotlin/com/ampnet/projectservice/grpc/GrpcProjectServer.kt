@@ -68,7 +68,7 @@ class GrpcProjectServer(
         responseObserver.onCompleted()
     }
 
-    override fun getOrganizationMembers(
+    override fun getOrganizationMembersForProject(
         request: GetByUuid,
         responseObserver: StreamObserver<OrganizationMembershipsResponse>
     ) {
