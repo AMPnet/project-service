@@ -12,7 +12,6 @@ import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 class GrpcProjectServerTest : RepositoryTestBase() {
@@ -31,7 +30,6 @@ class GrpcProjectServerTest : RepositoryTestBase() {
     }
 
     @Test
-    @Transactional
     fun mustReturnOrganizationMembers() {
         suppose("There are two organizations") {
             testContext.organization = createOrganization("org", userUuid)
