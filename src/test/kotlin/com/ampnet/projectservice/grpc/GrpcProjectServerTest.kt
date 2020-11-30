@@ -64,24 +64,35 @@ class GrpcProjectServerTest : TestBase() {
     @Test
     @Transactional
     fun mustReturnOrganizationMembers() {
-        suppose("There is a organization") {
+        suppose("There are two organizations") {
             testContext.organization = createOrganization("org", userUuid)
+            testContext.secondOrganization = createOrganization("org-2", userUuid)
         }
         suppose("There is a project") {
             testContext.project = createProject("project", testContext.organization, userUuid)
         }
         suppose("Users are members of organization") {
-            testContext.firstMembership = addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
-            testContext.secondMembership = addUserToOrganization(anotherUser, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
+            testContext.firstMembership =
+                addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
+            testContext.secondMembership =
+                addUserToOrganization(anotherUser, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+        suppose("There is a member in another organization") {
+            addUserToOrganization(UUID.randomUUID(), testContext.secondOrganization.uuid, OrganizationRole.ORG_MEMBER)
         }
 
-        verify("Grpc service will return organization members") {
+        verify("Grpc service will return organization members for specified project") {
             val request = GetByUuid.newBuilder().setProjectUuid(testContext.project.uuid.toString()).build()
+
             @Suppress("UNCHECKED_CAST")
-            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<OrganizationMembershipsResponse>
+            val streamObserver = Mockito.mock(StreamObserver::class.java)
+                as StreamObserver<OrganizationMembershipsResponse>
             grpcServer.getOrganizationMembers(request, streamObserver)
-            val organizationMembersResponse = generateMembersResponse(listOf(testContext.secondMembership, testContext.firstMembership))
-            val response = OrganizationMembershipsResponse.newBuilder().addAllMemberships(organizationMembersResponse).build()
+            val organizationMembersResponse = generateMembersResponse(
+                listOf(testContext.firstMembership, testContext.secondMembership)
+            )
+            val response = OrganizationMembershipsResponse.newBuilder()
+                .addAllMemberships(organizationMembersResponse).build()
             Mockito.verify(streamObserver).onNext(response)
             Mockito.verify(streamObserver).onCompleted()
             Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
@@ -135,7 +146,11 @@ class GrpcProjectServerTest : TestBase() {
         return organizationRepository.save(organization)
     }
 
-    private fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole): OrganizationMembership {
+    private fun addUserToOrganization(
+        userUuid: UUID,
+        organizationUuid: UUID,
+        role: OrganizationRole
+    ): OrganizationMembership {
         val membership = OrganizationMembership::class.java.getConstructor().newInstance()
         membership.userUuid = userUuid
         membership.organizationUuid = organizationUuid
@@ -163,6 +178,7 @@ class GrpcProjectServerTest : TestBase() {
     private class TestContext {
         lateinit var project: Project
         lateinit var organization: Organization
+        lateinit var secondOrganization: Organization
         lateinit var firstMembership: OrganizationMembership
         lateinit var secondMembership: OrganizationMembership
     }

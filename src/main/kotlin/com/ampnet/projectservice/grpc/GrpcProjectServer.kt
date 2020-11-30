@@ -16,7 +16,6 @@ import com.ampnet.projectservice.proto.OrganizationsResponse
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
 import com.ampnet.projectservice.proto.ProjectsResponse
-import com.ampnet.projectservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -74,10 +73,8 @@ class GrpcProjectServer(
         responseObserver: StreamObserver<OrganizationMembershipsResponse>
     ) {
         logger.debug { "Received gRPC request getOrganizationMembers for project: ${request.projectUuid}" }
-        val project = ServiceUtils.wrapOptional(projectRepository.findById(UUID.fromString(request.projectUuid)))
-        val organizationMembers = project?.let {
-            organizationMembershipRepository.findByOrganizationUuid(it.organization.uuid)
-        } ?: emptyList()
+        val organizationMembers =
+            organizationMembershipRepository.findByProjectUuid(UUID.fromString(request.projectUuid))
         val response = OrganizationMembershipsResponse.newBuilder()
             .addAllMemberships(organizationMembers.map { membershipToGrpcResponse(it) }).build()
         responseObserver.onNext(response)
