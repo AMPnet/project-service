@@ -30,7 +30,7 @@ import java.util.UUID
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
 @Import(DatabaseCleanerService::class)
-class RepositoryTestBase : TestBase() {
+abstract class RepositoryTestBase : TestBase() {
 
     @Autowired
     protected lateinit var organizationInviteRepository: OrganizationInviteRepository
@@ -100,11 +100,15 @@ class RepositoryTestBase : TestBase() {
         return documentRepository.save(document)
     }
 
-    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
+    protected fun addUserToOrganization(
+        userUuid: UUID,
+        organizationUuid: UUID,
+        role: OrganizationRole
+    ): OrganizationMembership {
         val membership = OrganizationMembership(
             0, organizationUuid, userUuid, role, ZonedDateTime.now()
         )
-        membershipRepository.save(membership)
+        return membershipRepository.save(membership)
     }
 
     protected fun createProject(
