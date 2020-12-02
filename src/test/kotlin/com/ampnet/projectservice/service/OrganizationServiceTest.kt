@@ -166,6 +166,26 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustCreateOrganizationWithSameNameInAnotherCoop() {
+        verify("Service will create organization with the same name in another coop") {
+            val multipartFile = MockMultipartFile(
+                "image", "image.png",
+                "image/png", "ImageData".toByteArray()
+            )
+            val request = OrganizationServiceRequest(
+                OrganizationRequest(organization.name, "description"),
+                createUserPrincipal(UUID.randomUUID(), coop = "some-new-coop"), multipartFile
+            )
+            testContext.organization = organizationService.createOrganization(request)
+        }
+        verify("Organization is created") {
+            val organization = organizationRepository
+                .findByNameAndCoop(testContext.organization.name, testContext.organization.coop)
+            assertThat(organization).isPresent
+        }
+    }
+
+    @Test
     fun mustNotBeAbleToUpdateOrganizationWithNullFields() {
         suppose("User exists without any memberships") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -234,5 +254,6 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         lateinit var document: Document
         lateinit var documentSaveRequest: DocumentSaveRequest
         val documentLink = "link"
+        lateinit var organization: Organization
     }
 }
