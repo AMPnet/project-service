@@ -17,7 +17,7 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
     @Query("SELECT org FROM Organization org INNER JOIN FETCH org.memberships mem WHERE mem.userUuid = ?1")
     fun findAllOrganizationsForUserUuid(userUuid: UUID): List<Organization>
 
-    fun findByName(name: String): Optional<Organization>
+    fun findByNameAndCoop(name: String, coop: String): Optional<Organization>
 
     fun findByNameContainingIgnoreCaseAndCoop(name: String, coop: String, pageable: Pageable): Page<Organization>
 

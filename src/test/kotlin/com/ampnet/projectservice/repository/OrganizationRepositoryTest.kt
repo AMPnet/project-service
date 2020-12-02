@@ -32,7 +32,8 @@ class OrganizationRepositoryTest : RepositoryTestBase() {
     @Test
     fun mustGetOrganizationByName() {
         verify("Jpa query returns organization") {
-            val organization = organizationRepository.findByName(testContext.organization.name).get()
+            val organization = organizationRepository
+                .findByNameAndCoop(testContext.organization.name, testContext.organization.coop).get()
             assertThat(organization).isNotNull
             assertThat(Hibernate.isInitialized(organization.documents)).isFalse()
             assertThat(Hibernate.isInitialized(organization.memberships)).isFalse()

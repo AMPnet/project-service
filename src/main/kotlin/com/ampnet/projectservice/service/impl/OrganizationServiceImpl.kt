@@ -36,10 +36,10 @@ class OrganizationServiceImpl(
 
     @Transactional
     override fun createOrganization(serviceRequest: OrganizationServiceRequest): Organization {
-        if (organizationRepository.findByName(serviceRequest.name).isPresent) {
+        if (organizationRepository.findByNameAndCoop(serviceRequest.name, serviceRequest.owner.coop).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.ORG_DUPLICATE_NAME,
-                "Organization with name: ${serviceRequest.name} already exists"
+                "Organization with name: ${serviceRequest.name} already exists in coop: ${serviceRequest.owner.coop}"
             )
         }
         val imageName = ServiceUtils.getImageNameFromMultipartFile(serviceRequest.headerImage)
