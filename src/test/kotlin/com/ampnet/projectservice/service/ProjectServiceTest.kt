@@ -74,6 +74,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.documents.isNullOrEmpty()).isTrue()
             assertThat(project.createdByUserUuid).isEqualTo(userUuid)
             assertThat(project.coop).isEqualTo(COOP)
+            assertThat(project.shortDescription).isEqualTo(request.shortDescription)
         }
     }
 
@@ -503,7 +504,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
             100,
             10000,
             false,
-            emptyList()
+            emptyList(),
+            "short description"
         )
     }
 

@@ -91,6 +91,8 @@ class Project(
     var tags: List<String>?,
 
     @Column(nullable = false)
-    var coop: String
+    var coop: String,
 
+    @Column(nullable = true)
+    var shortDescription: String?
 )

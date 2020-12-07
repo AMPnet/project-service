@@ -25,7 +25,8 @@ data class ProjectResponse(
     val mainImage: String?,
     val active: Boolean,
     val tags: List<String>,
-    val coop: String
+    val coop: String,
+    val shortDescription: String?
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -42,7 +43,8 @@ data class ProjectResponse(
         project.mainImage,
         project.active,
         project.tags.orEmpty(),
-        project.coop
+        project.coop,
+        project.shortDescription
     )
 }
 
@@ -74,7 +76,8 @@ data class ProjectFullResponse(
     val gallery: List<String>,
     val news: List<String>,
     val documents: List<DocumentResponse>,
-    val coop: String
+    val coop: String,
+    val shortDescription: String?
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -94,7 +97,8 @@ data class ProjectFullResponse(
         project.gallery.orEmpty(),
         project.newsLinks.orEmpty(),
         project.documents.orEmpty().map { DocumentResponse(it) },
-        project.coop
+        project.coop,
+        project.shortDescription
     )
 }
 
