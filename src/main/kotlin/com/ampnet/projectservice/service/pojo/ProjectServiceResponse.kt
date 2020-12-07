@@ -22,7 +22,8 @@ data class ProjectServiceResponse(
     val mainImage: String?,
     val active: Boolean,
     val tags: List<String>,
-    val coop: String
+    val coop: String,
+    val shortDescription: String?
 ) {
     constructor(project: Project) : this(
         project.uuid,
@@ -39,6 +40,7 @@ data class ProjectServiceResponse(
         project.mainImage,
         project.active,
         project.tags.orEmpty(),
-        project.coop
+        project.coop,
+        project.shortDescription
     )
 }
