@@ -103,6 +103,7 @@ class ProjectServiceImpl(
         validateRoi(serviceRequest.request?.roi)
         serviceRequest.request?.name?.let { serviceRequest.project.name = it }
         serviceRequest.request?.description?.let { serviceRequest.project.description = it }
+        serviceRequest.request?.shortDescription?.let { serviceRequest.project.shortDescription = it }
         serviceRequest.request?.location?.let {
             serviceRequest.project.location.lat = it.lat
             serviceRequest.project.location.long = it.long
@@ -277,7 +278,8 @@ class ProjectServiceImpl(
             request.active,
             null,
             request.tags?.toSet()?.map { it.toLowerCase() },
-            user.coop
+            user.coop,
+            request.shortDescription
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

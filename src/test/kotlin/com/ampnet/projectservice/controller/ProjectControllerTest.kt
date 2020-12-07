@@ -15,7 +15,6 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -127,6 +126,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.active).isEqualTo(testContext.projectRequest.active)
             assertThat(projectResponse.mainImage).isNullOrEmpty()
             assertThat(projectResponse.coop).isEqualTo(COOP)
+            assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectRequest.shortDescription)
 
             testContext.projectUuid = projectResponse.uuid
         }
@@ -150,6 +150,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(project.organization.uuid).isEqualTo(organization.uuid)
             assertThat(project.active).isEqualTo(testContext.projectRequest.active)
             assertThat(project.coop).isEqualTo(COOP)
+            assertThat(project.shortDescription).isEqualTo(testContext.projectRequest.shortDescription)
         }
     }
 
@@ -227,11 +228,12 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Admin can update project") {
             testContext.projectUpdateRequest = ProjectUpdateRequest(
                 "new name", "description",
-                ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag")
+                ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag"),
+                shortDescription = "new short description"
             )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
@@ -256,6 +258,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.mainImage).contains(testContext.imageLink)
             assertThat(projectResponse.documents).hasSize(2)
             assertThat(projectResponse.coop).isEqualTo(COOP)
+            assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
             val documents = projectResponse.documents.sortedByDescending { it.size }
             val document = documents.first()
             assertThat(document.id).isNotNull()
@@ -276,6 +279,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(updatedProject.mainImage).contains(testContext.imageLink)
+            assertThat(updatedProject.shortDescription).contains(testContext.projectUpdateRequest.shortDescription)
             val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
             assertThat(documents).hasSize(2)
             val document = documents.last()
@@ -315,7 +319,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 ProjectUpdateRequest(null, null, null, null, null)
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
@@ -338,6 +342,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.mainImage).contains(testContext.imageLink)
             assertThat(projectResponse.coop).isEqualTo(COOP)
+            assertThat(projectResponse.shortDescription).isNotEqualTo(testContext.projectUpdateRequest.shortDescription)
         }
         verify("Only project image is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
@@ -391,7 +396,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest = ProjectUpdateRequest(null, null, null, null, null)
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
@@ -445,7 +450,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest = ProjectUpdateRequest(tags = testContext.tags)
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
@@ -483,7 +488,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             mockMvc.perform(
@@ -501,7 +506,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 ProjectUpdateRequest("new name", "description", null, null, false)
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder =
                 multipart("$projectPath/${UUID.randomUUID()}")
@@ -721,7 +726,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest = ProjectUpdateRequest(news = listOf("news-link"))
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(
@@ -758,7 +763,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest = ProjectUpdateRequest(tags = testContext.tags)
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
-                jacksonObjectMapper().writeValueAsBytes(testContext.projectUpdateRequest)
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
             )
             val builder = getPutMultipartRequestBuilder()
             val result = mockMvc.perform(

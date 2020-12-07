@@ -153,7 +153,8 @@ abstract class ControllerTestBase : TestBase() {
         expectedFunding: Long = 10_000_000,
         minPerUser: Long = 10,
         maxPerUser: Long = 10_000,
-        coop: String = COOP
+        coop: String = COOP,
+        shortDescription: String = "short description"
     ): Project {
         val project = Project::class.java.getDeclaredConstructor().newInstance()
         project.uuid = UUID.randomUUID()
@@ -174,6 +175,7 @@ abstract class ControllerTestBase : TestBase() {
         project.createdAt = startDate.minusMinutes(1)
         project.coop = coop
         project.tags = listOf("tag_1", "tag_2")
+        project.shortDescription = shortDescription
         return projectRepository.save(project)
     }
 

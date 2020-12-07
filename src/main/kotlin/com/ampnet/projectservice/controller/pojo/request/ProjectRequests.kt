@@ -23,7 +23,8 @@ data class ProjectRequest(
     @field:Positive
     val maxPerUser: Long,
     val active: Boolean,
-    val tags: List<String>? = null
+    val tags: List<String>? = null,
+    val shortDescription: String? = null
 )
 
 data class ProjectLocationRequest(val lat: Double, val long: Double)
@@ -36,5 +37,6 @@ data class ProjectUpdateRequest(
     val roi: ProjectRoiRequest? = null,
     val active: Boolean? = null,
     val tags: List<String>? = null,
-    val news: List<String>? = null
+    val news: List<String>? = null,
+    val shortDescription: String? = null
 )
