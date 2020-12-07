@@ -279,7 +279,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(updatedProject.mainImage).contains(testContext.imageLink)
-            assertThat(updatedProject.shortDescription).contains(testContext.projectUpdateRequest.shortDescription)
+            assertThat(updatedProject.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
             val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
             assertThat(documents).hasSize(2)
             val document = documents.last()
