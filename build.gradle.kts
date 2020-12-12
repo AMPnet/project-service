@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.8.18"
+version = "0.8.19"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -61,6 +61,10 @@ dependencies {
     implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
     implementation("com.github.AMPnet:jwt:0.2.0")
+
+    val sentryVersion = "3.2.0"
+    implementation("io.sentry:sentry-spring-boot-starter:$sentryVersion")
+    implementation("io.sentry:sentry-logback:$sentryVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
