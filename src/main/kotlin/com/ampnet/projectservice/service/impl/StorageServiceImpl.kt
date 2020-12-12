@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.service.impl
 
+import com.ampnet.projectservice.exception.InternalException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.repository.DocumentRepository
 import com.ampnet.projectservice.service.CloudStorageService
@@ -20,6 +21,7 @@ class StorageServiceImpl(
         private const val MAX_DOCUMENT_TYPE_NAME = 16
     }
 
+    @Throws(InternalException::class)
     override fun saveDocument(request: DocumentSaveRequest): Document {
         logger.debug { "Storing document: ${request.name}" }
 
@@ -36,6 +38,7 @@ class StorageServiceImpl(
         return documentRepository.save(document)
     }
 
+    @Throws(InternalException::class)
     override fun saveImage(name: String, content: ByteArray): String {
         logger.debug { "Storing image: $name" }
         val link = storeOnCloud(name, content)
@@ -43,6 +46,7 @@ class StorageServiceImpl(
         return link
     }
 
+    @Throws(InternalException::class)
     override fun deleteImage(link: String) {
         logger.debug { "Deleting image: $link" }
         cloudStorageService.deleteFile(link)

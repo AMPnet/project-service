@@ -5,6 +5,7 @@ import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.exception.ErrorCode
+import com.ampnet.projectservice.exception.InternalException
 import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
@@ -47,6 +48,7 @@ class ProjectServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project {
         validateCreateProjectRequest(request)
         logger.debug { "Creating project: ${request.name}" }
@@ -99,6 +101,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
+    @Throws(InvalidRequestException::class, InternalException::class)
     override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): Project {
         validateRoi(serviceRequest.request?.roi)
         serviceRequest.request?.name?.let { serviceRequest.project.name = it }
@@ -128,6 +131,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
+    @Throws(InternalException::class)
     override fun addMainImage(project: Project, name: String, content: ByteArray) {
         val link = storageService.saveImage(name, content)
         project.mainImage = link
@@ -135,6 +139,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
+    @Throws(InternalException::class)
     override fun addImageToGallery(project: Project, name: String, content: ByteArray) {
         val gallery = project.gallery.orEmpty().toMutableList()
         val link = storageService.saveImage(name, content)
@@ -143,6 +148,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
+    @Throws(InternalException::class)
     override fun removeImagesFromGallery(project: Project, images: List<String>) {
         val gallery = project.gallery.orEmpty().toMutableList()
         images.forEach {
@@ -154,6 +160,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
+    @Throws(InternalException::class)
     override fun addDocument(project: Project, request: DocumentSaveRequest): Document {
         val document = storageService.saveDocument(request)
         val updatedProject = addDocumentToProject(project, document)
@@ -162,6 +169,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
+    @Throws(InternalException::class)
     override fun removeDocument(project: Project, documentId: Int) {
         val storedDocuments = project.documents.orEmpty().toMutableList()
         storedDocuments.firstOrNull { it.id == documentId }.let {

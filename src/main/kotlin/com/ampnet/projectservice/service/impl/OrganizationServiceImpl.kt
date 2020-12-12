@@ -35,6 +35,7 @@ class OrganizationServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class)
     override fun createOrganization(serviceRequest: OrganizationServiceRequest): Organization {
         if (organizationRepository.findByNameAndCoop(serviceRequest.name, serviceRequest.owner.coop).isPresent) {
             throw ResourceAlreadyExistsException(
@@ -85,11 +86,13 @@ class OrganizationServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
     override fun findByIdWithMemberships(organizationUuid: UUID): Organization? {
         return ServiceUtils.wrapOptional(organizationRepository.findByIdWithMemberships(organizationUuid))
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document {
         val organization = getOrganization(organizationUuid)
         val document = storageService.saveDocument(request)
@@ -98,6 +101,7 @@ class OrganizationServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun removeDocument(organizationUuid: UUID, documentId: Int) {
         val organization = getOrganization(organizationUuid)
         val storedDocuments = organization.documents.orEmpty().toMutableList()
@@ -108,6 +112,7 @@ class OrganizationServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun updateOrganization(request: OrganizationUpdateServiceRequest): Organization {
         val organization = getOrganization(request.organizationUuid)
         request.headerImage?.let {

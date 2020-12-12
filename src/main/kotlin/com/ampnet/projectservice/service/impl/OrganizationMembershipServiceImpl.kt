@@ -22,6 +22,7 @@ class OrganizationMembershipServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class)
     override fun addUserToOrganization(
         userUuid: UUID,
         organizationUuid: UUID,
@@ -58,6 +59,7 @@ class OrganizationMembershipServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun updateOrganizationRole(request: OrganizationMemberServiceRequest) {
         logger.debug {
             "Updating organization role for user: ${request.memberUuid} " +

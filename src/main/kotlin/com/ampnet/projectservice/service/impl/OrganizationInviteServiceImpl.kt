@@ -39,6 +39,7 @@ class OrganizationInviteServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class)
     override fun sendInvitation(request: OrganizationInviteServiceRequest) {
         val invitedToOrganization = organizationService.findByIdWithMemberships(request.organizationUuid)
             ?: throw ResourceNotFoundException(

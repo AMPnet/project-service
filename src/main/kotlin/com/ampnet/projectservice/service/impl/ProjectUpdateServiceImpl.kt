@@ -28,6 +28,7 @@ class ProjectUpdateServiceImpl(
         projectUpdateRepository.findByProjectUuid(project, pageable)
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun createProjectUpdate(request: CreateProjectUpdate): ProjectUpdate {
         verifyUserCanEditProject(request.user, request.project)
         val projectUpdate = ProjectUpdate(request.project, request.title, request.content, request.author, request.user)
@@ -35,6 +36,7 @@ class ProjectUpdateServiceImpl(
     }
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun deleteProjectUpdate(user: UUID, projectUuid: UUID, id: Int) {
         verifyUserCanEditProject(user, projectUuid)
         projectUpdateRepository.deleteById(id)
