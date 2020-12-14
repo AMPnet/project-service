@@ -54,7 +54,8 @@ class ProjectServiceImpl(
         logger.debug { "Creating project: ${request.name}" }
         val project = createProjectFromRequest(user, organization, request)
         project.createdAt = ZonedDateTime.now()
-        return projectRepository.save(project)
+        projectRepository.save(project)
+        return project
     }
 
     @Transactional(readOnly = true)
@@ -102,7 +103,7 @@ class ProjectServiceImpl(
 
     @Transactional
     @Throws(InvalidRequestException::class, InternalException::class)
-    override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): Project {
+    override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): FullProjectWithWallet {
         validateRoi(serviceRequest.request?.roi)
         serviceRequest.request?.name?.let { serviceRequest.project.name = it }
         serviceRequest.request?.description?.let { serviceRequest.project.description = it }
@@ -127,7 +128,10 @@ class ProjectServiceImpl(
             val document = storageService.saveDocument(it)
             addDocumentToProject(serviceRequest.project, document)
         }
-        return projectRepository.save(serviceRequest.project)
+        val project = projectRepository.save(serviceRequest.project)
+        Hibernate.initialize(project.organization)
+        val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
+        return FullProjectWithWallet(project, wallet.firstOrNull())
     }
 
     @Transactional
