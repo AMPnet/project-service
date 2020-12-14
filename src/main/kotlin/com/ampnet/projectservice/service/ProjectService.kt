@@ -17,7 +17,7 @@ import java.util.UUID
 interface ProjectService {
 
     fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project
-    fun updateProject(serviceRequest: ProjectUpdateServiceRequest): Project
+    fun updateProject(serviceRequest: ProjectUpdateServiceRequest): FullProjectWithWallet
 
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWallet>

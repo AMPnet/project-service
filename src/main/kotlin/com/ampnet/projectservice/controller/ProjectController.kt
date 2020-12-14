@@ -5,8 +5,7 @@ import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Organization
@@ -42,7 +41,7 @@ class ProjectController(
     companion object : KLogging()
 
     @PostMapping("/project")
-    fun createProject(@RequestBody @Valid request: ProjectRequest): ResponseEntity<ProjectResponse> {
+    fun createProject(@RequestBody @Valid request: ProjectRequest): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to create project: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
@@ -57,7 +56,7 @@ class ProjectController(
         @RequestPart("request", required = false) request: ProjectUpdateRequest?,
         @RequestParam("image", required = false) image: MultipartFile?,
         @RequestParam("documents", required = false) documents: List<MultipartFile>?
-    ): ResponseEntity<ProjectFullResponse> {
+    ): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val project = getProjectByIdWithAllData(projectUuid)
@@ -66,7 +65,7 @@ class ProjectController(
             val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
             val serviceRequest = ProjectUpdateServiceRequest(project, request, image, documentSaveRequests)
             val updatedProject = projectService.updateProject(serviceRequest)
-            ProjectFullResponse(updatedProject)
+            ProjectWithWalletFullResponse(updatedProject.project, updatedProject.walletResponse)
         }
     }
 
@@ -147,10 +146,10 @@ class ProjectController(
     private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
         multipartFile.originalFilename ?: multipartFile.name
 
-    private fun createProject(request: ProjectRequest, user: UserPrincipal): ProjectResponse {
+    private fun createProject(request: ProjectRequest, user: UserPrincipal): ProjectWithWalletFullResponse {
         val organization = getOrganization(request.organizationUuid)
         val project = projectService.createProject(user, organization, request)
-        return ProjectResponse(project)
+        return ProjectWithWalletFullResponse(project, null)
     }
 
     private fun getOrganization(organizationUuid: UUID): Organization =

@@ -6,11 +6,11 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectFullResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -111,7 +111,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isNotNull()
             assertThat(projectResponse.name).isEqualTo(testContext.projectRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectRequest.description)
@@ -127,6 +127,8 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.mainImage).isNullOrEmpty()
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectRequest.shortDescription)
+            assertThat(projectResponse.organization.uuid).isEqualTo(organization.uuid)
+            assertThat(projectResponse.wallet).isNull()
 
             testContext.projectUuid = projectResponse.uuid
         }
@@ -224,6 +226,11 @@ class ProjectControllerTest : ControllerTestBase() {
                 )
             ).thenReturn(testContext.documentLink2)
         }
+        suppose("Wallet service will return project wallet") {
+            testContext.activeWallet = createWalletResponse(userUuid, testContext.project.uuid)
+            Mockito.`when`(walletService.getWalletsByOwner(listOf(testContext.project.uuid)))
+                .thenReturn(listOf(testContext.activeWallet))
+        }
 
         verify("Admin can update project") {
             testContext.projectUpdateRequest = ProjectUpdateRequest(
@@ -245,7 +252,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectUpdateRequest.description)
@@ -259,6 +266,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.documents).hasSize(2)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
+            assertThat(projectResponse.organization.uuid).isEqualTo(testContext.project.organization.uuid)
             val documents = projectResponse.documents.sortedByDescending { it.size }
             val document = documents.first()
             assertThat(document.id).isNotNull()
@@ -266,6 +274,9 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
+            val wallet = projectResponse.wallet ?: fail("Project does not have a wallet")
+            assertThat(wallet.uuid).isEqualTo(testContext.activeWallet.uuid)
+            assertThat(wallet.owner).isEqualTo(testContext.project.uuid)
         }
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
@@ -330,7 +341,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isNotEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isNotEqualTo(testContext.projectUpdateRequest.description)
@@ -407,7 +418,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val projectResponse: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.documents).hasSize(2)
             val documents = projectResponse.documents.sortedByDescending { it.size }
             val document = documents.first()
@@ -459,7 +470,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val project: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            val project: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(project.tags).containsAll(testContext.tags)
         }
         verify("Tags are added to project") {
@@ -735,7 +746,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val project: ProjectFullResponse = objectMapper.readValue(result.response.contentAsString)
+            val project: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(project.news).containsAll(listOf("news-link"))
         }
         verify("News link is added to project") {
@@ -798,5 +809,6 @@ class ProjectControllerTest : ControllerTestBase() {
         val imageLink = "image-link"
         lateinit var projectUuid: UUID
         lateinit var tags: List<String>
+        lateinit var activeWallet: WalletServiceResponse
     }
 }
