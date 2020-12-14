@@ -199,7 +199,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
             val request = OrganizationUpdateServiceRequest(
                 organization.uuid,
                 null,
-                OrganizationUpdateRequest(null)
+                OrganizationUpdateRequest(null, null)
             )
             val updatedOrganization = organizationService.updateOrganization(request)
             assertThat(updatedOrganization.description).isEqualTo(organization.description)

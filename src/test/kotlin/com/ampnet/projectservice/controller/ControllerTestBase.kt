@@ -121,7 +121,12 @@ abstract class ControllerTestBase : TestBase() {
         assert(response.errCode == expectedErrorCode)
     }
 
-    protected fun createOrganization(name: String, userUuid: UUID, coop: String = COOP): Organization {
+    protected fun createOrganization(
+        name: String,
+        userUuid: UUID,
+        coop: String = COOP,
+        active: Boolean = true
+    ): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()
         organization.uuid = UUID.randomUUID()
         organization.name = name
@@ -131,6 +136,7 @@ abstract class ControllerTestBase : TestBase() {
         organization.createdByUserUuid = userUuid
         organization.headerImage = "Organization header image"
         organization.coop = coop
+        organization.active = active
         return organizationRepository.save(organization)
     }
 

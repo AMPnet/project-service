@@ -11,7 +11,8 @@ data class OrganizationResponse(
     val approved: Boolean,
     val description: String,
     val headerImage: String?,
-    val coop: String
+    val coop: String,
+    val active: Boolean
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
@@ -20,7 +21,8 @@ data class OrganizationResponse(
         organization.approved,
         organization.description.orEmpty(),
         organization.headerImage,
-        organization.coop
+        organization.coop,
+        organization.active
     )
 }
 

@@ -46,6 +46,9 @@ class SearchServiceTest : JpaServiceTestBase() {
             testContext.organizationName = "Das X"
             createOrganization(testContext.organizationName, userUuid)
         }
+        suppose("Hidden organization exists") {
+            createOrganization("Hidden org", userUuid, false)
+        }
 
         verify("Service will find one organization") {
             val organizations = searchService
@@ -68,6 +71,9 @@ class SearchServiceTest : JpaServiceTestBase() {
         suppose("Organization by name X exist") {
             testContext.organizationName = "Das X"
             createOrganization(testContext.organizationName, userUuid)
+        }
+        suppose("Hidden organization exist") {
+            createOrganization("Hidden org 4", userUuid, false)
         }
 
         verify("Service will find by name in lower case") {

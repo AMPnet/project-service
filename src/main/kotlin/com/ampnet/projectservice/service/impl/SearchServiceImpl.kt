@@ -20,7 +20,7 @@ class SearchServiceImpl(
 
     @Transactional(readOnly = true)
     override fun searchOrganizations(name: String, coop: String?, pageable: Pageable): Page<Organization> {
-        return organizationRepository.findByNameContainingIgnoreCaseAndCoop(
+        return organizationRepository.findAllActiveByNameAndCoop(
             name, coop ?: applicationProperties.coop.default, pageable
         )
     }

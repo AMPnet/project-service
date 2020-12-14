@@ -57,7 +57,7 @@ abstract class RepositoryTestBase : TestBase() {
     protected fun createOrganization(name: String, userUuid: UUID): Organization {
         val organization = Organization(
             UUID.randomUUID(), name, userUuid, ZonedDateTime.now(), null, true, null, null,
-            null, "Organization header image", "description", coop
+            null, "Organization header image", "description", coop, true
         )
         return organizationRepository.save(organization)
     }

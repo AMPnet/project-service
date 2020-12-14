@@ -35,8 +35,11 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
             createOrganization("test 2", userUuid)
             createOrganization("test 3", userUuid)
         }
+        suppose("Hidden organization exists") {
+            createOrganization("test 4", userUuid, active = false)
+        }
 
-        verify("User can get all organizations") {
+        verify("User can get all active organizations") {
             val result = mockMvc.perform(
                 MockMvcRequestBuilders.get(organizationPath)
                     .param("size", "10")
