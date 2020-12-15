@@ -29,7 +29,7 @@ class PublicOrganizationController(
     fun getOrganizations(pageable: Pageable): ResponseEntity<OrganizationListResponse> {
         logger.debug { "Received request for all active organizations" }
         val organizations =
-            organizationService.getAllActiveOrganizations(pageable).map { OrganizationResponse(it) }
+            organizationService.getAllByActive(pageable).map { OrganizationResponse(it) }
         return ResponseEntity.ok(
             OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages)
         )

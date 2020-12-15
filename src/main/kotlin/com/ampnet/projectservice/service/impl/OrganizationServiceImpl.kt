@@ -92,7 +92,7 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllActiveOrganizations(pageable: Pageable, active: Boolean): Page<Organization> {
+    override fun getAllByActive(pageable: Pageable, active: Boolean): Page<Organization> {
         return organizationRepository.findByActive(active, pageable)
     }
 
