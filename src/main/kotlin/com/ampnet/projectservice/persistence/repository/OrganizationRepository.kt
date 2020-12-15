@@ -19,15 +19,15 @@ interface OrganizationRepository : JpaRepository<Organization, UUID> {
 
     fun findByNameAndCoop(name: String, coop: String): Optional<Organization>
 
-    @Query(
-        "SELECT org FROM Organization org WHERE lower(org.name) like lower(concat('%', ?1,'%')) " +
-            "AND org.coop = ?2 AND org.active = true"
-    )
-    fun findAllActiveByNameAndCoop(name: String, coop: String, pageable: Pageable): Page<Organization>
+    fun findByNameContainingIgnoreCaseAndCoopAndActive(
+        name: String,
+        coop: String,
+        active: Boolean,
+        pageable: Pageable
+    ): Page<Organization>
 
     @Query("SELECT org FROM Organization org LEFT JOIN FETCH org.memberships WHERE org.uuid = :organizationUuid")
     fun findByIdWithMemberships(organizationUuid: UUID): Optional<Organization>
 
-    @Query("SELECT org FROM Organization org WHERE org.active = true")
-    fun findAllActive(pageable: Pageable): Page<Organization>
+    fun findByActive(active: Boolean, pageable: Pageable): Page<Organization>
 }
