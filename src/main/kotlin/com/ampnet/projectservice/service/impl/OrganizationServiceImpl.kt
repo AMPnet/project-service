@@ -91,6 +91,11 @@ class OrganizationServiceImpl(
         return ServiceUtils.wrapOptional(organizationRepository.findByIdWithMemberships(organizationUuid))
     }
 
+    @Transactional(readOnly = true)
+    override fun getAllByActive(pageable: Pageable, active: Boolean): Page<Organization> {
+        return organizationRepository.findByActive(active, pageable)
+    }
+
     @Transactional
     @Throws(ResourceNotFoundException::class)
     override fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document {
@@ -125,6 +130,9 @@ class OrganizationServiceImpl(
         }
         request.description?.let {
             organization.description = it
+        }
+        request.active?.let {
+            organization.active = it
         }
         return organization
     }

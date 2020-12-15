@@ -50,12 +50,15 @@ class Organization(
     var description: String?,
 
     @Column(nullable = false)
-    var coop: String
+    var coop: String,
+
+    @Column(nullable = false)
+    var active: Boolean
 
 ) {
     constructor(name: String, createdByUserUuid: UUID, headerImage: String?, description: String?, coop: String) : this(
         UUID.randomUUID(), name, createdByUserUuid, ZonedDateTime.now(),
         null, true, null, null,
-        null, headerImage, description, coop
+        null, headerImage, description, coop, true
     )
 }

@@ -79,7 +79,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val defaultPageable: Pageable = PageRequest.of(0, 20)
     protected val userEmail = "user@email.com"
 
-    protected fun createOrganization(name: String, createdByUuid: UUID): Organization {
+    protected fun createOrganization(name: String, createdByUuid: UUID, active: Boolean = true): Organization {
         val organization = Organization::class.java.getConstructor().newInstance()
         organization.uuid = UUID.randomUUID()
         organization.name = name
@@ -89,6 +89,7 @@ abstract class JpaServiceTestBase : TestBase() {
         organization.createdByUserUuid = createdByUuid
         organization.headerImage = null
         organization.coop = COOP
+        organization.active = active
         return organizationRepository.save(organization)
     }
 

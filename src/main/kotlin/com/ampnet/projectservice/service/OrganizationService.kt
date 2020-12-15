@@ -18,6 +18,7 @@ interface OrganizationService {
     fun findOrganizationById(organizationUuid: UUID): Organization?
     fun findAllOrganizationsForUser(userUuid: UUID): List<OrganizationWitProjectCountServiceResponse>
     fun findByIdWithMemberships(organizationUuid: UUID): Organization?
+    fun getAllByActive(pageable: Pageable, active: Boolean = true): Page<Organization>
 
     fun addDocument(organizationUuid: UUID, request: DocumentSaveRequest): Document
     fun removeDocument(organizationUuid: UUID, documentId: Int)

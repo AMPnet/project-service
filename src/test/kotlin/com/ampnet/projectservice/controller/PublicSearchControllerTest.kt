@@ -49,6 +49,9 @@ class PublicSearchControllerTest : ControllerTestBase() {
             createProject("The first project", organization, userUuid)
             createProject("The projcccp", organization, userUuid)
         }
+        suppose("There is hidden organization") {
+            createOrganization("Prospective Organization", userUuid, active = false)
+        }
 
         verify("Controller will a list of organizations and project containing searched word") {
             val result = mockMvc.perform(

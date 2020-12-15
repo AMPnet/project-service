@@ -27,8 +27,9 @@ class PublicOrganizationController(
 
     @GetMapping("/public/organization")
     fun getOrganizations(pageable: Pageable): ResponseEntity<OrganizationListResponse> {
-        logger.debug { "Received request for all organizations" }
-        val organizations = organizationService.getAllOrganizations(pageable).map { OrganizationResponse(it) }
+        logger.debug { "Received request for all active organizations" }
+        val organizations =
+            organizationService.getAllByActive(pageable).map { OrganizationResponse(it) }
         return ResponseEntity.ok(
             OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages)
         )

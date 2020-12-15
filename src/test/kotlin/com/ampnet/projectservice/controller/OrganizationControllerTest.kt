@@ -339,7 +339,7 @@ class OrganizationControllerTest : ControllerTestBase() {
 
         verify("User can update organization") {
             val description = "Organization description"
-            testContext.organizationUpdateRequest = OrganizationUpdateRequest(description)
+            testContext.organizationUpdateRequest = OrganizationUpdateRequest(description, false)
             val organizationRequestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
                 jacksonObjectMapper().writeValueAsBytes(testContext.organizationUpdateRequest)
@@ -361,6 +361,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationResponse.approved).isTrue()
             assertThat(organizationResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationResponse.coop).isEqualTo(COOP)
+            assertThat(organizationResponse.active).isFalse()
 
             testContext.createdOrganizationUuid = organizationResponse.uuid
         }
