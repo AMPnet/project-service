@@ -10,7 +10,7 @@ import java.util.UUID
 data class ProjectServiceResponse(
     val uuid: UUID,
     val name: String,
-    val description: String,
+    val description: String?,
     val location: ProjectLocationResponse,
     val roi: ProjectRoiResponse,
     val startDate: ZonedDateTime,
@@ -25,10 +25,10 @@ data class ProjectServiceResponse(
     val coop: String,
     val shortDescription: String?
 ) {
-    constructor(project: Project) : this(
+    constructor(project: Project, withDescription: Boolean = false) : this(
         project.uuid,
         project.name,
-        project.description,
+        if (withDescription) project.description else null,
         ProjectLocationResponse(project.location),
         ProjectRoiResponse(project.roi),
         project.startDate,

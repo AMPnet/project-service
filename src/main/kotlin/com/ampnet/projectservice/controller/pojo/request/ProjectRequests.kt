@@ -25,7 +25,14 @@ data class ProjectRequest(
     val active: Boolean,
     val tags: List<String>? = null,
     val shortDescription: String? = null
-)
+) {
+    override fun toString(): String {
+        return "ProjectRequest(organizationUuid=$organizationUuid, name='$name', location=$location, roi=$roi, " +
+            "startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, currency=$currency, " +
+            "minPerUser=$minPerUser, maxPerUser=$maxPerUser, active=$active, tags=$tags, " +
+            "shortDescription=$shortDescription)"
+    }
+}
 
 data class ProjectLocationRequest(val lat: Double, val long: Double)
 data class ProjectRoiRequest(val from: Double, val to: Double)
@@ -39,4 +46,9 @@ data class ProjectUpdateRequest(
     val tags: List<String>? = null,
     val news: List<String>? = null,
     val shortDescription: String? = null
-)
+) {
+    override fun toString(): String {
+        return "ProjectUpdateRequest(name=$name, location=$location, roi=$roi, active=$active, tags=$tags, " +
+            "news=$news, shortDescription=$shortDescription)"
+    }
+}

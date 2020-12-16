@@ -66,6 +66,7 @@ class PublicSearchControllerTest : ControllerTestBase() {
             val searchResponse: SearchOrgAndProjectResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(searchResponse.organizations).hasSize(1)
             assertThat(searchResponse.projects).hasSize(2)
+            assertThat(searchResponse.projects.map { it.description }).allMatch { it.isNullOrEmpty() }
         }
     }
 }

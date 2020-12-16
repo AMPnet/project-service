@@ -13,7 +13,7 @@ import java.util.UUID
 data class ProjectResponse(
     val uuid: UUID,
     val name: String,
-    val description: String,
+    val description: String?,
     val location: ProjectLocationResponse,
     val roi: ProjectRoiResponse,
     val startDate: ZonedDateTime,
@@ -28,10 +28,10 @@ data class ProjectResponse(
     val coop: String,
     val shortDescription: String?
 ) {
-    constructor(project: Project) : this(
+    constructor(project: Project, withDescription: Boolean = false) : this(
         project.uuid,
         project.name,
-        project.description,
+        if (withDescription) project.description else null,
         ProjectLocationResponse(project.location),
         ProjectRoiResponse(project.roi),
         project.startDate,
@@ -57,50 +57,6 @@ data class ProjectRoiResponse(val from: Double, val to: Double) {
 }
 
 data class ProjectListResponse(val projects: List<ProjectResponse>, val page: Int = 0, val totalPages: Int = 1)
-
-data class ProjectFullResponse(
-    val uuid: UUID,
-    val name: String,
-    val description: String,
-    val location: ProjectLocationResponse,
-    val roi: ProjectRoiResponse,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
-    val expectedFunding: Long,
-    val currency: Currency,
-    val minPerUser: Long,
-    val maxPerUser: Long,
-    val mainImage: String?,
-    val active: Boolean,
-    val tags: List<String>,
-    val gallery: List<String>,
-    val news: List<String>,
-    val documents: List<DocumentResponse>,
-    val coop: String,
-    val shortDescription: String?
-) {
-    constructor(project: Project) : this(
-        project.uuid,
-        project.name,
-        project.description,
-        ProjectLocationResponse(project.location),
-        ProjectRoiResponse(project.roi),
-        project.startDate,
-        project.endDate,
-        project.expectedFunding,
-        project.currency,
-        project.minPerUser,
-        project.maxPerUser,
-        project.mainImage,
-        project.active,
-        project.tags.orEmpty(),
-        project.gallery.orEmpty(),
-        project.newsLinks.orEmpty(),
-        project.documents.orEmpty().map { DocumentResponse(it) },
-        project.coop,
-        project.shortDescription
-    )
-}
 
 data class ProjectWithWalletFullResponse(
     val uuid: UUID,
