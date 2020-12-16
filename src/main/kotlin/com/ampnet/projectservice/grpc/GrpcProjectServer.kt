@@ -107,7 +107,7 @@ class GrpcProjectServer(
             .setCurrency(project.currency.name)
             .setActive(project.active)
             .setOrganizationUuid(project.organization.uuid.toString())
-            .setDescription(project.description)
+            .setDescription(project.shortDescription.orEmpty())
             .setCoop(project.coop)
         project.mainImage?.let { builder.setImageUrl(it) }
         return builder.build()
