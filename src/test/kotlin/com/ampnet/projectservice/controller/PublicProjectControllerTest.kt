@@ -141,6 +141,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectsResponse.projects).hasSize(2)
             assertThat(projectsResponse.projects.map { it.uuid })
                 .containsAll(listOf(testContext.project.uuid, testContext.secondProject.uuid))
+            assertThat(projectsResponse.projects.map { it.description }).allMatch { it.isNullOrEmpty() }
         }
     }
 
@@ -197,7 +198,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             val projectWithWallet = response.projectsWallets.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectWithWallet.project.name).isEqualTo(testContext.project.name)
-            assertThat(projectWithWallet.project.description).isEqualTo(testContext.project.description)
+            assertThat(projectWithWallet.project.description).isNull()
             assertThat(projectWithWallet.project.location).isEqualTo(ProjectLocationResponse(testContext.project.location))
             assertThat(projectWithWallet.project.roi).isEqualTo(ProjectRoiResponse(testContext.project.roi))
             assertThat(projectWithWallet.project.startDate).isEqualTo(testContext.project.startDate)
@@ -358,12 +359,14 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectListResponse.projectsWallets).hasSize(2)
             val projects = projectListResponse.projectsWallets
             assertThat(projects.map { it.project.uuid }).doesNotContain(testContext.thirdProject.uuid)
+            assertThat(projects.map { it.project.description }).allMatch { it.isNullOrEmpty() }
 
             val projectWithoutWallet = projectListResponse.projectsWallets
                 .filter { it.project.uuid == testContext.secondProject.uuid }
             assertThat(projectWithoutWallet).hasSize(1)
             assertThat(projectWithoutWallet.first().project).isNotNull
             assertThat(projectWithoutWallet.first().wallet).isNull()
+            assertThat(projectWithoutWallet.first().project.description).isNull()
 
             val projectWithWallet = projectListResponse.projectsWallets
                 .filter { it.project.uuid == testContext.project.uuid }
@@ -371,7 +374,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             val projectResponse = projectWithWallet.first().project
             val walletResponse = projectWithWallet.first().wallet
             assertThat(projectResponse.name).isEqualTo(testContext.project.name)
-            assertThat(projectResponse.description).isEqualTo(testContext.project.description)
+            assertThat(projectResponse.description).isNull()
             assertThat(projectResponse.location.lat).isEqualTo(testContext.project.location.lat)
             assertThat(projectResponse.location.long).isEqualTo(testContext.project.location.long)
             assertThat(projectResponse.roi.from).isEqualTo(testContext.project.roi.from)
