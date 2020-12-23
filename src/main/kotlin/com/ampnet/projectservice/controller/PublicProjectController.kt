@@ -2,15 +2,11 @@ package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.controller.pojo.response.CountActiveProjectsCount
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectsWithWalletAndOrgListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
-import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.ProjectService
 import mu.KLogging
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -57,17 +53,20 @@ class PublicProjectController(private val projectService: ProjectService) {
             }
             projectService.getProjectsByTags(tags, coop, pageable)
         }
-        return mapToProjectListResponse(projects)
+        val response = ProjectListResponse(
+            projects.toList(), projects.number, projects.totalPages
+        )
+        return ResponseEntity.ok(response)
     }
 
     @GetMapping("/public/project/active")
     fun getAllActiveProjects(
         @RequestParam(name = "coop", required = false) coop: String?,
         pageable: Pageable
-    ): ResponseEntity<ProjectsWithWalletAndOrgListResponse> {
+    ): ResponseEntity<ProjectsWalletsListResponse> {
         logger.debug { "Received request to get all active projects for cooperative with id: $coop" }
         val projectsWithWalletAndOrg = projectService.getActiveProjects(coop, pageable)
-        val response = ProjectsWithWalletAndOrgListResponse(
+        val response = ProjectsWalletsListResponse(
             projectsWithWalletAndOrg.toList(),
             projectsWithWalletAndOrg.number,
             projectsWithWalletAndOrg.totalPages
@@ -99,21 +98,9 @@ class PublicProjectController(private val projectService: ProjectService) {
         @RequestParam(name = "coop", required = false) coop: String?
     ): ResponseEntity<ProjectsWalletsListResponse> {
         logger.debug {
-            "Received request to get all projects for organization: $organizationUuid " +
-                "and cooperative with id: $coop"
+            "Received request to get all projects for organization: $organizationUuid and cooperative with id: $coop"
         }
-        val projects = projectService
-            .getAllProjectsForOrganization(organizationUuid, coop)
+        val projects = projectService.getAllProjectsForOrganization(organizationUuid, coop)
         return ResponseEntity.ok(ProjectsWalletsListResponse(projects))
-    }
-
-    private fun mapToProjectListResponse(page: Page<Project>): ResponseEntity<ProjectListResponse> {
-        val projectsResponse = page.map { ProjectResponse(it) }
-        val response = ProjectListResponse(
-            projectsResponse.toList(),
-            projectsResponse.number,
-            projectsResponse.totalPages
-        )
-        return ResponseEntity.ok(response)
     }
 }

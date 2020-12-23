@@ -6,7 +6,6 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectLocationRespons
 import com.ampnet.projectservice.controller.pojo.response.ProjectRoiResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
-import com.ampnet.projectservice.controller.pojo.response.ProjectsWithWalletAndOrgListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
 import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Organization
@@ -79,12 +78,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
             assertThat(projectResponse.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
 
-            assertThat(projectResponse.organization.coop).isEqualTo(organization.coop)
             assertThat(projectResponse.organization.uuid).isEqualTo(organization.uuid)
             assertThat(projectResponse.organization.name).isEqualTo(organization.name)
-            assertThat(projectResponse.organization.headerImage).isEqualTo(organization.headerImage)
-            assertThat(projectResponse.organization.description).isEqualTo(organization.description)
-            assertThat(projectResponse.organization.approved).isEqualTo(organization.approved)
         }
     }
 
@@ -193,7 +188,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: ProjectsWithWalletAndOrgListResponse = objectMapper.readValue(result.response.contentAsString)
+            val response: ProjectsWalletsListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.projectsWallets).hasSize(1)
             val projectWithWallet = response.projectsWallets.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(testContext.project.uuid)
@@ -220,13 +215,8 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.wallet?.currency).isEqualTo(testContext.activeWallet.currency)
             assertThat(projectWithWallet.wallet?.hash).isEqualTo(testContext.activeWallet.hash)
 
-            assertThat(projectWithWallet.organization.uuid).isEqualTo(organization.uuid)
-            assertThat(projectWithWallet.organization.name).isEqualTo(organization.name)
-            assertThat(projectWithWallet.organization.createdAt).isEqualTo(organization.createdAt)
-            assertThat(projectWithWallet.organization.approved).isEqualTo(organization.approved)
-            assertThat(projectWithWallet.organization.description).isEqualTo(organization.description)
-            assertThat(projectWithWallet.organization.headerImage).isEqualTo(organization.headerImage)
-            assertThat(projectWithWallet.organization.coop).isEqualTo(organization.coop)
+            assertThat(projectWithWallet.project.organization.uuid).isEqualTo(organization.uuid)
+            assertThat(projectWithWallet.project.organization.name).isEqualTo(organization.name)
         }
     }
 

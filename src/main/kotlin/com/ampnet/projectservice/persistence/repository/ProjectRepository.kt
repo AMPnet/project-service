@@ -37,8 +37,8 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
         tags: Collection<String>,
         size: Long,
         coop: String,
-        pageable: Pageable,
-        active: Boolean = true
+        active: Boolean,
+        pageable: Pageable
     ): Page<Project>
 
     @Query(
