@@ -23,7 +23,8 @@ data class ProjectServiceResponse(
     val active: Boolean,
     val tags: List<String>,
     val coop: String,
-    val shortDescription: String?
+    val shortDescription: String?,
+    val organization: OrganizationSmallServiceResponse
 ) {
     constructor(project: Project, withDescription: Boolean = false) : this(
         project.uuid,
@@ -41,6 +42,7 @@ data class ProjectServiceResponse(
         project.active,
         project.tags.orEmpty(),
         project.coop,
-        project.shortDescription
+        project.shortDescription,
+        OrganizationSmallServiceResponse(project.organization)
     )
 }

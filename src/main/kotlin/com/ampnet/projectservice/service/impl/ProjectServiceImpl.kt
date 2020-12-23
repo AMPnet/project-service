@@ -20,11 +20,9 @@ import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
-import com.ampnet.projectservice.service.pojo.OrganizationServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
-import com.ampnet.projectservice.service.pojo.ProjectWithWalletAndOrganization
 import mu.KLogging
 import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
@@ -81,11 +79,13 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjects(coop: String?, pageable: Pageable): Page<Project> =
-        projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
+    override fun getAllProjects(coop: String?, pageable: Pageable): Page<ProjectServiceResponse> {
+        val projects = projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
+        return projects.map { ProjectServiceResponse(it) }
+    }
 
     @Transactional(readOnly = true)
-    override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWalletAndOrganization> {
+    override fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
         val activeProjects = projectRepository.findByActive(
             ZonedDateTime.now(), true, coop ?: applicationProperties.coop.default, pageable
         )
@@ -93,9 +93,7 @@ class ProjectServiceImpl(
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
             activeWallets[project.uuid]?.let { wallet ->
-                ProjectWithWalletAndOrganization(
-                    ProjectServiceResponse(project), wallet, OrganizationServiceResponse(project.organization)
-                )
+                ProjectWithWallet(ProjectServiceResponse(project), wallet)
             }
         }
         return PageImpl(projectsWithWallets, pageable, activeProjects.totalElements)
@@ -194,9 +192,12 @@ class ProjectServiceImpl(
         coop: String?,
         pageable: Pageable,
         active: Boolean
-    ): Page<Project> = projectRepository.findByTags(
-        tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, pageable
-    )
+    ): Page<ProjectServiceResponse> {
+        val projects = projectRepository.findByTags(
+            tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, active, pageable
+        )
+        return projects.map { ProjectServiceResponse(it) }
+    }
 
     @Transactional(readOnly = true)
     override fun getProjectWithWallet(id: UUID): FullProjectWithWallet? {

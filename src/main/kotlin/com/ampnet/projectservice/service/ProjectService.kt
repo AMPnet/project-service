@@ -7,24 +7,35 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
+import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
-import com.ampnet.projectservice.service.pojo.ProjectWithWalletAndOrganization
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 interface ProjectService {
 
-    fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project
+    fun createProject(
+        user: UserPrincipal,
+        organization: Organization,
+        request: ProjectRequest
+    ): Project
+
     fun updateProject(serviceRequest: ProjectUpdateServiceRequest): FullProjectWithWallet
 
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWallet>
-    fun getAllProjects(coop: String?, pageable: Pageable): Page<Project>
+    fun getAllProjects(coop: String?, pageable: Pageable): Page<ProjectServiceResponse>
 
-    fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWalletAndOrganization>
-    fun getProjectsByTags(tags: List<String>, coop: String?, pageable: Pageable, active: Boolean = true): Page<Project>
+    fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet>
+    fun getProjectsByTags(
+        tags: List<String>,
+        coop: String?,
+        pageable: Pageable,
+        active: Boolean = true
+    ): Page<ProjectServiceResponse>
+
     fun getAllProjectTags(coop: String?): List<String>
     fun getProjectWithWallet(id: UUID): FullProjectWithWallet?
 

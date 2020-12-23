@@ -5,8 +5,9 @@ import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
+import com.ampnet.projectservice.service.pojo.OrganizationSmallServiceResponse
+import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
-import com.ampnet.projectservice.service.pojo.ProjectWithWalletAndOrganization
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -26,7 +27,8 @@ data class ProjectResponse(
     val active: Boolean,
     val tags: List<String>,
     val coop: String,
-    val shortDescription: String?
+    val shortDescription: String?,
+    val organization: OrganizationSmallServiceResponse
 ) {
     constructor(project: Project, withDescription: Boolean = false) : this(
         project.uuid,
@@ -44,7 +46,8 @@ data class ProjectResponse(
         project.active,
         project.tags.orEmpty(),
         project.coop,
-        project.shortDescription
+        project.shortDescription,
+        OrganizationSmallServiceResponse(project.organization)
     )
 }
 
@@ -56,7 +59,7 @@ data class ProjectRoiResponse(val from: Double, val to: Double) {
     constructor(roi: ProjectRoi) : this(roi.from, roi.to)
 }
 
-data class ProjectListResponse(val projects: List<ProjectResponse>, val page: Int = 0, val totalPages: Int = 1)
+data class ProjectListResponse(val projects: List<ProjectServiceResponse>, val page: Int = 0, val totalPages: Int = 1)
 
 data class ProjectWithWalletFullResponse(
     val uuid: UUID,
@@ -79,7 +82,7 @@ data class ProjectWithWalletFullResponse(
     val wallet: WalletServiceResponse?,
     val coop: String,
     val shortDescription: String?,
-    val organization: OrganizationResponse
+    val organization: OrganizationSmallServiceResponse
 ) {
     constructor(project: Project, wallet: WalletServiceResponse?) : this(
         project.uuid,
@@ -102,18 +105,12 @@ data class ProjectWithWalletFullResponse(
         wallet,
         project.coop,
         project.shortDescription,
-        OrganizationResponse(project.organization)
+        OrganizationSmallServiceResponse(project.organization)
     )
 }
 
 data class ProjectsWalletsListResponse(
     val projectsWallets: List<ProjectWithWallet>,
-    val page: Int = 0,
-    val totalPages: Int = 1
-)
-
-data class ProjectsWithWalletAndOrgListResponse(
-    val projectsWallets: List<ProjectWithWalletAndOrganization>,
     val page: Int = 0,
     val totalPages: Int = 1
 )
