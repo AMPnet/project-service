@@ -30,16 +30,18 @@ class PublicOrganizationController(
         logger.debug { "Received request for all active organizations" }
         val organizations =
             organizationService.getAllByActive(pageable).map { OrganizationResponse(it) }
-        return ResponseEntity.ok(
-            OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages)
-        )
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages))
     }
 
     @GetMapping("/public/organization/{uuid}")
     fun getOrganization(@PathVariable("uuid") uuid: UUID): ResponseEntity<OrganizationFullServiceResponse> {
         logger.debug { "Received request for organization with uuid: $uuid" }
         organizationService.findOrganizationWithProjectCountById(uuid)?.let {
-            return ResponseEntity.ok(it)
+            return ResponseEntity.ok()
+                .cacheControl(ControllerUtils.cacheControl)
+                .body(it)
         }
         return ResponseEntity.notFound().build()
     }
@@ -54,6 +56,8 @@ class PublicOrganizationController(
         val membersResponse = members.map {
             OrganizationMembershipInfoResponse(it, users.firstOrNull { user -> user.uuid == it.userUuid.toString() })
         }
-        return ResponseEntity.ok(OrganizationMembershipsInfoResponse(membersResponse))
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(OrganizationMembershipsInfoResponse(membersResponse))
     }
 }
