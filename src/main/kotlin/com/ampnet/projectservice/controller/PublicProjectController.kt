@@ -24,12 +24,9 @@ class PublicProjectController(private val projectService: ProjectService) {
     fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to get project with wallet with uuid: $uuid" }
         projectService.getProjectWithWallet(uuid)?.let { projectWithWallet ->
-            return ResponseEntity.ok(
-                ProjectWithWalletFullResponse(
-                    projectWithWallet.project,
-                    projectWithWallet.walletResponse
-                )
-            )
+            return ResponseEntity.ok()
+                .cacheControl(ControllerUtils.cacheControl)
+                .body(ProjectWithWalletFullResponse(projectWithWallet.project, projectWithWallet.walletResponse))
         }
         return ResponseEntity.notFound().build()
     }
@@ -56,7 +53,9 @@ class PublicProjectController(private val projectService: ProjectService) {
         val response = ProjectListResponse(
             projects.toList(), projects.number, projects.totalPages
         )
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(response)
     }
 
     @GetMapping("/public/project/active")
@@ -71,7 +70,9 @@ class PublicProjectController(private val projectService: ProjectService) {
             projectsWithWalletAndOrg.number,
             projectsWithWalletAndOrg.totalPages
         )
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(response)
     }
 
     @GetMapping("/public/project/active/count")
@@ -80,7 +81,9 @@ class PublicProjectController(private val projectService: ProjectService) {
     ): ResponseEntity<CountActiveProjectsCount> {
         logger.debug { "Received request to get all active projects count for cooperative with id: $coop" }
         val count = projectService.countActiveProjects(coop)
-        return ResponseEntity.ok(CountActiveProjectsCount(count))
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(CountActiveProjectsCount(count))
     }
 
     @GetMapping("/public/project/tags")
@@ -89,7 +92,9 @@ class PublicProjectController(private val projectService: ProjectService) {
     ): ResponseEntity<TagsResponse> {
         logger.debug { "Received request to get all project tags for cooperative with id: $coop" }
         val tags = projectService.getAllProjectTags(coop)
-        return ResponseEntity.ok(TagsResponse(tags))
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(TagsResponse(tags))
     }
 
     @GetMapping("/public/project/organization/{organizationUuid}")
@@ -101,6 +106,8 @@ class PublicProjectController(private val projectService: ProjectService) {
             "Received request to get all projects for organization: $organizationUuid and cooperative with id: $coop"
         }
         val projects = projectService.getAllProjectsForOrganization(organizationUuid, coop)
-        return ResponseEntity.ok(ProjectsWalletsListResponse(projects))
+        return ResponseEntity.ok()
+            .cacheControl(ControllerUtils.cacheControl)
+            .body(ProjectsWalletsListResponse(projects))
     }
 }
