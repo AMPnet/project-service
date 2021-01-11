@@ -6,12 +6,14 @@ import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
+import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
@@ -24,6 +26,7 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.userservice.proto.UserResponse
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
@@ -70,6 +73,8 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var applicationProperties: ApplicationProperties
+
+    protected val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
@@ -164,4 +169,13 @@ abstract class JpaServiceTestBase : TestBase() {
             .setLastName(last)
             .setEnabled(enabled)
             .build()
+
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
+        val membership = OrganizationMembership::class.java.getConstructor().newInstance()
+        membership.userUuid = userUuid
+        membership.organizationUuid = organizationUuid
+        membership.role = role
+        membership.createdAt = ZonedDateTime.now()
+        membershipRepository.save(membership)
+    }
 }

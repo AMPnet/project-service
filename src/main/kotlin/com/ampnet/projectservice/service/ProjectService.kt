@@ -12,6 +12,7 @@ import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 interface ProjectService {
@@ -41,7 +42,7 @@ interface ProjectService {
 
     fun countActiveProjects(coop: String?): Int
 
-    fun addMainImage(project: Project, name: String, content: ByteArray)
+    fun addMainImage(projectUuid: UUID, userUuid: UUID, image: MultipartFile)
     fun addImageToGallery(project: Project, name: String, content: ByteArray)
     fun removeImagesFromGallery(project: Project, images: List<String>)
     fun addDocument(project: Project, request: DocumentSaveRequest): Document

@@ -59,14 +59,12 @@ class ProjectController(
     ): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
-            val serviceRequest = ProjectUpdateServiceRequest(project, request, image, documentSaveRequests)
-            val updatedProject = projectService.updateProject(serviceRequest)
-            ProjectWithWalletFullResponse(updatedProject.project, updatedProject.walletResponse)
-        }
+        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
+        val serviceRequest = ProjectUpdateServiceRequest(
+            projectUuid, userPrincipal.uuid, request, image, documentSaveRequests
+        )
+        val updatedProject = projectService.updateProject(serviceRequest)
+        return ResponseEntity.ok(ProjectWithWalletFullResponse(updatedProject.project, updatedProject.walletResponse))
     }
 
     @PostMapping("/project/{projectUuid}/document")
@@ -106,12 +104,8 @@ class ProjectController(
     ): ResponseEntity<Unit> {
         logger.debug { "Received request to add main image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val imageName = getImageNameFromMultipartFile(image)
-            projectService.addMainImage(project, imageName, image.bytes)
-        }
+        projectService.addMainImage(projectUuid, userPrincipal.uuid, image)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/project/{projectUuid}/image/gallery")

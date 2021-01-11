@@ -6,7 +6,6 @@ import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
-import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
@@ -20,7 +19,6 @@ import java.time.ZonedDateTime
 
 class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
-    private val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
     private val organizationService: OrganizationService by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl, projectRepository)

@@ -23,9 +23,6 @@ class OrganizationMembershipServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl, projectRepository)
     }
-    private val organizationMembershipService: OrganizationMembershipService by lazy {
-        OrganizationMembershipServiceImpl(membershipRepository)
-    }
     private lateinit var organization: Organization
 
     private lateinit var testContext: TestContext

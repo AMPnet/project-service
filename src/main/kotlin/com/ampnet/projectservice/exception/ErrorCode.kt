@@ -23,6 +23,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     PRJ_MAX_FUNDS_TOO_HIGH("07", "09", "Expected funding is too high"),
     PRJ_MAX_FUNDS_PER_USER_TOO_HIGH("07", "10", "Max funding per user is too high"),
     PRJ_ROI("07", "11", "Invalid project ROI"),
+    PRJ_WRITE_PRIVILEGE("07", "13", "Missing project write privilege"),
 
     // Internal: 08
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),

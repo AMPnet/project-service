@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.persistence.model.Organization
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.springframework.mock.web.MockMultipartFile
 import java.time.ZonedDateTime
 
 class ProjectServiceTest : JpaServiceTestBase() {
@@ -24,8 +26,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         ProjectServiceImpl(
-            projectRepository, storageServiceImpl,
-            applicationProperties, walletService, projectTagRepository
+            projectRepository, storageServiceImpl, applicationProperties,
+            walletService, projectTagRepository, organizationMembershipService
         )
     }
     private val imageContent = "data".toByteArray()
@@ -115,12 +117,20 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 createUserPrincipal(userUuid), organization, testContext.createProjectRequest
             )
         }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Main image is added to project") {
             testContext.imageLink = "link-main-image"
+            val image = MockMultipartFile(
+                "image", testContext.imageLink,
+                "image/png", imageContent
+            )
             Mockito.`when`(
                 cloudStorageService.saveFile(testContext.imageLink, imageContent)
             ).thenReturn(testContext.imageLink)
-            projectService.addMainImage(testContext.project, testContext.imageLink, imageContent)
+            projectService.addMainImage(testContext.project.uuid, userUuid, image)
         }
 
         verify("Image is stored in project") {
