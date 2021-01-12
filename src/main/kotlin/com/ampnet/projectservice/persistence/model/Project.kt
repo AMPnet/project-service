@@ -94,5 +94,8 @@ class Project(
     var coop: String,
 
     @Column(nullable = true)
-    var shortDescription: String?
+    var shortDescription: String?,
+
+    @Column(nullable = true)
+    var termsOfService: String?
 )

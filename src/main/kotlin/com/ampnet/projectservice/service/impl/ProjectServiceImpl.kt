@@ -141,8 +141,19 @@ class ProjectServiceImpl(
             val document = storageService.saveDocument(it)
             addDocumentToProject(project, document)
         }
+        serviceRequest.termsOfServiceRequest?.let {
+            val termsOfService = storageService.saveDocument(it)
+            addTermsOfServiceToProject(project, termsOfService)
+        }
         val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
         return FullProjectWithWallet(project, wallet.firstOrNull())
+    }
+
+    private fun addTermsOfServiceToProject(project: Project, termsOfService: Document) {
+        val documents = project.documents.orEmpty().toMutableList()
+        documents += termsOfService
+        project.documents = documents
+        project.termsOfService = termsOfService.link
     }
 
     @Transactional
@@ -317,7 +328,8 @@ class ProjectServiceImpl(
             null,
             request.tags?.toSet()?.map { it.toLowerCase() },
             user.coop,
-            request.shortDescription
+            request.shortDescription,
+            null
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

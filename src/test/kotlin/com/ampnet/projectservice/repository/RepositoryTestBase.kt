@@ -126,8 +126,8 @@ abstract class RepositoryTestBase : TestBase() {
             UUID.randomUUID(), organization, name, "description", ProjectLocation(0.1, 1.0),
             ProjectRoi(4.44, 9.99), startDate, endDate, expectedFunding, Currency.EUR, minPerUser, maxPerUser,
             null, listOf("gallery1", "gallery2"), listOf("news1", "news2"), createdByUserUuid,
-            startDate.minusMinutes(1), active, null,
-            listOf("blue", "yellow", "green"), coop, "short description"
+            startDate.minusMinutes(1), active, null, listOf("blue", "yellow", "green"),
+            coop, "short description", null
         )
         return projectRepository.save(project)
     }

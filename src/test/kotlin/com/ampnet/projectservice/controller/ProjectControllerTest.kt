@@ -445,6 +445,58 @@ class ProjectControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfundUser
+    fun mustBeAbleToUpdateProjectWithTermsOfService() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
+        suppose("Project exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+        suppose("File service will store documents") {
+            testContext.termsOfService = MockMultipartFile(
+                "termsOfService", "ToC.txt",
+                "text/plain", "Terms of service".toByteArray()
+            )
+            Mockito.`when`(
+                cloudStorageService.saveFile(
+                    testContext.termsOfService.originalFilename,
+                    testContext.termsOfService.bytes
+                )
+            ).thenReturn(testContext.termsOfServiceLink)
+        }
+
+        verify("Admin can update project") {
+            testContext.projectUpdateRequest = ProjectUpdateRequest(null, null, null, null, null)
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
+            val result = mockMvc.perform(
+                builder.file(requestJson)
+                    .file(testContext.termsOfService)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectResponse.termsOfService).isEqualTo(testContext.termsOfServiceLink)
+        }
+        verify("Project is updated") {
+            val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            val termsOfServiceDocument = updatedProject.documents?.first() ?: fail("Missing terms of service document")
+            assertThat(termsOfServiceDocument.id).isNotNull()
+            assertThat(termsOfServiceDocument.name).isEqualTo(testContext.termsOfService.originalFilename)
+            assertThat(termsOfServiceDocument.size).isEqualTo(testContext.termsOfService.size)
+            assertThat(termsOfServiceDocument.type).isEqualTo(testContext.termsOfService.contentType)
+            assertThat(termsOfServiceDocument.link).isEqualTo(testContext.termsOfServiceLink)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
     fun mustBeAbleToAddProjectTags() {
         suppose("User is admin in the organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -804,9 +856,11 @@ class ProjectControllerTest : ControllerTestBase() {
         lateinit var document: Document
         lateinit var documentMock1: MockMultipartFile
         lateinit var documentMock2: MockMultipartFile
+        lateinit var termsOfService: MockMultipartFile
         val documentLink1 = "document-link1"
         val documentLink2 = "document-link2"
         val imageLink = "image-link"
+        val termsOfServiceLink = "terms-of-service-link"
         lateinit var projectUuid: UUID
         lateinit var tags: List<String>
         lateinit var activeWallet: WalletServiceResponse
