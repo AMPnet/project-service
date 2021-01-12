@@ -42,13 +42,15 @@ class ProjectController(
         @PathVariable("projectUuid") projectUuid: UUID,
         @RequestPart("request", required = false) request: ProjectUpdateRequest?,
         @RequestParam("image", required = false) image: MultipartFile?,
-        @RequestParam("documents", required = false) documents: List<MultipartFile>?
+        @RequestParam("documents", required = false) documents: List<MultipartFile>?,
+        @RequestParam("termsOfService", required = false) termsOfService: MultipartFile?
     ): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
+        val termsOfServiceRequest = termsOfService?.let { DocumentSaveRequest(it, userPrincipal.uuid) }
         val serviceRequest = ProjectUpdateServiceRequest(
-            projectUuid, userPrincipal.uuid, request, image, documentSaveRequests
+            projectUuid, userPrincipal.uuid, request, image, documentSaveRequests, termsOfServiceRequest
         )
         val updatedProject = projectService.updateProject(serviceRequest)
         return ResponseEntity.ok(ProjectWithWalletFullResponse(updatedProject.project, updatedProject.walletResponse))
