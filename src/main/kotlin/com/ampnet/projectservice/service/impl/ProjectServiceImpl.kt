@@ -20,6 +20,7 @@ import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.OrganizationMembershipService
+import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -46,16 +47,19 @@ class ProjectServiceImpl(
     private val applicationProperties: ApplicationProperties,
     private val walletService: WalletService,
     private val projectTagRepository: ProjectTagRepository,
-    private val organizationMembershipService: OrganizationMembershipService
+    private val organizationMembershipService: OrganizationMembershipService,
+    private val organizationService: OrganizationService
 ) : ProjectService {
 
     companion object : KLogging()
 
     @Transactional
-    @Throws(InvalidRequestException::class)
-    override fun createProject(user: UserPrincipal, organization: Organization, request: ProjectRequest): Project {
+    @Throws(InvalidRequestException::class, AccessDeniedException::class)
+    override fun createProject(user: UserPrincipal, request: ProjectRequest): Project {
+        throwExceptionIfUserHasNoPrivilegeToWriteInProject(user.uuid, request.organizationUuid)
         validateCreateProjectRequest(request)
         logger.debug { "Creating project: ${request.name}" }
+        val organization = getOrganization(request.organizationUuid)
         val project = createProjectFromRequest(user, organization, request)
         project.createdAt = ZonedDateTime.now()
         projectRepository.save(project)
@@ -165,7 +169,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    @Throws(InternalException::class)
+    @Throws(InternalException::class, AccessDeniedException::class)
     override fun removeImagesFromGallery(projectUuid: UUID, userUuid: UUID, images: List<String>) {
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
@@ -179,7 +183,7 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    @Throws(InternalException::class)
+    @Throws(InternalException::class, AccessDeniedException::class)
     override fun addDocument(projectUuid: UUID, request: DocumentSaveRequest): Document {
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(request.userUuid, project.organization.uuid)
@@ -190,8 +194,10 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    @Throws(InternalException::class)
-    override fun removeDocument(project: Project, documentId: Int) {
+    @Throws(InternalException::class, AccessDeniedException::class)
+    override fun removeDocument(projectUuid: UUID, userUuid: UUID, documentId: Int) {
+        val project = getProjectWithAllData(projectUuid)
+        throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
         val storedDocuments = project.documents.orEmpty().toMutableList()
         storedDocuments.firstOrNull { it.id == documentId }.let {
             storedDocuments.remove(it)
@@ -346,4 +352,10 @@ class ProjectServiceImpl(
     private fun getProjectWithAllData(projectUuid: UUID): Project =
         getProjectByIdWithAllData(projectUuid)
             ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $projectUuid")
+
+    private fun getOrganization(organizationUuid: UUID): Organization =
+        organizationService.findOrganizationById(organizationUuid)
+            ?: throw ResourceNotFoundException(
+                ErrorCode.ORG_MISSING, "Missing organization with id: $organizationUuid"
+            )
 }

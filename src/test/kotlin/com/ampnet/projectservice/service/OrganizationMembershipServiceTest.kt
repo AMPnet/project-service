@@ -5,9 +5,6 @@ import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
-import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
-import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.OrganizationMemberServiceRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -18,11 +15,6 @@ import java.util.UUID
 
 class OrganizationMembershipServiceTest : JpaServiceTestBase() {
 
-    private val organizationService: OrganizationService by lazy {
-        val organizationMemberServiceImpl = OrganizationMembershipServiceImpl(membershipRepository)
-        val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl, projectRepository)
-    }
     private lateinit var organization: Organization
 
     private lateinit var testContext: TestContext

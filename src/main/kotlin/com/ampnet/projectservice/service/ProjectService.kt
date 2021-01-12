@@ -3,7 +3,6 @@ package com.ampnet.projectservice.service
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.persistence.model.Document
-import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
@@ -17,12 +16,7 @@ import java.util.UUID
 
 interface ProjectService {
 
-    fun createProject(
-        user: UserPrincipal,
-        organization: Organization,
-        request: ProjectRequest
-    ): Project
-
+    fun createProject(user: UserPrincipal, request: ProjectRequest): Project
     fun updateProject(serviceRequest: ProjectUpdateServiceRequest): FullProjectWithWallet
 
     fun getProjectByIdWithAllData(id: UUID): Project?
@@ -46,5 +40,5 @@ interface ProjectService {
     fun addImageToGallery(projectUuid: UUID, userUuid: UUID, image: MultipartFile)
     fun removeImagesFromGallery(projectUuid: UUID, userUuid: UUID, images: List<String>)
     fun addDocument(projectUuid: UUID, request: DocumentSaveRequest): Document
-    fun removeDocument(project: Project, documentId: Int)
+    fun removeDocument(projectUuid: UUID, userUuid: UUID, documentId: Int)
 }

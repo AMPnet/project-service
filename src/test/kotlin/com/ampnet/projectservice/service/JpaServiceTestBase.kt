@@ -27,6 +27,8 @@ import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
+import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.userservice.proto.UserResponse
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
@@ -76,6 +78,11 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var applicationProperties: ApplicationProperties
 
     protected val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
+
+    protected val organizationService: OrganizationService by lazy {
+        val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
+        OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl, projectRepository)
+    }
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
