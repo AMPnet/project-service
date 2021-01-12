@@ -8,9 +8,6 @@ import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
-import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
-import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
-import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
@@ -26,14 +23,6 @@ import java.util.UUID
 
 class OrganizationServiceTest : JpaServiceTestBase() {
 
-    private val organizationService: OrganizationService by lazy {
-        val organizationMemberServiceImpl = OrganizationMembershipServiceImpl(membershipRepository)
-        val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        OrganizationServiceImpl(organizationRepository, organizationMemberServiceImpl, storageServiceImpl, projectRepository)
-    }
-    private val organizationMembershipService: OrganizationMembershipService by lazy {
-        OrganizationMembershipServiceImpl(membershipRepository)
-    }
     private lateinit var organization: Organization
 
     private lateinit var testContext: TestContext

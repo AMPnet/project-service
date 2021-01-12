@@ -73,6 +73,13 @@ class GlobalExceptionHandler {
         return generateErrorResponse(ErrorCode.INT_REQUEST, sb.toString(), errors)
     }
 
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(PermissionDeniedException::class)
+    fun handlePermissionDeniedException(exception: PermissionDeniedException): ErrorResponse {
+        logger.info("PermissionDeniedException", exception)
+        return generateErrorResponse(exception.errorCode, exception.message)
+    }
+
     private fun generateErrorResponse(
         errorCode: ErrorCode,
         systemMessage: String?,

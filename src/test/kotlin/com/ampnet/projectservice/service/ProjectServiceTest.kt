@@ -5,8 +5,10 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InvalidRequestException
+import com.ampnet.projectservice.exception.PermissionDeniedException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.service.impl.ProjectServiceImpl
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.springframework.mock.web.MockMultipartFile
 import java.time.ZonedDateTime
 
 class ProjectServiceTest : JpaServiceTestBase() {
@@ -24,8 +27,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         ProjectServiceImpl(
-            projectRepository, storageServiceImpl,
-            applicationProperties, walletService, projectTagRepository
+            projectRepository, storageServiceImpl, applicationProperties, walletService,
+            projectTagRepository, organizationMembershipService, organizationService
         )
     }
     private val imageContent = "data".toByteArray()
@@ -42,11 +45,15 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToCreateProject() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Service received a request to create a project") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Test project")
             testContext.project = projectService.createProject(
-                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+                createUserPrincipal(userUuid), testContext.createProjectRequest
             )
         }
 
@@ -97,10 +104,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_DATE)
         }
@@ -108,19 +119,31 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToAddMainImage() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
             testContext.project = projectService.createProject(
-                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+                createUserPrincipal(userUuid), testContext.createProjectRequest
             )
+        }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Main image is added to project") {
             testContext.imageLink = "link-main-image"
+            val image = MockMultipartFile(
+                "image", testContext.imageLink,
+                "image/png", imageContent
+            )
             Mockito.`when`(
                 cloudStorageService.saveFile(testContext.imageLink, imageContent)
             ).thenReturn(testContext.imageLink)
-            projectService.addMainImage(testContext.project, testContext.imageLink, imageContent)
+            projectService.addMainImage(testContext.project.uuid, userUuid, image)
         }
 
         verify("Image is stored in project") {
@@ -132,19 +155,29 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToAddImagesToGallery() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
             testContext.project = projectService.createProject(
-                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+                createUserPrincipal(userUuid), testContext.createProjectRequest
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Two images are added to project gallery") {
-            testContext.gallery = listOf("link-1", "link-2")
-            testContext.gallery.forEach {
-                Mockito.`when`(cloudStorageService.saveFile(it, imageContent)).thenReturn(it)
-                projectService.addImageToGallery(testContext.project, it, imageContent)
-            }
+            testContext.gallery = listOf("image-link-1", "image-link-2")
+            val firstImage = createImage(testContext.gallery.first(), imageContent)
+            val secondImage = createImage(testContext.gallery.last(), imageContent)
+            Mockito.`when`(cloudStorageService.saveFile(firstImage.originalFilename, imageContent)).thenReturn(firstImage.originalFilename)
+            Mockito.`when`(cloudStorageService.saveFile(secondImage.originalFilename, imageContent)).thenReturn(secondImage.originalFilename)
+            projectService.addImageToGallery(testContext.project.uuid, userUuid, firstImage)
+            projectService.addImageToGallery(testContext.project.uuid, userUuid, secondImage)
         }
 
         verify("The project gallery contains added images") {
@@ -156,12 +189,20 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToAppendNewImageToGallery() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
             testContext.project = projectService.createProject(
-                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+                createUserPrincipal(userUuid), testContext.createProjectRequest
             )
+        }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2")
@@ -170,10 +211,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
         suppose("Additional image is added to gallery") {
             testContext.imageLink = "link-new"
+            val image = createImage(testContext.imageLink, imageContent)
             Mockito.`when`(
                 cloudStorageService.saveFile(testContext.imageLink, imageContent)
             ).thenReturn(testContext.imageLink)
-            projectService.addImageToGallery(testContext.project, testContext.imageLink, imageContent)
+            projectService.addImageToGallery(testContext.project.uuid, userUuid, image)
         }
 
         verify("Gallery has additional image") {
@@ -186,12 +228,20 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToRemoveImageFromGallery() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Project exists") {
             databaseCleanerService.deleteAllProjects()
             testContext.createProjectRequest = createProjectRequest("Image")
             testContext.project = projectService.createProject(
-                createUserPrincipal(userUuid), organization, testContext.createProjectRequest
+                createUserPrincipal(userUuid), testContext.createProjectRequest
             )
+        }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2", "link-3")
@@ -199,7 +249,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
             projectRepository.save(testContext.project)
         }
         suppose("Image is removed from gallery") {
-            projectService.removeImagesFromGallery(testContext.project, listOf("link-1", "link-3"))
+            projectService.removeImagesFromGallery(testContext.project.uuid, userUuid, listOf("link-1", "link-3"))
         }
 
         verify("Gallery does not have deleted image") {
@@ -230,10 +280,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_DATE)
         }
@@ -259,10 +313,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MIN_ABOVE_MAX)
         }
@@ -288,10 +346,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH)
         }
@@ -317,10 +379,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH)
         }
@@ -346,10 +412,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH)
         }
@@ -357,24 +427,28 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToGetAllProjectTags() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Project has tags") {
             databaseCleanerService.deleteAllProjects()
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("First project"))
+                .createProject(createUserPrincipal(userUuid), createProjectRequest("First project"))
             testContext.tags = listOf("tag 1", "tag 2", "tag 3")
             project.tags = testContext.tags
             projectRepository.save(project)
         }
         suppose("Another project has tags") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Second project"))
+                .createProject(createUserPrincipal(userUuid), createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 4")
             projectRepository.save(project)
             testContext.tags.toMutableList().add("tag 4")
         }
         suppose("Project from another cooperative has tags") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), organization, createProjectRequest("Third project"))
+                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Third project"))
             project.tags = listOf("tag 1", "tag 4", "tag 5")
             projectRepository.save(project)
         }
@@ -387,38 +461,42 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustBeAbleToGetProjectsByTags() {
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Project has tags and is active") {
             databaseCleanerService.deleteAllProjects()
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("First project"))
+                .createProject(createUserPrincipal(userUuid), createProjectRequest("First project"))
             project.tags = listOf("tag 1", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Second project has tags and is active") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Second project"))
+                .createProject(createUserPrincipal(userUuid), createProjectRequest("Second project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Third project has tags and is active") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Third project"))
+                .createProject(createUserPrincipal(userUuid), createProjectRequest("Third project"))
             project.tags = listOf("tag 1", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Fourth project has tags and is not active") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid), organization, createProjectRequest("Fourth project"))
+                .createProject(createUserPrincipal(userUuid), createProjectRequest("Fourth project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             project.active = false
             projectRepository.save(project)
         }
         suppose("Fifth project has tags and is active but from another cooperative") {
             val project = projectService
-                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), organization, createProjectRequest("Fifth project"))
+                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Fifth project"))
             project.tags = listOf("tag 1", "tag 2", "tag 3")
             project.active = true
             projectRepository.save(project)
@@ -452,10 +530,14 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_ROI)
         }
@@ -481,12 +563,73 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 emptyList()
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
 
         verify("Service will throw an exception") {
             val exception = assertThrows<InvalidRequestException> {
-                projectService.createProject(createUserPrincipal(userUuid), organization, testContext.createProjectRequest)
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_ROI)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionIfUserIsNotAMemberOfOrganization() {
+        verify("Service will throw permission denied exception") {
+            val currentTime = ZonedDateTime.now()
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
+                "name",
+                "Description",
+                ProjectLocationRequest(12.34, 12.33),
+                ProjectRoiRequest(12.22, 2.23),
+                currentTime,
+                currentTime.plusDays(30),
+                1000000,
+                Currency.EUR,
+                10,
+                10000,
+                false,
+                emptyList()
+            )
+            val exception = assertThrows<PermissionDeniedException> {
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.ORG_MEM_MISSING)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionIfUserHasNoPrivilegeToWriteInProject() {
+        suppose("User is a member of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+
+        verify("Service will throw permission denied exception") {
+            val currentTime = ZonedDateTime.now()
+            testContext.createProjectRequest = ProjectRequest(
+                organization.uuid,
+                "name",
+                "Description",
+                ProjectLocationRequest(12.34, 12.33),
+                ProjectRoiRequest(12.22, 2.23),
+                currentTime,
+                currentTime.plusDays(30),
+                1000000,
+                Currency.EUR,
+                10,
+                10000,
+                false,
+                emptyList()
+            )
+            val exception = assertThrows<PermissionDeniedException> {
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_WRITE_PRIVILEGE)
         }
     }
 

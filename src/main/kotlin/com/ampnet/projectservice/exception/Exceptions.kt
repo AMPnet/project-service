@@ -19,3 +19,5 @@ class InternalException(val errorCode: ErrorCode, exceptionMessage: String, thro
     Exception(exceptionMessage, throwable)
 
 class GrpcException(val errorCode: ErrorCode, exceptionMessage: String) : Exception(exceptionMessage)
+
+class PermissionDeniedException(val errorCode: ErrorCode, exceptionMessage: String) : Exception(exceptionMessage)

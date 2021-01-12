@@ -6,12 +6,14 @@ import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.mailservice.MailServiceImpl
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
+import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
@@ -24,6 +26,9 @@ import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
 import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
+import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
+import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import com.ampnet.userservice.proto.UserResponse
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
@@ -32,6 +37,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -70,6 +76,13 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var applicationProperties: ApplicationProperties
+
+    protected val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
+
+    protected val organizationService: OrganizationService by lazy {
+        val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
+        OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl, projectRepository)
+    }
 
     protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mailService: MailService = Mockito.mock(MailServiceImpl::class.java)
@@ -164,4 +177,19 @@ abstract class JpaServiceTestBase : TestBase() {
             .setLastName(last)
             .setEnabled(enabled)
             .build()
+
+    protected fun addUserToOrganization(userUuid: UUID, organizationUuid: UUID, role: OrganizationRole) {
+        val membership = OrganizationMembership::class.java.getConstructor().newInstance()
+        membership.userUuid = userUuid
+        membership.organizationUuid = organizationUuid
+        membership.role = role
+        membership.createdAt = ZonedDateTime.now()
+        membershipRepository.save(membership)
+    }
+
+    protected fun createImage(
+        originalFilename: String = "original-file-name",
+        content: ByteArray = "ImageData".toByteArray()
+    ): MockMultipartFile =
+        MockMultipartFile("image", originalFilename, "image/png", content)
 }
