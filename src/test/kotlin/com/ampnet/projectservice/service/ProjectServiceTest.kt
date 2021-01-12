@@ -214,13 +214,17 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 createUserPrincipal(userUuid), organization, testContext.createProjectRequest
             )
         }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2", "link-3")
             testContext.project.gallery = testContext.gallery
             projectRepository.save(testContext.project)
         }
         suppose("Image is removed from gallery") {
-            projectService.removeImagesFromGallery(testContext.project, listOf("link-1", "link-3"))
+            projectService.removeImagesFromGallery(testContext.project.uuid, userUuid, listOf("link-1", "link-3"))
         }
 
         verify("Gallery does not have deleted image") {

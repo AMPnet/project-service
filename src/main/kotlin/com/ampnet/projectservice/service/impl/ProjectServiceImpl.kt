@@ -166,7 +166,9 @@ class ProjectServiceImpl(
 
     @Transactional
     @Throws(InternalException::class)
-    override fun removeImagesFromGallery(project: Project, images: List<String>) {
+    override fun removeImagesFromGallery(projectUuid: UUID, userUuid: UUID, images: List<String>) {
+        val project = getProjectWithAllData(projectUuid)
+        throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
         val gallery = project.gallery.orEmpty().toMutableList()
         images.forEach {
             if (gallery.remove(it)) {

@@ -126,11 +126,8 @@ class ProjectController(
     ): ResponseEntity<Unit> {
         logger.debug { "Received request to delete gallery images for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            projectService.removeImagesFromGallery(project, request.images)
-        }
+        projectService.removeImagesFromGallery(projectUuid, userPrincipal.uuid, request.images)
+        return ResponseEntity.ok().build()
     }
 
     private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
