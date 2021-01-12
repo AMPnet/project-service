@@ -180,7 +180,9 @@ class ProjectServiceImpl(
 
     @Transactional
     @Throws(InternalException::class)
-    override fun addDocument(project: Project, request: DocumentSaveRequest): Document {
+    override fun addDocument(projectUuid: UUID, request: DocumentSaveRequest): Document {
+        val project = getProjectWithAllData(projectUuid)
+        throwExceptionIfUserHasNoPrivilegeToWriteInProject(request.userUuid, project.organization.uuid)
         val document = storageService.saveDocument(request)
         val updatedProject = addDocumentToProject(project, document)
         projectRepository.save(updatedProject)

@@ -74,13 +74,9 @@ class ProjectController(
     ): ResponseEntity<DocumentResponse> {
         logger.debug { "Received request to add document to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val request = DocumentSaveRequest(file, userPrincipal.uuid)
-            val document = projectService.addDocument(project, request)
-            DocumentResponse(document)
-        }
+        val request = DocumentSaveRequest(file, userPrincipal.uuid)
+        val document = projectService.addDocument(projectUuid, request)
+        return ResponseEntity.ok(DocumentResponse(document))
     }
 
     @DeleteMapping("/project/{projectUuid}/document/{documentId}")
@@ -129,9 +125,6 @@ class ProjectController(
         projectService.removeImagesFromGallery(projectUuid, userPrincipal.uuid, request.images)
         return ResponseEntity.ok().build()
     }
-
-    private fun getImageNameFromMultipartFile(multipartFile: MultipartFile): String =
-        multipartFile.originalFilename ?: multipartFile.name
 
     private fun createProject(request: ProjectRequest, user: UserPrincipal): ProjectWithWalletFullResponse {
         val organization = getOrganization(request.organizationUuid)
