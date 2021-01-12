@@ -106,7 +106,10 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    @Throws(InvalidRequestException::class, InternalException::class, ResourceNotFoundException::class)
+    @Throws(
+        InvalidRequestException::class, InternalException::class,
+        ResourceNotFoundException::class, PermissionDeniedException::class
+    )
     override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): FullProjectWithWallet {
         val project = getProjectWithAllData(serviceRequest.projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(serviceRequest.userUuid, project.organization.uuid)
@@ -150,10 +153,13 @@ class ProjectServiceImpl(
     }
 
     @Transactional
-    @Throws(InternalException::class)
-    override fun addImageToGallery(project: Project, name: String, content: ByteArray) {
+    @Throws(InternalException::class, AccessDeniedException::class)
+    override fun addImageToGallery(projectUuid: UUID, userUuid: UUID, image: MultipartFile) {
+        val project = getProjectWithAllData(projectUuid)
+        throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
         val gallery = project.gallery.orEmpty().toMutableList()
-        val link = storageService.saveImage(name, content)
+        val imageName = ServiceUtils.getImageNameFromMultipartFile(image)
+        val link = storageService.saveImage(imageName, image.bytes)
         gallery.add(link)
         setProjectGallery(project, gallery)
     }

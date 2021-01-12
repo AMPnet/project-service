@@ -115,12 +115,8 @@ class ProjectController(
     ): ResponseEntity<Unit> {
         logger.debug { "Received request to add gallery image to project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val project = getProjectByIdWithAllData(projectUuid)
-
-        return ifUserHasPrivilegeToWriteInProjectThenReturn(userPrincipal.uuid, project.organization.uuid) {
-            val imageName = getImageNameFromMultipartFile(image)
-            projectService.addImageToGallery(project, imageName, image.bytes)
-        }
+        projectService.addImageToGallery(projectUuid, userPrincipal.uuid, image)
+        return ResponseEntity.ok().build()
     }
 
     @DeleteMapping("/project/{projectUuid}/image/gallery")

@@ -149,12 +149,18 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 createUserPrincipal(userUuid), organization, testContext.createProjectRequest
             )
         }
+        suppose("User is a admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("Two images are added to project gallery") {
-            testContext.gallery = listOf("link-1", "link-2")
-            testContext.gallery.forEach {
-                Mockito.`when`(cloudStorageService.saveFile(it, imageContent)).thenReturn(it)
-                projectService.addImageToGallery(testContext.project, it, imageContent)
-            }
+            testContext.gallery = listOf("image-link-1", "image-link-2")
+            val firstImage = createImage(testContext.gallery.first(), imageContent)
+            val secondImage = createImage(testContext.gallery.last(), imageContent)
+            Mockito.`when`(cloudStorageService.saveFile(firstImage.originalFilename, imageContent)).thenReturn(firstImage.originalFilename)
+            Mockito.`when`(cloudStorageService.saveFile(secondImage.originalFilename, imageContent)).thenReturn(secondImage.originalFilename)
+            projectService.addImageToGallery(testContext.project.uuid, userUuid, firstImage)
+            projectService.addImageToGallery(testContext.project.uuid, userUuid, secondImage)
         }
 
         verify("The project gallery contains added images") {
@@ -173,6 +179,10 @@ class ProjectServiceTest : JpaServiceTestBase() {
                 createUserPrincipal(userUuid), organization, testContext.createProjectRequest
             )
         }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2")
             testContext.project.gallery = testContext.gallery
@@ -180,10 +190,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
         suppose("Additional image is added to gallery") {
             testContext.imageLink = "link-new"
+            val image = createImage(testContext.imageLink, imageContent)
             Mockito.`when`(
                 cloudStorageService.saveFile(testContext.imageLink, imageContent)
             ).thenReturn(testContext.imageLink)
-            projectService.addImageToGallery(testContext.project, testContext.imageLink, imageContent)
+            projectService.addImageToGallery(testContext.project.uuid, userUuid, image)
         }
 
         verify("Gallery has additional image") {

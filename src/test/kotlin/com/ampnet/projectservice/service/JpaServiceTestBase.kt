@@ -35,6 +35,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -178,4 +179,10 @@ abstract class JpaServiceTestBase : TestBase() {
         membership.createdAt = ZonedDateTime.now()
         membershipRepository.save(membership)
     }
+
+    protected fun createImage(
+        originalFilename: String = "original-file-name",
+        content: ByteArray = "ImageData".toByteArray()
+    ): MockMultipartFile =
+        MockMultipartFile("image", originalFilename, "image/png", content)
 }

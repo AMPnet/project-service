@@ -43,7 +43,7 @@ interface ProjectService {
     fun countActiveProjects(coop: String?): Int
 
     fun addMainImage(projectUuid: UUID, userUuid: UUID, image: MultipartFile)
-    fun addImageToGallery(project: Project, name: String, content: ByteArray)
+    fun addImageToGallery(projectUuid: UUID, userUuid: UUID, image: MultipartFile)
     fun removeImagesFromGallery(project: Project, images: List<String>)
     fun addDocument(project: Project, request: DocumentSaveRequest): Document
     fun removeDocument(project: Project, documentId: Int)
