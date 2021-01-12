@@ -36,6 +36,7 @@ message ProjectResponse {
   string image_url = 12;
   string description = 13;
   string coop = 14;
+  string tos_url = 15;
 }
 
 message OrganizationMembershipResponse {
