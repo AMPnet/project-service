@@ -110,6 +110,7 @@ class GrpcProjectServer(
             .setDescription(project.shortDescription.orEmpty())
             .setCoop(project.coop)
         project.mainImage?.let { builder.setImageUrl(it) }
+        project.termsOfService?.let { builder.setTosUrl(project.termsOfService) }
         return builder.build()
     }
 
