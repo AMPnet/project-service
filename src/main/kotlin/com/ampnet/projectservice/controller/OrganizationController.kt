@@ -3,18 +3,15 @@ package com.ampnet.projectservice.controller
 import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
 import com.ampnet.projectservice.controller.pojo.request.OrganizationUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
-import com.ampnet.projectservice.controller.pojo.response.OrganizationListResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithProjectCountListResponse
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
-import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
 import com.ampnet.projectservice.service.pojo.OrganizationServiceRequest
 import com.ampnet.projectservice.service.pojo.OrganizationUpdateServiceRequest
 import mu.KLogging
-import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -36,15 +33,6 @@ class OrganizationController(
 
     companion object : KLogging()
 
-    @GetMapping("/organization")
-    fun getOrganizations(pageable: Pageable): ResponseEntity<OrganizationListResponse> {
-        logger.debug { "Received request for all organizations" }
-        val organizations = organizationService.getAllOrganizations(pageable).map { OrganizationResponse(it) }
-        return ResponseEntity.ok(
-            OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages)
-        )
-    }
-
     @GetMapping("/organization/personal")
     fun getPersonalOrganizations(): ResponseEntity<OrganizationWithProjectCountListResponse> {
         logger.debug { "Received request for personal organizations" }
@@ -52,15 +40,6 @@ class OrganizationController(
         val organizations =
             organizationService.findAllOrganizationsForUser(userPrincipal.uuid)
         return ResponseEntity.ok(OrganizationWithProjectCountListResponse(organizations))
-    }
-
-    @GetMapping("/organization/{uuid}")
-    fun getOrganization(@PathVariable("uuid") uuid: UUID): ResponseEntity<OrganizationFullServiceResponse> {
-        logger.debug { "Received request for organization with uuid: $uuid" }
-        organizationService.findOrganizationWithProjectCountById(uuid)?.let {
-            return ResponseEntity.ok(it)
-        }
-        return ResponseEntity.notFound().build()
     }
 
     @PostMapping("/organization", consumes = ["multipart/form-data"])
