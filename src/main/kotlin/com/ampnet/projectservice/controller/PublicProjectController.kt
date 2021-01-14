@@ -25,7 +25,6 @@ class PublicProjectController(private val projectService: ProjectService) {
         logger.debug { "Received request to get project with wallet with uuid: $uuid" }
         projectService.getProjectWithWallet(uuid)?.let { projectWithWallet ->
             return ResponseEntity.ok()
-                .cacheControl(ControllerUtils.cacheControl)
                 .body(ProjectWithWalletFullResponse(projectWithWallet.project, projectWithWallet.walletResponse))
         }
         return ResponseEntity.notFound().build()
