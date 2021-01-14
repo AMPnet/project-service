@@ -21,22 +21,6 @@ include::{snippets}/OrganizationControllerTest/mustBeAbleToCreateOrganization/ht
 .Response
 include::{snippets}/OrganizationControllerTest/mustBeAbleToCreateOrganization/http-response.adoc[]
 
-=== Get organization by id
-.Request
-include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganization/http-request.adoc[]
-.Response
-include::{snippets}/OrganizationControllerTest/mustBeAbleToGetOrganization/http-response.adoc[]
-
-=== Get all organizations
-To get a list of all organization, user must have a privilege: `PrivilegeType.PRA_ORG`.
-List of all organizations is pageable. Define size of the list using param: `size` and page number with param: `page`.
-List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
-
-.Request
-include::{snippets}/OrganizationControllerTest/mustReturnListOfOrganizations/http-request.adoc[]
-.Response
-include::{snippets}/OrganizationControllerTest/mustReturnListOfOrganizations/http-response.adoc[]
-
 === Get personal organizations
 .Request
 include::{snippets}/OrganizationControllerTest/mustBeAbleToGetPersonalOrganizations/http-request.adoc[]
@@ -51,7 +35,7 @@ include::{snippets}/OrganizationControllerTest/mustBeAbleToUpdateOrganization/ht
 
 === Documents
 
-==== Add document for organization
+==== Add a document for organization
 .Request
 include::{snippets}/OrganizationControllerTest/mustBeAbleToStoreDocumentForOrganization/http-request.adoc[]
 .Response
