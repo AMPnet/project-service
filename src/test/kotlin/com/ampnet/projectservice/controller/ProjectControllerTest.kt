@@ -481,12 +481,22 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.termsOfService).isEqualTo(testContext.termsOfServiceLink)
+            assertThat(projectResponse.termsOfService?.link).isEqualTo(testContext.termsOfServiceLink)
         }
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
                 ?: fail("Missing project")
-            assertThat(updatedProject.termsOfService)
+            val termsOfServiceDocument = updatedProject.termsOfService ?: fail("Missing terms of service document")
+            assertThat(termsOfServiceDocument.id).isNotNull()
+            assertThat(termsOfServiceDocument.name).isEqualTo(testContext.termsOfService.originalFilename)
+            assertThat(termsOfServiceDocument.size).isEqualTo(testContext.termsOfService.size)
+            assertThat(termsOfServiceDocument.type).isEqualTo(testContext.termsOfService.contentType)
+            assertThat(termsOfServiceDocument.link).isEqualTo(testContext.termsOfServiceLink)
+        }
+        verify("Old terms of services is deleted") {
+            val tosId = testContext.project.termsOfService?.id ?: fail("Missing project old tos")
+            val document = documentRepository.findById(tosId)
+            assertThat(document).isEmpty
         }
     }
 
@@ -659,6 +669,33 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(project).isPresent
             val documents = project.get().documents
             assertThat(documents).hasSize(1).doesNotContain(testContext.document)
+            val document = documentRepository.findById(testContext.document.id)
+            assertThat(document).isEmpty
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustBeAbleToRemoveProjectTermsOfServices() {
+        suppose("Project exists") {
+            testContext.project = createProject("Project", organization, userUuid)
+        }
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
+
+        verify("User admin can delete document") {
+            val tosId = testContext.project.termsOfService?.id ?: fail("Missing project tos")
+            mockMvc.perform(
+                delete("$projectPath/${testContext.project.uuid}/document/$tosId")
+            )
+                .andExpect(status().isOk)
+        }
+        verify("Terms of services is deleted") {
+            val tosId = testContext.project.termsOfService?.id ?: fail("Missing project tos")
+            val document = documentRepository.findById(tosId)
+            assertThat(document).isEmpty
         }
     }
 

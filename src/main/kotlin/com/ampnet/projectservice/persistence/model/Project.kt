@@ -15,6 +15,7 @@ import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
+import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
@@ -96,6 +97,7 @@ class Project(
     @Column(nullable = true)
     var shortDescription: String?,
 
-    @Column(nullable = true)
-    var termsOfService: String?
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tos_doc_id")
+    var termsOfService: Document?
 )

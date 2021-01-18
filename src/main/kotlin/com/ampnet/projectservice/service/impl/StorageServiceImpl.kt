@@ -46,10 +46,15 @@ class StorageServiceImpl(
         return link
     }
 
-    @Throws(InternalException::class)
     override fun deleteImage(link: String) {
         logger.debug { "Deleting image: $link" }
         cloudStorageService.deleteFile(link)
+    }
+
+    override fun deleteFile(document: Document) {
+        logger.debug { "Deleting file: ${document.link}" }
+        cloudStorageService.deleteFile(document.link)
+        documentRepository.delete(document)
     }
 
     private fun storeOnCloud(name: String, content: ByteArray): String = cloudStorageService.saveFile(name, content)

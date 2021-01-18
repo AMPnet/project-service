@@ -142,8 +142,10 @@ class ProjectServiceImpl(
             addDocumentToProject(project, document)
         }
         serviceRequest.termsOfServiceRequest?.let {
-            val termsOfService = storageService.saveDocument(it)
-            project.termsOfService = termsOfService.link
+            project.termsOfService?.let { tos ->
+                storageService.deleteFile(tos)
+            }
+            project.termsOfService = storageService.saveDocument(it)
         }
         val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
         return FullProjectWithWallet(project, wallet.firstOrNull())
@@ -203,10 +205,18 @@ class ProjectServiceImpl(
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
         val storedDocuments = project.documents.orEmpty().toMutableList()
-        storedDocuments.firstOrNull { it.id == documentId }.let {
+        storedDocuments.firstOrNull { it.id == documentId }?.let {
             storedDocuments.remove(it)
             project.documents = storedDocuments
             projectRepository.save(project)
+            storageService.deleteFile(it)
+            return
+        }
+        project.termsOfService?.let {
+            if (it.id == documentId) {
+                storageService.deleteFile(it)
+                project.termsOfService = null
+            }
         }
     }
 

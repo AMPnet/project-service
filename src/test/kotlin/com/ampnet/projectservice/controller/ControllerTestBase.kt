@@ -74,7 +74,7 @@ abstract class ControllerTestBase : TestBase() {
     protected lateinit var membershipRepository: OrganizationMembershipRepository
 
     @Autowired
-    private lateinit var documentRepository: DocumentRepository
+    protected lateinit var documentRepository: DocumentRepository
 
     @Autowired
     protected lateinit var organizationInviteRepository: OrganizationInviteRepository
@@ -180,9 +180,9 @@ abstract class ControllerTestBase : TestBase() {
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
         project.coop = coop
+        project.termsOfService = saveDocument(name, "terms-of-services", "PDF", 100, createdByUserUuid)
         project.tags = listOf("tag_1", "tag_2")
         project.shortDescription = shortDescription
-        project.termsOfService = "link-to-tos"
         return projectRepository.save(project)
     }
 
