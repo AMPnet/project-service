@@ -182,6 +182,7 @@ abstract class ControllerTestBase : TestBase() {
         project.coop = coop
         project.tags = listOf("tag_1", "tag_2")
         project.shortDescription = shortDescription
+        project.termsOfService = "link-to-tos"
         return projectRepository.save(project)
     }
 
