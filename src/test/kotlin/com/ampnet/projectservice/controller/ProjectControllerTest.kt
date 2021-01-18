@@ -486,12 +486,7 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
                 ?: fail("Missing project")
-            val termsOfServiceDocument = updatedProject.documents?.first() ?: fail("Missing terms of service document")
-            assertThat(termsOfServiceDocument.id).isNotNull()
-            assertThat(termsOfServiceDocument.name).isEqualTo(testContext.termsOfService.originalFilename)
-            assertThat(termsOfServiceDocument.size).isEqualTo(testContext.termsOfService.size)
-            assertThat(termsOfServiceDocument.type).isEqualTo(testContext.termsOfService.contentType)
-            assertThat(termsOfServiceDocument.link).isEqualTo(testContext.termsOfServiceLink)
+            assertThat(updatedProject.termsOfService)
         }
     }
 
