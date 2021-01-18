@@ -147,4 +147,17 @@ abstract class RepositoryTestBase : TestBase() {
         projectRepository.save(project)
         return savedDocument
     }
+
+    protected fun createTermsOfServiceDocument(
+        project: Project,
+        createdByUserUuid: UUID,
+        name: String = "terms_of_service",
+        link: String = "link",
+        type: String = "document/type",
+        size: Int = 100
+    ) {
+        val termsOfService = saveDocument(name, link, type, size, createdByUserUuid)
+        project.termsOfService = termsOfService
+        projectRepository.save(project)
+    }
 }

@@ -28,6 +28,7 @@ class ProjectRepositoryTest : RepositoryTestBase() {
             assertThat(Hibernate.isInitialized(project.documents)).isTrue()
             assertThat(Hibernate.isInitialized(project.organization)).isTrue()
             assertThat(Hibernate.isInitialized(project.tags)).isTrue()
+            assertThat(Hibernate.isInitialized(project.termsOfService)).isTrue()
             assertThat(Hibernate.isInitialized(project.gallery)).isFalse()
             assertThat(Hibernate.isInitialized(project.newsLinks)).isFalse()
             val organization = project.organization
@@ -47,6 +48,7 @@ class ProjectRepositoryTest : RepositoryTestBase() {
             assertThat(Hibernate.isInitialized(project.documents)).isFalse()
             assertThat(Hibernate.isInitialized(project.gallery)).isFalse()
             assertThat(Hibernate.isInitialized(project.newsLinks)).isFalse()
+            assertThat(Hibernate.isInitialized(project.termsOfService)).isFalse()
             val organization = project.organization
             assertThat(Hibernate.isInitialized(organization.documents)).isFalse()
             assertThat(Hibernate.isInitialized(organization.memberships)).isFalse()
@@ -67,5 +69,6 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         testContext.project = createProject("project1", testContext.organization, userUuid)
         createProjectDocument(testContext.project, userUuid)
+        createTermsOfServiceDocument(testContext.project, userUuid)
     }
 }
