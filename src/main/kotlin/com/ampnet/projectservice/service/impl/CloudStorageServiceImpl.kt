@@ -59,7 +59,6 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
         }
     }
 
-    @Throws(InternalException::class)
     override fun deleteFile(link: String) {
         val key = getKeyFromLink(link)
         try {
