@@ -1,2 +1,2 @@
 ALTER TABLE project DROP COLUMN terms_of_service;
-ALTER TABLE project ADD COLUMN tos_doc_id INT REFERENCES document(id);
+ALTER TABLE document ADD COLUMN purpose_id INT NOT NULL DEFAULT 0;

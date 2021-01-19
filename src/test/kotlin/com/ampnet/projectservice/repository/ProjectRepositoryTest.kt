@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.repository
 
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -28,7 +29,6 @@ class ProjectRepositoryTest : RepositoryTestBase() {
             assertThat(Hibernate.isInitialized(project.documents)).isTrue()
             assertThat(Hibernate.isInitialized(project.organization)).isTrue()
             assertThat(Hibernate.isInitialized(project.tags)).isTrue()
-            assertThat(Hibernate.isInitialized(project.termsOfService)).isTrue()
             assertThat(Hibernate.isInitialized(project.gallery)).isFalse()
             assertThat(Hibernate.isInitialized(project.newsLinks)).isFalse()
             val organization = project.organization
@@ -48,7 +48,6 @@ class ProjectRepositoryTest : RepositoryTestBase() {
             assertThat(Hibernate.isInitialized(project.documents)).isFalse()
             assertThat(Hibernate.isInitialized(project.gallery)).isFalse()
             assertThat(Hibernate.isInitialized(project.newsLinks)).isFalse()
-            assertThat(Hibernate.isInitialized(project.termsOfService)).isFalse()
             val organization = project.organization
             assertThat(Hibernate.isInitialized(organization.documents)).isFalse()
             assertThat(Hibernate.isInitialized(organization.memberships)).isFalse()
@@ -69,6 +68,6 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         testContext.project = createProject("project1", testContext.organization, userUuid)
         createProjectDocument(testContext.project, userUuid)
-        createTermsOfServiceDocument(testContext.project, userUuid)
+        createProjectDocument(testContext.project, userUuid, purpose = DocumentPurpose.TERMS, name = "tos")
     }
 }

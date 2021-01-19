@@ -3,6 +3,7 @@ package com.ampnet.projectservice.repository
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
@@ -94,9 +95,10 @@ abstract class RepositoryTestBase : TestBase() {
         link: String,
         type: String,
         size: Int,
-        createdByUserUuid: UUID
+        createdByUserUuid: UUID,
+        purpose: DocumentPurpose = DocumentPurpose.GENERIC
     ): Document {
-        val document = Document(link, name, type, size, createdByUserUuid)
+        val document = Document(link, name, type, size, createdByUserUuid, purpose)
         return documentRepository.save(document)
     }
 
@@ -127,7 +129,7 @@ abstract class RepositoryTestBase : TestBase() {
             ProjectRoi(4.44, 9.99), startDate, endDate, expectedFunding, Currency.EUR, minPerUser, maxPerUser,
             null, listOf("gallery1", "gallery2"), listOf("news1", "news2"), createdByUserUuid,
             startDate.minusMinutes(1), active, null, listOf("blue", "yellow", "green"),
-            coop, "short description", null
+            coop, "short description"
         )
         return projectRepository.save(project)
     }
@@ -138,7 +140,8 @@ abstract class RepositoryTestBase : TestBase() {
         name: String = "name",
         link: String = "link",
         type: String = "document/type",
-        size: Int = 100
+        size: Int = 100,
+        purpose: DocumentPurpose = DocumentPurpose.GENERIC
     ): Document {
         val savedDocument = saveDocument(name, link, type, size, createdByUserUuid)
         val documents = project.documents.orEmpty().toMutableList()
@@ -146,18 +149,5 @@ abstract class RepositoryTestBase : TestBase() {
         project.documents = documents
         projectRepository.save(project)
         return savedDocument
-    }
-
-    protected fun createTermsOfServiceDocument(
-        project: Project,
-        createdByUserUuid: UUID,
-        name: String = "terms_of_service",
-        link: String = "link",
-        type: String = "document/type",
-        size: Int = 100
-    ) {
-        val termsOfService = saveDocument(name, link, type, size, createdByUserUuid)
-        project.termsOfService = termsOfService
-        projectRepository.save(project)
     }
 }

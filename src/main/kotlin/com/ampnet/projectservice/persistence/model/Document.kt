@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.persistence.model
 
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -34,10 +35,13 @@ class Document(
     val createdByUserUuid: UUID,
 
     @Column(nullable = false)
-    val createdAt: ZonedDateTime
+    val createdAt: ZonedDateTime,
+
+    @Column(name = "purpose_id", nullable = false)
+    val purpose: DocumentPurpose
 ) {
-    constructor(link: String, name: String, type: String, size: Int, createdByUserUuid: UUID) : this(
-        0, link, name, type.take(MAX_DOCUMENT_TYPE_NAME), size, createdByUserUuid, ZonedDateTime.now()
+    constructor(link: String, name: String, type: String, size: Int, createdByUserUuid: UUID, purpose: DocumentPurpose = DocumentPurpose.GENERIC) : this(
+        0, link, name, type.take(MAX_DOCUMENT_TYPE_NAME), size, createdByUserUuid, ZonedDateTime.now(), purpose
     )
 
     constructor(link: String, request: DocumentSaveRequest) : this(
@@ -47,7 +51,8 @@ class Document(
         request.type.take(MAX_DOCUMENT_TYPE_NAME),
         request.size,
         request.userUuid,
-        ZonedDateTime.now()
+        ZonedDateTime.now(),
+        request.purpose
     )
 }
 

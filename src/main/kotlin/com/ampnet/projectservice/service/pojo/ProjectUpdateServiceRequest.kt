@@ -9,6 +9,5 @@ data class ProjectUpdateServiceRequest(
     val userUuid: UUID,
     val request: ProjectUpdateRequest?,
     val image: MultipartFile?,
-    val documentSaveRequests: List<DocumentSaveRequest>?,
-    val termsOfServiceRequest: DocumentSaveRequest?
+    val documentSaveRequests: List<DocumentSaveRequest>?
 )

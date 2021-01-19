@@ -7,6 +7,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
@@ -263,14 +264,12 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.mainImage).contains(testContext.imageLink)
-            assertThat(projectResponse.documents).hasSize(2)
+            assertThat(projectResponse.documents).hasSize(3)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
             assertThat(projectResponse.organization.uuid).isEqualTo(testContext.project.organization.uuid)
-            val documents = projectResponse.documents.sortedByDescending { it.size }
-            val document = documents.first()
+            val document = projectResponse.documents.first { it.link == testContext.documentLink1 }
             assertThat(document.id).isNotNull()
-            assertThat(document.link).isEqualTo(testContext.documentLink1)
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
@@ -291,14 +290,13 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(updatedProject.mainImage).contains(testContext.imageLink)
             assertThat(updatedProject.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
-            val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
-            assertThat(documents).hasSize(2)
-            val document = documents.last()
+            val documents = updatedProject.documents ?: fail("Missing documents")
+            assertThat(documents).hasSize(3)
+            val document = documents.first { it.link == testContext.documentLink2 }
             assertThat(document.id).isNotNull()
             assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock2.size)
             assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink2)
         }
     }
 
@@ -419,27 +417,24 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.documents).hasSize(2)
-            val documents = projectResponse.documents.sortedByDescending { it.size }
-            val document = documents.first()
+            assertThat(projectResponse.documents).hasSize(3)
+            val document = projectResponse.documents.first { it.link == testContext.documentLink1 }
             assertThat(document.id).isNotNull()
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink1)
         }
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
                 ?: fail("Missing project")
-            val documents = updatedProject.documents?.sortedByDescending { it.size } ?: fail("Missing documents")
-            assertThat(documents).hasSize(2)
-            documents.sortedBy { it.size }
-            val document = documents.last()
+            val documents = updatedProject.documents ?: fail("Missing documents")
+            assertThat(documents).hasSize(3)
+            val document = updatedProject.documents?.first { it.link == testContext.documentLink2 }
+                ?: fail("Missing document")
             assertThat(document.id).isNotNull()
             assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock2.size)
             assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
-            assertThat(document.link).isEqualTo(testContext.documentLink2)
         }
     }
 
@@ -481,22 +476,18 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.termsOfService?.link).isEqualTo(testContext.termsOfServiceLink)
+            assertThat(projectResponse.documents.last { it.purpose == DocumentPurpose.TERMS }.link)
+                .isEqualTo(testContext.termsOfServiceLink)
         }
         verify("Project is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
                 ?: fail("Missing project")
-            val termsOfServiceDocument = updatedProject.termsOfService ?: fail("Missing terms of service document")
+            val termsOfServiceDocument = getTos(updatedProject.documents)
             assertThat(termsOfServiceDocument.id).isNotNull()
             assertThat(termsOfServiceDocument.name).isEqualTo(testContext.termsOfService.originalFilename)
             assertThat(termsOfServiceDocument.size).isEqualTo(testContext.termsOfService.size)
             assertThat(termsOfServiceDocument.type).isEqualTo(testContext.termsOfService.contentType)
             assertThat(termsOfServiceDocument.link).isEqualTo(testContext.termsOfServiceLink)
-        }
-        verify("Old terms of services is deleted") {
-            val tosId = testContext.project.termsOfService?.id ?: fail("Missing project old tos")
-            val document = documentRepository.findById(tosId)
-            assertThat(document).isEmpty
         }
     }
 
@@ -632,9 +623,9 @@ class ProjectControllerTest : ControllerTestBase() {
             val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(optionalProject).isPresent
             val projectDocuments = optionalProject.get().documents ?: fail("Project documents must not be null")
-            assertThat(projectDocuments).hasSize(1)
+            assertThat(projectDocuments).hasSize(2)
 
-            val document = projectDocuments[0]
+            val document = projectDocuments.first { it.purpose == DocumentPurpose.GENERIC }
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
@@ -668,7 +659,7 @@ class ProjectControllerTest : ControllerTestBase() {
             val project = projectRepository.findByIdWithAllData(testContext.project.uuid)
             assertThat(project).isPresent
             val documents = project.get().documents
-            assertThat(documents).hasSize(1).doesNotContain(testContext.document)
+            assertThat(documents).hasSize(2).doesNotContain(testContext.document)
             val document = documentRepository.findById(testContext.document.id)
             assertThat(document).isEmpty
         }
@@ -686,14 +677,14 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("User admin can delete document") {
-            val tosId = testContext.project.termsOfService?.id ?: fail("Missing project tos")
+            val tosId = getTos(testContext.project.documents).id
             mockMvc.perform(
                 delete("$projectPath/${testContext.project.uuid}/document/$tosId")
             )
                 .andExpect(status().isOk)
         }
         verify("Terms of services is deleted") {
-            val tosId = testContext.project.termsOfService?.id ?: fail("Missing project tos")
+            val tosId = getTos(testContext.project.documents).id
             val document = documentRepository.findById(tosId)
             assertThat(document).isEmpty
         }
@@ -879,6 +870,9 @@ class ProjectControllerTest : ControllerTestBase() {
             }
         }
     }
+
+    private fun getTos(documents: MutableList<Document>?): Document =
+        documents?.lastOrNull { it.purpose == DocumentPurpose.TERMS } ?: fail("Missing tos in documents")
 
     private class TestContext {
         lateinit var project: Project

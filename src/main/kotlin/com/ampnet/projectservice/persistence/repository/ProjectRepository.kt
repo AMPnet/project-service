@@ -15,7 +15,6 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
         "SELECT project FROM Project project " +
             "INNER JOIN FETCH project.organization " +
             "LEFT JOIN FETCH project.documents " +
-            "LEFT JOIN FETCH project.termsOfService " +
             "WHERE project.uuid = ?1"
     )
     fun findByIdWithAllData(id: UUID): Optional<Project>

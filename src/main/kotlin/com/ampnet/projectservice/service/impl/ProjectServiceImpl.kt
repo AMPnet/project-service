@@ -141,12 +141,6 @@ class ProjectServiceImpl(
             val document = storageService.saveDocument(it)
             addDocumentToProject(project, document)
         }
-        serviceRequest.termsOfServiceRequest?.let {
-            project.termsOfService?.let { tos ->
-                storageService.deleteFile(tos)
-            }
-            project.termsOfService = storageService.saveDocument(it)
-        }
         val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
         return FullProjectWithWallet(project, wallet.firstOrNull())
     }
@@ -210,13 +204,6 @@ class ProjectServiceImpl(
             project.documents = storedDocuments
             projectRepository.save(project)
             storageService.deleteFile(it)
-            return
-        }
-        project.termsOfService?.let {
-            if (it.id == documentId) {
-                storageService.deleteFile(it)
-                project.termsOfService = null
-            }
         }
     }
 
@@ -331,8 +318,7 @@ class ProjectServiceImpl(
             null,
             request.tags?.toSet()?.map { it.toLowerCase() },
             user.coop,
-            request.shortDescription,
-            null
+            request.shortDescription
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {

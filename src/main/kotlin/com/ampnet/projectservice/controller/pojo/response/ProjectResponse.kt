@@ -42,7 +42,6 @@ data class ProjectWithWalletFullResponse(
     val wallet: WalletServiceResponse?,
     val coop: String,
     val shortDescription: String?,
-    val termsOfService: DocumentResponse?,
     val organization: OrganizationSmallServiceResponse
 ) {
     constructor(project: Project, wallet: WalletServiceResponse?) : this(
@@ -66,7 +65,6 @@ data class ProjectWithWalletFullResponse(
         wallet,
         project.coop,
         project.shortDescription,
-        project.termsOfService?.let { DocumentResponse(it) },
         OrganizationSmallServiceResponse(project.organization)
     )
 }

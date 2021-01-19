@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
@@ -162,6 +163,7 @@ abstract class ControllerTestBase : TestBase() {
         coop: String = COOP,
         shortDescription: String = "short description"
     ): Project {
+        val tos = saveDocument(name, "terms-of-services", "PDF", 100, createdByUserUuid, DocumentPurpose.TERMS)
         val project = Project::class.java.getDeclaredConstructor().newInstance()
         project.uuid = UUID.randomUUID()
         project.organization = organization
@@ -180,7 +182,7 @@ abstract class ControllerTestBase : TestBase() {
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
         project.coop = coop
-        project.termsOfService = saveDocument(name, "terms-of-services", "PDF", 100, createdByUserUuid)
+        project.documents = listOf(tos).toMutableList()
         project.tags = listOf("tag_1", "tag_2")
         project.shortDescription = shortDescription
         return projectRepository.save(project)
@@ -191,9 +193,10 @@ abstract class ControllerTestBase : TestBase() {
         link: String,
         type: String,
         size: Int,
-        createdByUserUuid: UUID
+        createdByUserUuid: UUID,
+        purpose: DocumentPurpose = DocumentPurpose.GENERIC
     ): Document {
-        val document = Document(link, name, type, size, createdByUserUuid)
+        val document = Document(link, name, type, size, createdByUserUuid, purpose)
         return documentRepository.save(document)
     }
 

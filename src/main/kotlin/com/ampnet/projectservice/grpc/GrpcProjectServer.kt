@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.grpc
 
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceNotFoundException
@@ -89,7 +90,9 @@ class GrpcProjectServer(
         projectRepository.findByIdWithAllData(UUID.fromString(request.projectUuid)).ifPresent { project ->
             val builder = ProjectWithDataResponse.newBuilder()
                 .setProject(projectToGrpcResponse(project))
-            project.termsOfService?.let { builder.setTosUrl(it.link) }
+            project.documents
+                ?.lastOrNull { document -> document.purpose == DocumentPurpose.TERMS }
+                ?.let { tos -> builder.setTosUrl(tos.link) }
             val response = builder.build()
             responseObserver.onNext(response)
             responseObserver.onCompleted()
