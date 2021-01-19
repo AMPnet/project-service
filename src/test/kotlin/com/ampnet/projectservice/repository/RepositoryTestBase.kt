@@ -96,7 +96,7 @@ abstract class RepositoryTestBase : TestBase() {
         size: Int,
         createdByUserUuid: UUID
     ): Document {
-        val document = Document(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
+        val document = Document(link, name, type, size, createdByUserUuid)
         return documentRepository.save(document)
     }
 

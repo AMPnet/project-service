@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.persistence.model
 
+import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -18,20 +19,36 @@ class Document(
     val id: Int,
 
     @Column(nullable = false)
-    var link: String,
+    val link: String,
 
     @Column(nullable = false)
-    var name: String,
+    val name: String,
 
     @Column(length = 16)
-    var type: String,
+    val type: String,
 
     @Column(nullable = false)
-    var size: Int,
+    val size: Int,
 
     @Column(nullable = false)
-    var createdByUserUuid: UUID,
+    val createdByUserUuid: UUID,
 
     @Column(nullable = false)
-    var createdAt: ZonedDateTime
-)
+    val createdAt: ZonedDateTime
+) {
+    constructor(link: String, name: String, type: String, size: Int, createdByUserUuid: UUID) : this(
+        0, link, name, type.take(MAX_DOCUMENT_TYPE_NAME), size, createdByUserUuid, ZonedDateTime.now()
+    )
+
+    constructor(link: String, request: DocumentSaveRequest) : this(
+        0,
+        link,
+        request.name,
+        request.type.take(MAX_DOCUMENT_TYPE_NAME),
+        request.size,
+        request.userUuid,
+        ZonedDateTime.now()
+    )
+}
+
+const val MAX_DOCUMENT_TYPE_NAME = 16

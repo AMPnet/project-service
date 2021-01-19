@@ -193,13 +193,7 @@ abstract class ControllerTestBase : TestBase() {
         size: Int,
         createdByUserUuid: UUID
     ): Document {
-        val document = Document::class.java.getDeclaredConstructor().newInstance()
-        document.name = name
-        document.link = link
-        document.type = type
-        document.size = size
-        document.createdByUserUuid = createdByUserUuid
-        document.createdAt = ZonedDateTime.now()
+        val document = Document(link, name, type, size, createdByUserUuid)
         return documentRepository.save(document)
     }
 
