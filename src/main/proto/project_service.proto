@@ -36,7 +36,11 @@ message ProjectResponse {
   string image_url = 12;
   string description = 13;
   string coop = 14;
-  string tos_url = 15;
+}
+
+message ProjectWithDataResponse {
+  ProjectResponse project = 1;
+  string tos_url = 2;
 }
 
 message OrganizationMembershipResponse {
@@ -66,4 +70,5 @@ service ProjectService {
   rpc GetOrganizations(GetByUuids) returns (OrganizationsResponse);
   rpc GetProjects(GetByUuids) returns (ProjectsResponse);
   rpc GetOrganizationMembersForProject(GetByUuid) returns (OrganizationMembershipsResponse);
+  rpc GetProjectWithData(GetByUuid) returns (ProjectWithDataResponse);
 }

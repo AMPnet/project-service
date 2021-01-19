@@ -1,6 +1,9 @@
 package com.ampnet.projectservice.grpc
 
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
+import com.ampnet.projectservice.exception.ErrorCode
+import com.ampnet.projectservice.exception.ResourceNotFoundException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
@@ -15,6 +18,7 @@ import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.projectservice.proto.OrganizationsResponse
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
+import com.ampnet.projectservice.proto.ProjectWithDataResponse
 import com.ampnet.projectservice.proto.ProjectsResponse
 import io.grpc.stub.StreamObserver
 import mu.KLogging
@@ -81,6 +85,24 @@ class GrpcProjectServer(
         responseObserver.onCompleted()
     }
 
+    override fun getProjectWithData(request: GetByUuid, responseObserver: StreamObserver<ProjectWithDataResponse>) {
+        logger.debug { "Received gRPC request getProjectFull: ${request.projectUuid}" }
+        projectRepository.findByIdWithAllData(UUID.fromString(request.projectUuid)).ifPresent { project ->
+            val builder = ProjectWithDataResponse.newBuilder()
+                .setProject(projectToGrpcResponse(project))
+            project.documents
+                ?.lastOrNull { document -> document.purpose == DocumentPurpose.TERMS }
+                ?.let { tos -> builder.setTosUrl(tos.link) }
+            val response = builder.build()
+            responseObserver.onNext(response)
+            responseObserver.onCompleted()
+            return@ifPresent
+        }
+        val exception = ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: ${request.projectUuid}")
+        logger.warn { exception.message }
+        responseObserver.onError(exception)
+    }
+
     private fun organizationToGrpcResponse(organization: Organization): OrganizationResponse {
         val builder = OrganizationResponse.newBuilder()
             .setUuid(organization.uuid.toString())
@@ -94,7 +116,7 @@ class GrpcProjectServer(
         return builder.build()
     }
 
-    private fun projectToGrpcResponse(project: Project): ProjectResponse {
+    internal fun projectToGrpcResponse(project: Project): ProjectResponse {
         val builder = ProjectResponse.newBuilder()
             .setUuid(project.uuid.toString())
             .setName(project.name)
@@ -110,7 +132,6 @@ class GrpcProjectServer(
             .setDescription(project.shortDescription.orEmpty())
             .setCoop(project.coop)
         project.mainImage?.let { builder.setImageUrl(it) }
-        project.termsOfService?.let { builder.setTosUrl(project.termsOfService) }
         return builder.build()
     }
 

@@ -6,9 +6,8 @@ import com.ampnet.projectservice.persistence.repository.DocumentRepository
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.StorageService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
-import mu.KotlinLogging
+import mu.KLogging
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
 
 @Service
 class StorageServiceImpl(
@@ -16,10 +15,7 @@ class StorageServiceImpl(
     private val cloudStorageService: CloudStorageService
 ) : StorageService {
 
-    private companion object {
-        private val logger = KotlinLogging.logger {}
-        private const val MAX_DOCUMENT_TYPE_NAME = 16
-    }
+    companion object : KLogging()
 
     @Throws(InternalException::class)
     override fun saveDocument(request: DocumentSaveRequest): Document {
@@ -28,13 +24,7 @@ class StorageServiceImpl(
         val fileLink = storeOnCloud(request.name, request.data)
         logger.debug { "Successfully stored document on cloud: $fileLink" }
 
-        val document = Document::class.java.getDeclaredConstructor().newInstance()
-        document.link = fileLink
-        document.name = request.name
-        document.size = request.size
-        document.createdAt = ZonedDateTime.now()
-        document.createdByUserUuid = request.userUuid
-        document.type = request.type.take(MAX_DOCUMENT_TYPE_NAME)
+        val document = Document(fileLink, request)
         return documentRepository.save(document)
     }
 
@@ -46,10 +36,15 @@ class StorageServiceImpl(
         return link
     }
 
-    @Throws(InternalException::class)
     override fun deleteImage(link: String) {
         logger.debug { "Deleting image: $link" }
         cloudStorageService.deleteFile(link)
+    }
+
+    override fun deleteFile(document: Document) {
+        logger.debug { "Deleting file: ${document.link}" }
+        cloudStorageService.deleteFile(document.link)
+        documentRepository.delete(document)
     }
 
     private fun storeOnCloud(name: String, content: ByteArray): String = cloudStorageService.saveFile(name, content)

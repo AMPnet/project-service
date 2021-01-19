@@ -59,7 +59,6 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
         }
     }
 
-    @Throws(InternalException::class)
     override fun deleteFile(link: String) {
         val key = getKeyFromLink(link)
         try {
@@ -67,7 +66,6 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
             logger.info { "Deleted file: $key" }
         } catch (ex: S3Exception) {
             logger.warn { ex.message }
-            throw InternalException(ErrorCode.INT_FILE_STORAGE, "Could not delete file with key: $key on cloud")
         }
     }
 

@@ -5,8 +5,10 @@ import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.proto.GetByUuid
+import com.ampnet.projectservice.proto.GetByUuids
 import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.projectservice.proto.OrganizationMembershipsResponse
+import com.ampnet.projectservice.proto.ProjectsResponse
 import com.ampnet.projectservice.repository.RepositoryTestBase
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
@@ -60,6 +62,28 @@ class GrpcProjectServerTest : RepositoryTestBase() {
             )
             val response = OrganizationMembershipsResponse.newBuilder()
                 .addAllMemberships(organizationMembersResponse).build()
+            Mockito.verify(streamObserver).onNext(response)
+            Mockito.verify(streamObserver).onCompleted()
+            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+        }
+    }
+
+    @Test
+    fun mustReturnProjects() {
+        suppose("There is a project") {
+            testContext.organization = createOrganization("org", userUuid)
+            testContext.project = createProject("project", testContext.organization, userUuid)
+        }
+
+        verify("Grpc service will return specified project") {
+            val request = GetByUuids.newBuilder().addUuids(testContext.project.uuid.toString()).build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java)
+                as StreamObserver<ProjectsResponse>
+            grpcServer.getProjects(request, streamObserver)
+            val projectResponse = grpcServer.projectToGrpcResponse(testContext.project)
+            val response = ProjectsResponse.newBuilder().addProjects(projectResponse).build()
             Mockito.verify(streamObserver).onNext(response)
             Mockito.verify(streamObserver).onCompleted()
             Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())

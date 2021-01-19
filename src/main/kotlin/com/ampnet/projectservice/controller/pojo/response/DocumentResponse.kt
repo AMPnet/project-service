@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.controller.pojo.response
 
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.persistence.model.Document
 import java.time.ZonedDateTime
 
@@ -9,7 +10,8 @@ data class DocumentResponse(
     val name: String,
     val type: String,
     val size: Int,
-    val createdAt: ZonedDateTime
+    val createdAt: ZonedDateTime,
+    val purpose: DocumentPurpose
 ) {
     constructor(document: Document) : this(
         document.id,
@@ -17,6 +19,7 @@ data class DocumentResponse(
         document.name,
         document.type,
         document.size,
-        document.createdAt
+        document.createdAt,
+        document.purpose
     )
 }

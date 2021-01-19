@@ -2,6 +2,7 @@ package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.controller.pojo.request.OrganizationRequest
 import com.ampnet.projectservice.controller.pojo.request.OrganizationUpdateRequest
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
@@ -85,7 +86,8 @@ class OrganizationServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotBeAbleDocumentToNonExistingOrganization() {
         verify("Service will throw an exception that organization is missing") {
-            val request = DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid)
+            val request =
+                DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid, DocumentPurpose.GENERIC)
             val exception = assertThrows<ResourceNotFoundException> {
                 organizationService.addDocument(UUID.randomUUID(), request)
             }
@@ -101,7 +103,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         }
         suppose("File storage service will successfully store document") {
             testContext.documentSaveRequest =
-                DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid)
+                DocumentSaveRequest("Data".toByteArray(), "name", 10, "type/some", userUuid, DocumentPurpose.GENERIC)
             Mockito.`when`(
                 cloudStorageService.saveFile(testContext.documentSaveRequest.name, testContext.documentSaveRequest.data)
             ).thenReturn(testContext.documentLink)

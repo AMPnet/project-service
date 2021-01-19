@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.enums.Currency
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
@@ -74,7 +75,7 @@ abstract class ControllerTestBase : TestBase() {
     protected lateinit var membershipRepository: OrganizationMembershipRepository
 
     @Autowired
-    private lateinit var documentRepository: DocumentRepository
+    protected lateinit var documentRepository: DocumentRepository
 
     @Autowired
     protected lateinit var organizationInviteRepository: OrganizationInviteRepository
@@ -162,6 +163,7 @@ abstract class ControllerTestBase : TestBase() {
         coop: String = COOP,
         shortDescription: String = "short description"
     ): Project {
+        val tos = saveDocument(name, "terms-of-services", "PDF", 100, createdByUserUuid, DocumentPurpose.TERMS)
         val project = Project::class.java.getDeclaredConstructor().newInstance()
         project.uuid = UUID.randomUUID()
         project.organization = organization
@@ -180,9 +182,9 @@ abstract class ControllerTestBase : TestBase() {
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
         project.coop = coop
+        project.documents = listOf(tos).toMutableList()
         project.tags = listOf("tag_1", "tag_2")
         project.shortDescription = shortDescription
-        project.termsOfService = "link-to-tos"
         return projectRepository.save(project)
     }
 
@@ -191,15 +193,10 @@ abstract class ControllerTestBase : TestBase() {
         link: String,
         type: String,
         size: Int,
-        createdByUserUuid: UUID
+        createdByUserUuid: UUID,
+        purpose: DocumentPurpose = DocumentPurpose.GENERIC
     ): Document {
-        val document = Document::class.java.getDeclaredConstructor().newInstance()
-        document.name = name
-        document.link = link
-        document.type = type
-        document.size = size
-        document.createdByUserUuid = createdByUserUuid
-        document.createdAt = ZonedDateTime.now()
+        val document = Document(link, name, type, size, createdByUserUuid, purpose)
         return documentRepository.save(document)
     }
 

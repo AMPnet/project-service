@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
@@ -47,10 +48,12 @@ class ProjectController(
     ): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
-        val termsOfServiceRequest = termsOfService?.let { DocumentSaveRequest(it, userPrincipal.uuid) }
+        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }?.toMutableList()
+        termsOfService?.let {
+            documentSaveRequests?.add(DocumentSaveRequest(it, userPrincipal.uuid, DocumentPurpose.TERMS))
+        }
         val serviceRequest = ProjectUpdateServiceRequest(
-            projectUuid, userPrincipal.uuid, request, image, documentSaveRequests, termsOfServiceRequest
+            projectUuid, userPrincipal.uuid, request, image, documentSaveRequests
         )
         val updatedProject = projectService.updateProject(serviceRequest)
         return ResponseEntity.ok(ProjectWithWalletFullResponse(updatedProject.project, updatedProject.walletResponse))

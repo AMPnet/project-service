@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.repository
 
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
@@ -67,5 +68,6 @@ class ProjectRepositoryTest : RepositoryTestBase() {
         addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         testContext.project = createProject("project1", testContext.organization, userUuid)
         createProjectDocument(testContext.project, userUuid)
+        createProjectDocument(testContext.project, userUuid, purpose = DocumentPurpose.TERMS, name = "tos")
     }
 }

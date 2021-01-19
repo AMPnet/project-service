@@ -144,7 +144,7 @@ abstract class JpaServiceTestBase : TestBase() {
         type: String = "document/type",
         size: Int = 100
     ): Document {
-        val document = Document(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
+        val document = Document(link, name, type, size, createdByUserUuid)
         return documentRepository.save(document)
     }
 

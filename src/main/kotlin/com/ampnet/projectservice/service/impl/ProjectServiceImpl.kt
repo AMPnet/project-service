@@ -141,10 +141,6 @@ class ProjectServiceImpl(
             val document = storageService.saveDocument(it)
             addDocumentToProject(project, document)
         }
-        serviceRequest.termsOfServiceRequest?.let {
-            val termsOfService = storageService.saveDocument(it)
-            project.termsOfService = termsOfService.link
-        }
         val wallet = walletService.getWalletsByOwner(listOf(project.uuid))
         return FullProjectWithWallet(project, wallet.firstOrNull())
     }
@@ -203,10 +199,11 @@ class ProjectServiceImpl(
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
         val storedDocuments = project.documents.orEmpty().toMutableList()
-        storedDocuments.firstOrNull { it.id == documentId }.let {
+        storedDocuments.firstOrNull { it.id == documentId }?.let {
             storedDocuments.remove(it)
             project.documents = storedDocuments
             projectRepository.save(project)
+            storageService.deleteFile(it)
         }
     }
 
@@ -321,8 +318,7 @@ class ProjectServiceImpl(
             null,
             request.tags?.toSet()?.map { it.toLowerCase() },
             user.coop,
-            request.shortDescription,
-            null
+            request.shortDescription
         )
 
     private fun setProjectGallery(project: Project, gallery: List<String>) {
