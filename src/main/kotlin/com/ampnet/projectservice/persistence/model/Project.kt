@@ -85,7 +85,7 @@ class Project(
     @JoinColumn(name = "project_uuid")
     var documents: MutableList<Document>?,
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "tag")
     var tags: List<String>?,

@@ -26,8 +26,8 @@ class ProjectRepositoryTest : RepositoryTestBase() {
             val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
             val project = optionalProject.get()
             assertThat(project).isNotNull
-            assertThat(Hibernate.isInitialized(project.documents)).isTrue()
             assertThat(Hibernate.isInitialized(project.organization)).isTrue()
+            assertThat(Hibernate.isInitialized(project.documents)).isFalse()
             assertThat(Hibernate.isInitialized(project.tags)).isTrue()
             assertThat(Hibernate.isInitialized(project.gallery)).isFalse()
             assertThat(Hibernate.isInitialized(project.newsLinks)).isFalse()
@@ -44,7 +44,7 @@ class ProjectRepositoryTest : RepositoryTestBase() {
             assertThat(projects).hasSize(1)
             val project = projects.first()
             assertThat(Hibernate.isInitialized(project.organization)).isTrue()
-            assertThat(Hibernate.isInitialized(project.tags)).isTrue()
+            assertThat(Hibernate.isInitialized(project.tags)).isFalse()
             assertThat(Hibernate.isInitialized(project.documents)).isFalse()
             assertThat(Hibernate.isInitialized(project.gallery)).isFalse()
             assertThat(Hibernate.isInitialized(project.newsLinks)).isFalse()

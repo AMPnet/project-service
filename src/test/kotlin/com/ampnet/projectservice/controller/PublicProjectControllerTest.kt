@@ -66,6 +66,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.minPerUser).isEqualTo(testContext.project.minPerUser)
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
+            assertThat(projectResponse.tags).isEqualTo(testContext.project.tags.orEmpty())
             assertThat(projectResponse.gallery).isEqualTo(testContext.project.gallery.orEmpty())
             assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
             assertThat(projectResponse.coop).isEqualTo(COOP)

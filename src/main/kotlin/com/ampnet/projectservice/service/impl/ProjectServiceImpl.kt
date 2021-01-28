@@ -72,6 +72,7 @@ class ProjectServiceImpl(
             ?: return null
         Hibernate.initialize(project.gallery)
         Hibernate.initialize(project.newsLinks)
+        Hibernate.initialize(project.documents)
         return project
     }
 
@@ -81,6 +82,7 @@ class ProjectServiceImpl(
             projectRepository.findAllByOrganizationUuid(organizationId, coop ?: applicationProperties.coop.default)
         val walletsMap = walletService.getWalletsByOwner(projects.map { it.uuid }).associateBy { it.owner }
         return projects.map { project ->
+            Hibernate.initialize(project.tags)
             ProjectWithWallet(
                 ProjectServiceResponse(project),
                 walletsMap[project.uuid]
@@ -91,6 +93,7 @@ class ProjectServiceImpl(
     @Transactional(readOnly = true)
     override fun getAllProjects(coop: String?, pageable: Pageable): Page<ProjectServiceResponse> {
         val projects = projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
+        projects.forEach { Hibernate.initialize(it.tags) }
         return projects.map { ProjectServiceResponse(it) }
     }
 
@@ -222,6 +225,9 @@ class ProjectServiceImpl(
         val projects = projectRepository.findByTags(
             tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, active, pageable
         )
+        projects.forEach {
+            Hibernate.initialize(it.tags)
+        }
         return projects.map { ProjectServiceResponse(it) }
     }
 

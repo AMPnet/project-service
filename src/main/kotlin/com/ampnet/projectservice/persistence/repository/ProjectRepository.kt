@@ -14,7 +14,7 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     @Query(
         "SELECT project FROM Project project " +
             "INNER JOIN FETCH project.organization " +
-            "LEFT JOIN FETCH project.documents " +
+            "LEFT JOIN FETCH project.tags " +
             "WHERE project.uuid = ?1"
     )
     fun findByIdWithAllData(id: UUID): Optional<Project>
@@ -43,7 +43,11 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
 
     @Query(
         "SELECT project FROM Project project " +
-            "INNER JOIN project.organization organization " +
+            "INNER JOIN FETCH project.organization  " +
+            "LEFT JOIN FETCH project.tags " +
+            "WHERE project.startDate < :time AND project.endDate > :time " +
+            "AND project.active = :active AND project.coop = :coop",
+        countQuery = "SELECT COUNT(project.uuid) FROM Project project " +
             "WHERE project.startDate < :time AND project.endDate > :time " +
             "AND project.active = :active AND project.coop = :coop"
     )
