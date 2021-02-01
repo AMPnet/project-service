@@ -21,10 +21,11 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
 
     @Query(
         "SELECT project FROM Project project " +
-            "INNER JOIN FETCH project.organization organization " +
-            "WHERE organization.uuid = ?1 AND organization.coop = ?2"
+            "INNER JOIN FETCH project.organization " +
+            "LEFT JOIN FETCH project.tags " +
+            "WHERE project.organization.uuid = ?1 AND project.coop = ?2"
     )
-    fun findAllByOrganizationUuid(organizationUuid: UUID, coop: String): List<Project>
+    fun findAllByOrganizationUuid(organizationUuid: UUID, coop: String): Set<Project>
 
     fun findByNameContainingIgnoreCaseAndCoop(name: String, coop: String, pageable: Pageable): Page<Project>
 
@@ -60,6 +61,14 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     )
     fun countAllActiveByDate(time: ZonedDateTime, active: Boolean, coop: String): Int
 
+    @Query(
+        "SELECT project FROM Project project " +
+            "INNER JOIN FETCH project.organization  " +
+            "LEFT JOIN FETCH project.tags " +
+            "WHERE project.coop = :coop",
+        countQuery = "SELECT COUNT(project.uuid) FROM Project project " +
+            "WHERE project.coop = :coop"
+    )
     fun findAllByCoop(coop: String, pageable: Pageable): Page<Project>
 
     @Query(
