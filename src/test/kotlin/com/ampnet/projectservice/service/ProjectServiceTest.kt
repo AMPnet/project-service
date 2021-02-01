@@ -206,7 +206,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2")
-            testContext.project.gallery = testContext.gallery
+            testContext.project.gallery = testContext.gallery.toSet()
             projectRepository.save(testContext.project)
         }
         suppose("Additional image is added to gallery") {
@@ -245,7 +245,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         }
         suppose("The project has gallery") {
             testContext.gallery = listOf("link-1", "link-2", "link-3")
-            testContext.project.gallery = testContext.gallery
+            testContext.project.gallery = testContext.gallery.toSet()
             projectRepository.save(testContext.project)
         }
         suppose("Image is removed from gallery") {
@@ -436,20 +436,20 @@ class ProjectServiceTest : JpaServiceTestBase() {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid), createProjectRequest("First project"))
             testContext.tags = listOf("tag 1", "tag 2", "tag 3")
-            project.tags = testContext.tags
+            project.tags = testContext.tags.toSet()
             projectRepository.save(project)
         }
         suppose("Another project has tags") {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid), createProjectRequest("Second project"))
-            project.tags = listOf("tag 1", "tag 4")
+            project.tags = setOf("tag 1", "tag 4")
             projectRepository.save(project)
             testContext.tags.toMutableList().add("tag 4")
         }
         suppose("Project from another cooperative has tags") {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Third project"))
-            project.tags = listOf("tag 1", "tag 4", "tag 5")
+            project.tags = setOf("tag 1", "tag 4", "tag 5")
             projectRepository.save(project)
         }
 
@@ -469,35 +469,35 @@ class ProjectServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllProjects()
             val project = projectService
                 .createProject(createUserPrincipal(userUuid), createProjectRequest("First project"))
-            project.tags = listOf("tag 1", "tag 3")
+            project.tags = setOf("tag 1", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Second project has tags and is active") {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid), createProjectRequest("Second project"))
-            project.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.tags = setOf("tag 1", "tag 2", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Third project has tags and is active") {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid), createProjectRequest("Third project"))
-            project.tags = listOf("tag 1", "tag 3")
+            project.tags = setOf("tag 1", "tag 3")
             project.active = true
             projectRepository.save(project)
         }
         suppose("Fourth project has tags and is not active") {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid), createProjectRequest("Fourth project"))
-            project.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.tags = setOf("tag 1", "tag 2", "tag 3")
             project.active = false
             projectRepository.save(project)
         }
         suppose("Fifth project has tags and is active but from another cooperative") {
             val project = projectService
                 .createProject(createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Fifth project"))
-            project.tags = listOf("tag 1", "tag 2", "tag 3")
+            project.tags = setOf("tag 1", "tag 2", "tag 3")
             project.active = true
             projectRepository.save(project)
         }

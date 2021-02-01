@@ -4,6 +4,7 @@ import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
+import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InternalException
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -70,9 +71,6 @@ class ProjectServiceImpl(
     override fun getProjectByIdWithAllData(id: UUID): Project? {
         val project = ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
             ?: return null
-        Hibernate.initialize(project.gallery)
-        Hibernate.initialize(project.newsLinks)
-        Hibernate.initialize(project.documents)
         return project
     }
 
@@ -132,9 +130,9 @@ class ProjectServiceImpl(
         }
         serviceRequest.request?.active?.let { project.active = it }
         serviceRequest.request?.tags?.let {
-            project.tags = it.toSet().map { tag -> tag.toLowerCase() }
+            project.tags = it.map { tag -> tag.toLowerCase() }.toSet()
         }
-        serviceRequest.request?.news?.let { project.newsLinks = it }
+        serviceRequest.request?.news?.let { project.newsLinks = it.toSet() }
         serviceRequest.image?.let {
             addMainImageToProject(it, project)
         }
@@ -162,7 +160,7 @@ class ProjectServiceImpl(
     override fun addImageToGallery(projectUuid: UUID, userUuid: UUID, image: MultipartFile) {
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
-        val gallery = project.gallery.orEmpty().toMutableList()
+        val gallery = project.gallery.orEmpty().toMutableSet()
         val imageName = ServiceUtils.getImageNameFromMultipartFile(image)
         val link = storageService.saveImage(imageName, image.bytes)
         gallery.add(link)
@@ -174,7 +172,7 @@ class ProjectServiceImpl(
     override fun removeImagesFromGallery(projectUuid: UUID, userUuid: UUID, images: List<String>) {
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
-        val gallery = project.gallery.orEmpty().toMutableList()
+        val gallery = project.gallery.orEmpty().toMutableSet()
         images.forEach {
             if (gallery.remove(it)) {
                 storageService.deleteImage(it)
@@ -199,7 +197,7 @@ class ProjectServiceImpl(
     override fun removeDocument(projectUuid: UUID, userUuid: UUID, documentId: Int) {
         val project = getProjectWithAllData(projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(userUuid, project.organization.uuid)
-        val storedDocuments = project.documents.orEmpty().toMutableList()
+        val storedDocuments = project.documents.orEmpty().toMutableSet()
         storedDocuments.firstOrNull { it.id == documentId }?.let {
             storedDocuments.remove(it)
             project.documents = storedDocuments
@@ -284,7 +282,13 @@ class ProjectServiceImpl(
     }
 
     private fun addDocumentToProject(project: Project, document: Document): Project {
-        val documents = project.documents.orEmpty().toMutableList()
+        val documents = project.documents.orEmpty().toMutableSet()
+        if (document.purpose == DocumentPurpose.TERMS) {
+            documents.firstOrNull { it.purpose == DocumentPurpose.TERMS }?.let {
+                storageService.deleteFile(it)
+                documents.remove(it)
+            }
+        }
         documents += document
         project.documents = documents
         return project
@@ -318,12 +322,12 @@ class ProjectServiceImpl(
             ZonedDateTime.now(),
             request.active,
             null,
-            request.tags?.toSet()?.map { it.toLowerCase() },
+            request.tags?.map { it.toLowerCase() }?.toSet(),
             user.coop,
             request.shortDescription
         )
 
-    private fun setProjectGallery(project: Project, gallery: List<String>) {
+    private fun setProjectGallery(project: Project, gallery: Set<String>) {
         project.gallery = gallery
         projectRepository.save(project)
     }

@@ -182,8 +182,8 @@ abstract class ControllerTestBase : TestBase() {
         project.active = active
         project.createdAt = startDate.minusMinutes(1)
         project.coop = coop
-        project.documents = listOf(tos).toMutableList()
-        project.tags = listOf("tag_1", "tag_2")
+        project.documents = mutableSetOf(tos)
+        project.tags = setOf("tag_1", "tag_2")
         project.shortDescription = shortDescription
         return projectRepository.save(project)
     }
@@ -248,7 +248,7 @@ abstract class ControllerTestBase : TestBase() {
         size: Int = 100
     ): Document {
         val savedDocument = saveDocument(name, link, type, size, createdByUserUuid)
-        val documents = project.documents.orEmpty().toMutableList()
+        val documents = project.documents.orEmpty().toMutableSet()
         documents.add(savedDocument)
         project.documents = documents
         projectRepository.save(project)

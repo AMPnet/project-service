@@ -21,7 +21,7 @@ data class ProjectServiceResponse(
     val maxPerUser: Long,
     val mainImage: String?,
     val active: Boolean,
-    val tags: List<String>,
+    val tags: Set<String>,
     val coop: String,
     val shortDescription: String?,
     val organization: OrganizationSmallServiceResponse

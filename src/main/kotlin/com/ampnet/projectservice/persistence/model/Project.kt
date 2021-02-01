@@ -65,12 +65,12 @@ class Project(
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "project_gallery", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "image")
-    var gallery: List<String>?,
+    var gallery: Set<String>?,
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "project_news", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "link")
-    var newsLinks: List<String>?,
+    var newsLinks: Set<String>?,
 
     @Column(nullable = true)
     var createdByUserUuid: UUID,
@@ -83,12 +83,12 @@ class Project(
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_uuid")
-    var documents: MutableList<Document>?,
+    var documents: MutableSet<Document>?,
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "project_tag", joinColumns = [JoinColumn(name = "project_uuid")])
     @Column(name = "tag")
-    var tags: List<String>?,
+    var tags: Set<String>?,
 
     @Column(nullable = false)
     var coop: String,

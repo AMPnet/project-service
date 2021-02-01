@@ -500,7 +500,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("There is a project with tags") {
             testContext.project = createProject("Projectos", organization, userUuid)
-            testContext.project.tags = listOf("wind", "green")
+            testContext.project.tags = setOf("wind", "green")
             projectRepository.save(testContext.project)
         }
 
@@ -773,7 +773,7 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project has gallery images") {
-            testContext.project.gallery = listOf("image-link-1", "image-link-2", "image-link-3")
+            testContext.project.gallery = setOf("image-link-1", "image-link-2", "image-link-3")
             projectRepository.save(testContext.project)
         }
 
@@ -837,7 +837,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("There is a project with tags") {
             testContext.project = createProject("Project ex", organization, userUuid)
-            testContext.project.tags = listOf("too long")
+            testContext.project.tags = setOf("too long")
             projectRepository.save(testContext.project)
         }
 
@@ -868,7 +868,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun getTos(documents: MutableList<Document>?): Document =
+    private fun getTos(documents: MutableSet<Document>?): Document =
         documents?.lastOrNull { it.purpose == DocumentPurpose.TERMS } ?: fail("Missing tos in documents")
 
     private class TestContext {
