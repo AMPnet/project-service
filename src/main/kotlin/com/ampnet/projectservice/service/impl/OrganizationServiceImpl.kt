@@ -60,9 +60,7 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllOrganizations(pageable: Pageable): Page<Organization> {
-        return organizationRepository.findAll(pageable)
-    }
+    override fun getAllOrganizations(pageable: Pageable): Page<Organization> = organizationRepository.findAll(pageable)
 
     @Transactional(readOnly = true)
     override fun findOrganizationWithProjectCountById(organizationUuid: UUID): OrganizationFullServiceResponse? {
@@ -71,9 +69,9 @@ class OrganizationServiceImpl(
         return OrganizationFullServiceResponse(organization, projectCount)
     }
 
-    override fun findOrganizationById(organizationUuid: UUID): Organization? {
-        return ServiceUtils.wrapOptional(organizationRepository.findByIdWithDocuments(organizationUuid))
-    }
+    @Transactional(readOnly = true)
+    override fun findOrganizationById(organizationUuid: UUID): Organization? =
+        ServiceUtils.wrapOptional(organizationRepository.findByIdWithDocuments(organizationUuid))
 
     @Transactional(readOnly = true)
     override fun findAllOrganizationsForUser(userUuid: UUID): List<OrganizationWitProjectCountServiceResponse> {
@@ -87,14 +85,12 @@ class OrganizationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findByIdWithMemberships(organizationUuid: UUID): Organization? {
-        return ServiceUtils.wrapOptional(organizationRepository.findByIdWithMemberships(organizationUuid))
-    }
+    override fun findByIdWithMemberships(organizationUuid: UUID): Organization? =
+        ServiceUtils.wrapOptional(organizationRepository.findByIdWithMemberships(organizationUuid))
 
     @Transactional(readOnly = true)
-    override fun getAllByActive(pageable: Pageable, active: Boolean): Page<Organization> {
-        return organizationRepository.findByActive(active, pageable)
-    }
+    override fun getAllByActive(pageable: Pageable, active: Boolean): Page<Organization> =
+        organizationRepository.findByActive(active, pageable)
 
     @Transactional
     @Throws(ResourceNotFoundException::class)
