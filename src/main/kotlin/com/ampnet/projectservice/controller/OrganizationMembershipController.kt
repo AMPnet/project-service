@@ -86,7 +86,7 @@ class OrganizationMembershipController(
                     val response = action()
                     ResponseEntity.ok(response)
                 } else {
-                    logger.info { "User does not have organization privilege to write users: PW_USERS" }
+                    logger.info { "User does not have organization privilege to see users: PR_USERS" }
                     ResponseEntity.status(HttpStatus.FORBIDDEN).build()
                 }
             }
