@@ -109,7 +109,7 @@ class OrganizationServiceImpl(
     @Throws(ResourceNotFoundException::class)
     override fun removeDocument(organizationUuid: UUID, documentId: Int) {
         val organization = getOrganization(organizationUuid)
-        val storedDocuments = organization.documents.orEmpty().toMutableList()
+        val storedDocuments = organization.documents.orEmpty().toMutableSet()
         storedDocuments.firstOrNull { it.id == documentId }.let {
             storedDocuments.remove(it)
             organization.documents = storedDocuments
@@ -145,7 +145,7 @@ class OrganizationServiceImpl(
             )
 
     private fun addDocumentToOrganization(organization: Organization, document: Document) {
-        val documents = organization.documents.orEmpty().toMutableList()
+        val documents = organization.documents.orEmpty().toMutableSet()
         documents += document
         organization.documents = documents
         organizationRepository.save(organization)
