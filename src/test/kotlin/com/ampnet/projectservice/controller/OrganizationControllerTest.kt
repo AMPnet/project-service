@@ -150,10 +150,12 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(firstOrganization.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(firstOrganization.name).isEqualTo(testContext.organization.name)
             assertThat(firstOrganization.coop).isEqualTo(COOP)
+            assertThat(firstOrganization.ownerUuid).isEqualTo(testContext.secondOrganization.createdByUserUuid)
             assertThat(secondOrganization.projectCount).isEqualTo(2)
             assertThat(secondOrganization.name).isEqualTo(testContext.secondOrganization.name)
             assertThat(secondOrganization.uuid).isEqualTo(testContext.secondOrganization.uuid)
             assertThat(secondOrganization.coop).isEqualTo(COOP)
+            assertThat(secondOrganization.ownerUuid).isEqualTo(testContext.secondOrganization.createdByUserUuid)
         }
         verify("Project repository returns projects in organizations") {
             val projects = projectRepository.findAllByOrganizations(
