@@ -87,6 +87,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
             assertThat(organizationWithDocumentResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationWithDocumentResponse.coop).isEqualTo(COOP)
+            assertThat(organizationWithDocumentResponse.ownerUuid).isEqualTo(userUuid)
 
             testContext.createdOrganizationUuid = organizationWithDocumentResponse.uuid
         }
@@ -291,6 +292,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationResponse.coop).isEqualTo(COOP)
             assertThat(organizationResponse.active).isFalse()
+            assertThat(organizationResponse.ownerUuid).isEqualTo(userUuid)
 
             testContext.createdOrganizationUuid = organizationResponse.uuid
         }

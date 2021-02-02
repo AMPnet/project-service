@@ -29,7 +29,6 @@ class ProjectUpdateServiceTest : JpaServiceTestBase() {
     private lateinit var projectUpdate: ProjectUpdate
 
     @Test
-    // @Transactional
     fun mustNotBeAbleToCreateProjectUpdateWithoutAdminPrivilege() {
         suppose("User is not project admin") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -40,12 +39,11 @@ class ProjectUpdateServiceTest : JpaServiceTestBase() {
                 val serviceRequest = CreateProjectUpdate(userUuid, "author", project.uuid, "title", "content")
                 service.createProjectUpdate(serviceRequest)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_WRITE_PRIVILEGE)
         }
     }
 
     @Test
-    // @Transactional
     fun mustNotBeAbleToDeleteProjectUpdateWithoutAdminPrivilege() {
         suppose("User is not project admin") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -58,7 +56,7 @@ class ProjectUpdateServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<InvalidRequestException> {
                 service.deleteProjectUpdate(userUuid, project.uuid, projectUpdate.id)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_WRITE_PRIVILEGE)
         }
     }
 }
