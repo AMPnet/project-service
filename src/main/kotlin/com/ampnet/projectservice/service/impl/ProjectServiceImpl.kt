@@ -68,11 +68,8 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectByIdWithAllData(id: UUID): Project? {
-        val project = ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
-            ?: return null
-        return project
-    }
+    override fun getProjectByIdWithAllData(id: UUID): Project? =
+        ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(id))
 
     @Transactional(readOnly = true)
     override fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWallet> {
@@ -207,9 +204,8 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllProjectTags(coop: String?): List<String> {
-        return projectTagRepository.getAllTagsByCoop(coop ?: applicationProperties.coop.default)
-    }
+    override fun getAllProjectTags(coop: String?): List<String> =
+        projectTagRepository.getAllTagsByCoop(coop ?: applicationProperties.coop.default)
 
     @Transactional(readOnly = true)
     override fun getProjectsByTags(
@@ -221,6 +217,7 @@ class ProjectServiceImpl(
         val projects = projectRepository.findByTags(
             tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, active, pageable
         )
+        // TODO: fix query `findByTags` to skip querying tags for each project
         projects.forEach { Hibernate.initialize(it.tags) }
         return projects.map { ProjectServiceResponse(it) }
     }
@@ -332,9 +329,7 @@ class ProjectServiceImpl(
         projectRepository.save(project)
     }
 
-    private fun isWalletActivate(walletResponse: WalletServiceResponse): Boolean {
-        return walletResponse.hash.isNotEmpty()
-    }
+    private fun isWalletActivate(walletResponse: WalletServiceResponse): Boolean = walletResponse.hash.isNotEmpty()
 
     private fun getUserMembershipInOrganization(userUuid: UUID, organizationUuid: UUID): OrganizationMembership? =
         organizationMembershipService.getOrganizationMemberships(organizationUuid).find { it.userUuid == userUuid }
@@ -362,7 +357,5 @@ class ProjectServiceImpl(
 
     private fun getOrganization(organizationUuid: UUID): Organization =
         organizationService.findOrganizationById(organizationUuid)
-            ?: throw ResourceNotFoundException(
-                ErrorCode.ORG_MISSING, "Missing organization with id: $organizationUuid"
-            )
+            ?: throw ResourceNotFoundException(ErrorCode.ORG_MISSING, "Missing organization with id: $organizationUuid")
 }
