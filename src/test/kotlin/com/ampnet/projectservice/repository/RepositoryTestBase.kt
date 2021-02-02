@@ -83,7 +83,7 @@ abstract class RepositoryTestBase : TestBase() {
         size: Int = 100
     ): Document {
         val savedDocument = saveDocument(name, link, type, size, createdByUserUuid)
-        val documents = organization.documents.orEmpty().toMutableSet()
+        val documents = organization.documents.orEmpty().toMutableList()
         documents.add(savedDocument)
         organization.documents = documents
         organizationRepository.save(organization)

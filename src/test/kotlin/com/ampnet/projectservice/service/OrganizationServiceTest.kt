@@ -223,7 +223,7 @@ class OrganizationServiceTest : JpaServiceTestBase() {
         size: Int = 100
     ): Document {
         val document = saveDocument(name, link, createdByUserUuid, type, size)
-        val documents = organization.documents.orEmpty().toMutableSet()
+        val documents = organization.documents.orEmpty().toMutableList()
         documents.add(document)
         organization.documents = documents
         organizationRepository.save(organization)

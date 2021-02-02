@@ -37,11 +37,11 @@ class Organization(
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationUuid")
-    var documents: MutableSet<Document>?,
+    var documents: MutableList<Document>?,
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationUuid")
-    var memberships: MutableSet<OrganizationMembership>?,
+    var memberships: MutableList<OrganizationMembership>?,
 
     @Column
     var headerImage: String?,
