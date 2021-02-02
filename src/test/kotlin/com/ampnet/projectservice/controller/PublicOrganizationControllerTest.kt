@@ -100,6 +100,7 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationFullServiceResponse.createdAt).isEqualTo(testContext.organization.createdAt)
             assertThat(organizationFullServiceResponse.projectCount).isEqualTo(2)
             assertThat(organizationFullServiceResponse.coop).isEqualTo(COOP)
+            assertThat(organizationFullServiceResponse.ownerUuid).isEqualTo(testContext.organization.createdByUserUuid)
         }
     }
 

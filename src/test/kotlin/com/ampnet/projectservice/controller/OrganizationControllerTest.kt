@@ -87,6 +87,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
             assertThat(organizationWithDocumentResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationWithDocumentResponse.coop).isEqualTo(COOP)
+            assertThat(organizationWithDocumentResponse.ownerUuid).isEqualTo(userUuid)
 
             testContext.createdOrganizationUuid = organizationWithDocumentResponse.uuid
         }
@@ -149,10 +150,12 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(firstOrganization.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(firstOrganization.name).isEqualTo(testContext.organization.name)
             assertThat(firstOrganization.coop).isEqualTo(COOP)
+            assertThat(firstOrganization.ownerUuid).isEqualTo(testContext.secondOrganization.createdByUserUuid)
             assertThat(secondOrganization.projectCount).isEqualTo(2)
             assertThat(secondOrganization.name).isEqualTo(testContext.secondOrganization.name)
             assertThat(secondOrganization.uuid).isEqualTo(testContext.secondOrganization.uuid)
             assertThat(secondOrganization.coop).isEqualTo(COOP)
+            assertThat(secondOrganization.ownerUuid).isEqualTo(testContext.secondOrganization.createdByUserUuid)
         }
         verify("Project repository returns projects in organizations") {
             val projects = projectRepository.findAllByOrganizations(
@@ -291,6 +294,7 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationResponse.coop).isEqualTo(COOP)
             assertThat(organizationResponse.active).isFalse()
+            assertThat(organizationResponse.ownerUuid).isEqualTo(userUuid)
 
             testContext.createdOrganizationUuid = organizationResponse.uuid
         }

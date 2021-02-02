@@ -48,7 +48,7 @@ class ProjectUpdateServiceImpl(
         }
         if (canUserWriteOrgProject(user, project.organization.uuid).not()) {
             throw InvalidRequestException(
-                ErrorCode.USER_ROLE_INVALID, "User: $user does not have a privilege to edit project: ${project.uuid}"
+                ErrorCode.PRJ_WRITE_PRIVILEGE, "User: $user does not have a privilege to edit project: ${project.uuid}"
             )
         }
     }
@@ -57,6 +57,6 @@ class ProjectUpdateServiceImpl(
         val membership = ServiceUtils.wrapOptional(
             organizationMembershipRepository.findByOrganizationUuidAndUserUuid(organizationUuid, userUuid)
         )
-        return membership?.hasPrivilegeToWriteProject() ?: false
+        return membership?.hasPrivilegeToWriteOrganization() ?: false
     }
 }

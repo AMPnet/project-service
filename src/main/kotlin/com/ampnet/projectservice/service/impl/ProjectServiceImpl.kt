@@ -57,7 +57,7 @@ class ProjectServiceImpl(
     @Transactional
     @Throws(InvalidRequestException::class, AccessDeniedException::class)
     override fun createProject(user: UserPrincipal, request: ProjectRequest): Project {
-        throwExceptionIfUserHasNoPrivilegeToWriteInProject(user.uuid, request.organizationUuid)
+        throwExceptionIfUserHasNoPrivilegeToWriteInOrganization(user.uuid, request.organizationUuid)
         validateCreateProjectRequest(request)
         logger.debug { "Creating project: ${request.name}" }
         val organization = getOrganization(request.organizationUuid)
@@ -343,10 +343,27 @@ class ProjectServiceImpl(
                 ErrorCode.ORG_MEM_MISSING,
                 "User $userUuid is not a member of organization $organizationUuid"
             )
-        if (!orgMembership.hasPrivilegeToWriteProject()) {
+        if (orgMembership.hasPrivilegeToWriteProject().not()) {
             throw PermissionDeniedException(
                 ErrorCode.PRJ_WRITE_PRIVILEGE,
-                "User does not have organization privilege to write users: PW_PROJECT"
+                "User does not have organization privilege to write in project: PW_PROJECT"
+            )
+        }
+    }
+
+    private fun throwExceptionIfUserHasNoPrivilegeToWriteInOrganization(
+        userUuid: UUID,
+        organizationUuid: UUID
+    ) {
+        val orgMembership = getUserMembershipInOrganization(userUuid, organizationUuid)
+            ?: throw PermissionDeniedException(
+                ErrorCode.ORG_MEM_MISSING,
+                "User $userUuid is not a member of organization $organizationUuid"
+            )
+        if (orgMembership.hasPrivilegeToWriteOrganization().not()) {
+            throw PermissionDeniedException(
+                ErrorCode.PRJ_WRITE_PRIVILEGE,
+                "User does not have organization privilege to write organization: PW_ORG"
             )
         }
     }

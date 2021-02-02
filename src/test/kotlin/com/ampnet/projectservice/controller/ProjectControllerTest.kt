@@ -530,10 +530,9 @@ class ProjectControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfundUser
-    fun mustReturnForbiddenIfUserIsMissingOrgPrivileges() {
-        suppose("User is a member of organization") {
+    fun mustReturnForbiddenIfUserIsNotInOrganization() {
+        suppose("User is not a member of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
         }
         suppose("Project exists") {
             testContext.project = createProject("My project", organization, userUuid)

@@ -16,7 +16,8 @@ enum class OrganizationRole(val id: Int) {
     ORG_MEMBER(2) {
         override fun getPrivileges(): List<OrganizationPrivilegeType> {
             return listOf(
-                OrganizationPrivilegeType.PR_USERS
+                OrganizationPrivilegeType.PR_USERS,
+                OrganizationPrivilegeType.PW_PROJECT
             )
         }
     };

@@ -37,8 +37,8 @@ class OrganizationMembershipControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllOrganizations()
             testContext.organization = createOrganization("test organization", userUuid)
         }
-        suppose("User is a admin of organization") {
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
+        suppose("User is a member of organization") {
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
         }
         suppose("Organization has two members") {
             testContext.member = UUID.randomUUID()

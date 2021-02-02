@@ -13,7 +13,8 @@ data class OrganizationWitProjectCountServiceResponse(
     val description: String,
     val headerImage: String?,
     val projectCount: Int,
-    val coop: String
+    val coop: String,
+    val ownerUuid: UUID
 ) {
     constructor(organization: Organization, projectCount: Int) : this(
         organization.uuid,
@@ -23,7 +24,8 @@ data class OrganizationWitProjectCountServiceResponse(
         organization.description.orEmpty(),
         organization.headerImage,
         projectCount,
-        organization.coop
+        organization.coop,
+        organization.createdByUserUuid
     )
 }
 
@@ -36,7 +38,8 @@ data class OrganizationFullServiceResponse(
     val description: String,
     val headerImage: String?,
     val projectCount: Int,
-    val coop: String
+    val coop: String,
+    val ownerUuid: UUID
 ) {
     constructor(organization: Organization, projectCount: Int) : this(
         organization.uuid,
@@ -47,6 +50,7 @@ data class OrganizationFullServiceResponse(
         organization.description.orEmpty(),
         organization.headerImage,
         projectCount,
-        organization.coop
+        organization.coop,
+        organization.createdByUserUuid
     )
 }

@@ -118,6 +118,22 @@ class ProjectServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustNotBeAbleToCreateProjectWithMemberRole() {
+        suppose("User is a member of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+
+        verify("User cannot create project with member role") {
+            databaseCleanerService.deleteAllProjects()
+            testContext.createProjectRequest = createProjectRequest("Test project")
+            assertThrows<PermissionDeniedException> {
+                projectService.createProject(createUserPrincipal(userUuid), testContext.createProjectRequest)
+            }
+        }
+    }
+
+    @Test
     fun mustBeAbleToAddMainImage() {
         suppose("User is a admin of organization") {
             databaseCleanerService.deleteAllOrganizationMemberships()
@@ -174,8 +190,10 @@ class ProjectServiceTest : JpaServiceTestBase() {
             testContext.gallery = listOf("image-link-1", "image-link-2")
             val firstImage = createImage(testContext.gallery.first(), imageContent)
             val secondImage = createImage(testContext.gallery.last(), imageContent)
-            Mockito.`when`(cloudStorageService.saveFile(firstImage.originalFilename, imageContent)).thenReturn(firstImage.originalFilename)
-            Mockito.`when`(cloudStorageService.saveFile(secondImage.originalFilename, imageContent)).thenReturn(secondImage.originalFilename)
+            Mockito.`when`(cloudStorageService.saveFile(firstImage.originalFilename, imageContent))
+                .thenReturn(firstImage.originalFilename)
+            Mockito.`when`(cloudStorageService.saveFile(secondImage.originalFilename, imageContent))
+                .thenReturn(secondImage.originalFilename)
             projectService.addImageToGallery(testContext.project.uuid, userUuid, firstImage)
             projectService.addImageToGallery(testContext.project.uuid, userUuid, secondImage)
         }
@@ -440,15 +458,17 @@ class ProjectServiceTest : JpaServiceTestBase() {
             projectRepository.save(project)
         }
         suppose("Another project has tags") {
-            val project = projectService
-                .createProject(createUserPrincipal(userUuid), createProjectRequest("Second project"))
+            val project = projectService.createProject(
+                createUserPrincipal(userUuid), createProjectRequest("Second project")
+            )
             project.tags = setOf("tag 1", "tag 4")
             projectRepository.save(project)
             testContext.tags.toMutableList().add("tag 4")
         }
         suppose("Project from another cooperative has tags") {
-            val project = projectService
-                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Third project"))
+            val project = projectService.createProject(
+                createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Third project")
+            )
             project.tags = setOf("tag 1", "tag 4", "tag 5")
             projectRepository.save(project)
         }
@@ -495,8 +515,10 @@ class ProjectServiceTest : JpaServiceTestBase() {
             projectRepository.save(project)
         }
         suppose("Fifth project has tags and is active but from another cooperative") {
-            val project = projectService
-                .createProject(createUserPrincipal(userUuid, coop = "another_coop"), createProjectRequest("Fifth project"))
+            val project = projectService.createProject(
+                createUserPrincipal(userUuid, coop = "another_coop"),
+                createProjectRequest("Fifth project")
+            )
             project.tags = setOf("tag 1", "tag 2", "tag 3")
             project.active = true
             projectRepository.save(project)

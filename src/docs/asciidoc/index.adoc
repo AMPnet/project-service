@@ -121,7 +121,7 @@ All requests need header: `Authorization: Bearer JWT`.
 === Create project
 
 ==== Successfully create
-`Tags` value is optional.
+Only organization admin can create project. `Tags` value is optional.
 
 .Request
 include::{snippets}/ProjectControllerTest/mustBeAbleToCreateProject/http-request.adoc[]
