@@ -32,7 +32,7 @@ class OrganizationMembershipController(
         logger.debug { "Received request to get members for organization: $uuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
+        return ifUserHasPrivilegeToSeeUserInOrganizationThenReturn(userPrincipal.uuid, uuid) {
             val members = organizationMembershipService.getOrganizationMemberships(uuid)
             val membersWithoutMe = members.filter { userPrincipal.uuid != it.userUuid }
             val users = userService.getUsers(membersWithoutMe.map { it.userUuid })
@@ -52,7 +52,7 @@ class OrganizationMembershipController(
         logger.debug { "Received request to remove member: $memberUuid from organization: $organizationUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
 
-        return ifUserHasPrivilegeWriteUserInOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
+        return ifUserHasPrivilegeToWriteOrganizationThenReturn(userPrincipal.uuid, organizationUuid) {
             organizationMembershipService.removeUserFromOrganization(memberUuid, organizationUuid)
         }
     }
@@ -74,7 +74,7 @@ class OrganizationMembershipController(
         }
     }
 
-    private fun <T> ifUserHasPrivilegeWriteUserInOrganizationThenReturn(
+    private fun <T> ifUserHasPrivilegeToSeeUserInOrganizationThenReturn(
         userUuid: UUID,
         organizationUuid: UUID,
         action: () -> (T)
@@ -82,7 +82,7 @@ class OrganizationMembershipController(
         organizationMembershipService.getOrganizationMemberships(organizationUuid)
             .find { it.userUuid == userUuid }
             ?.let { orgMembership ->
-                return if (orgMembership.hasPrivilegeToWriteOrganizationUsers()) {
+                return if (orgMembership.hasPrivilegeToSeeOrganizationUsers()) {
                     val response = action()
                     ResponseEntity.ok(response)
                 } else {

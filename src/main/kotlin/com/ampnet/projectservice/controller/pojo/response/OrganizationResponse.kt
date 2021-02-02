@@ -12,7 +12,8 @@ data class OrganizationResponse(
     val description: String,
     val headerImage: String?,
     val coop: String,
-    val active: Boolean
+    val active: Boolean,
+    val ownerUuid: UUID
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
@@ -22,7 +23,8 @@ data class OrganizationResponse(
         organization.description.orEmpty(),
         organization.headerImage,
         organization.coop,
-        organization.active
+        organization.active,
+        organization.createdByUserUuid
     )
 }
 
@@ -40,7 +42,8 @@ data class OrganizationWithDocumentResponse(
     val documents: List<DocumentResponse>,
     val description: String,
     val headerImage: String?,
-    val coop: String
+    val coop: String,
+    val ownerUuid: UUID
 ) {
     constructor(organization: Organization) : this(
         organization.uuid,
@@ -50,6 +53,7 @@ data class OrganizationWithDocumentResponse(
         organization.documents?.map { DocumentResponse(it) }.orEmpty(),
         organization.description.orEmpty(),
         organization.headerImage,
-        organization.coop
+        organization.coop,
+        organization.createdByUserUuid
     )
 }
