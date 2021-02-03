@@ -24,7 +24,8 @@ data class ProjectServiceResponse(
     val tags: List<String>,
     val coop: String,
     val shortDescription: String?,
-    val organization: OrganizationSmallServiceResponse
+    val organization: OrganizationSmallServiceResponse,
+    val ownerUuid: UUID
 ) {
     constructor(project: Project, withDescription: Boolean = false) : this(
         project.uuid,
@@ -43,6 +44,7 @@ data class ProjectServiceResponse(
         project.tags.orEmpty(),
         project.coop,
         project.shortDescription,
-        OrganizationSmallServiceResponse(project.organization)
+        OrganizationSmallServiceResponse(project.organization),
+        project.createdByUserUuid
     )
 }

@@ -129,6 +129,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectRequest.shortDescription)
             assertThat(projectResponse.organization.uuid).isEqualTo(organization.uuid)
+            assertThat(projectResponse.ownerUuid).isEqualTo(userUuid)
             assertThat(projectResponse.wallet).isNull()
 
             testContext.projectUuid = projectResponse.uuid
