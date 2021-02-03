@@ -70,6 +70,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.project.shortDescription)
+            assertThat(projectResponse.ownerUuid).isEqualTo(userUuid)
 
             assertThat(projectResponse.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectResponse.wallet?.owner).isEqualTo(testContext.activeWallet.owner)
@@ -207,6 +208,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.project.tags).containsAll(testContext.project.tags)
             assertThat(projectWithWallet.project.coop).isEqualTo(COOP)
             assertThat(projectWithWallet.project.shortDescription).isEqualTo(testContext.project.shortDescription)
+            assertThat(projectWithWallet.project.ownerUuid).isEqualTo(userUuid)
 
             assertThat(projectWithWallet.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectWithWallet.wallet?.owner).isEqualTo(testContext.project.uuid)
@@ -379,6 +381,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.active).isEqualTo(testContext.project.active)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.project.shortDescription)
+            assertThat(projectResponse.ownerUuid).isEqualTo(userUuid)
             assertThat(walletResponse?.owner).isEqualTo(testContext.project.uuid)
             assertThat(walletResponse?.uuid).isEqualTo(testContext.activeWallet.uuid)
         }
