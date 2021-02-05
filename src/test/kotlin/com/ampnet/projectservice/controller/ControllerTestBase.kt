@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.controller
 
 import com.ampnet.projectservice.TestBase
+import com.ampnet.projectservice.amqp.mailservice.MailService
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.controller.pojo.request.ProjectLocationRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
@@ -10,7 +11,6 @@ import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ErrorResponse
-import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.grpc.walletservice.WalletService
 import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse

@@ -1,11 +1,11 @@
 package com.ampnet.projectservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.projectservice.amqp.mailservice.MailService
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.exception.ResourceNotFoundException
-import com.ampnet.projectservice.grpc.mailservice.MailService
 import com.ampnet.projectservice.grpc.userservice.UserService
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationFollower
