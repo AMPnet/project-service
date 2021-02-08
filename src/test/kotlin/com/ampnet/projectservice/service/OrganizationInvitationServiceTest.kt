@@ -1,12 +1,12 @@
 package com.ampnet.projectservice.service
 
+import com.ampnet.projectservice.amqp.mailservice.MailOrgInvitationMessage
 import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.ResourceAlreadyExistsException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.service.impl.OrganizationInviteServiceImpl
-import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import org.assertj.core.api.Assertions.assertThat
@@ -101,7 +101,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             assertThat(secondInvitation.email).isEqualTo(invitedUsers.last())
         }
         verify("Sending mail invitation is called") {
-            val captor = argumentCaptor<OrganizationInvitationMailRequest>()
+            val captor = argumentCaptor<MailOrgInvitationMessage>()
             Mockito.verify(mailService, Mockito.times(1))
                 .sendOrganizationInvitationMail(captor.capture())
             val mailRequest = captor.firstValue

@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.projectservice.amqp.mailservice.MailOrgInvitationMessage
 import com.ampnet.projectservice.amqp.mailservice.MailService
 import com.ampnet.projectservice.enums.OrganizationRole
 import com.ampnet.projectservice.exception.ErrorCode
@@ -15,7 +16,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationInviteReposi
 import com.ampnet.projectservice.service.OrganizationInviteService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
-import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInvitationWithData
 import com.ampnet.projectservice.service.pojo.OrganizationInviteAnswerRequest
 import com.ampnet.projectservice.service.pojo.OrganizationInviteServiceRequest
@@ -56,7 +56,7 @@ class OrganizationInviteServiceImpl(
             )
         }
         inviteRepository.saveAll(invites)
-        val serviceRequest = OrganizationInvitationMailRequest(
+        val serviceRequest = MailOrgInvitationMessage(
             request.emails, invitedToOrganization.name, request.invitedByUser.uuid, request.invitedByUser.coop
         )
         mailService.sendOrganizationInvitationMail(serviceRequest)

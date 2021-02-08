@@ -1,6 +1,5 @@
 package com.ampnet.projectservice.amqp.mailservice
 
-import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import mu.KLogging
 import org.springframework.amqp.AmqpException
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -12,8 +11,7 @@ class MailServiceQueueSender(private val rabbitTemplate: RabbitTemplate) : MailS
 
     companion object : KLogging()
 
-    override fun sendOrganizationInvitationMail(request: OrganizationInvitationMailRequest) {
-        val message = MailOrgInvitationMessage(request.emails, request.organizationName, request.sender, request.coop)
+    override fun sendOrganizationInvitationMail(message: MailOrgInvitationMessage) {
         logger.debug { "Sending mail confirmation: $message" }
         try {
             rabbitTemplate.convertAndSend(QUEUE_MAIL_ORG_INVITATION, message)
@@ -21,13 +19,13 @@ class MailServiceQueueSender(private val rabbitTemplate: RabbitTemplate) : MailS
             logger.warn(ex) { "Failed to send AMQP message to queue: $QUEUE_MAIL_ORG_INVITATION" }
         }
     }
-
-    data class MailOrgInvitationMessage(
-        val emails: List<String>,
-        val organizationName: String,
-        val sender: UUID,
-        val coop: String
-    )
 }
+
+data class MailOrgInvitationMessage(
+    val emails: List<String>,
+    val organizationName: String,
+    val sender: UUID,
+    val coop: String
+)
 
 const val QUEUE_MAIL_ORG_INVITATION = "mail.project.org-invitation"
