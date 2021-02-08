@@ -111,7 +111,7 @@ jib {
             username = dockerUsername
             password = dockerPassword
         }
-        tags = setOf("amqp")
+        tags = setOf("latest")
     }
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"

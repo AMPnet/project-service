@@ -85,7 +85,6 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             organizationInviteService.sendInvitation(request)
         }
         verify("Invitation is stored in database") {
-
             val firstInvitationOptional =
                 inviteRepository.findByOrganizationUuidAndEmail(organization.uuid, invitedUsers.first())
             val secondInvitationOptional =
@@ -108,7 +107,7 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             val mailRequest = captor.firstValue
             assertThat(mailRequest.emails).containsAll(invitedUsers)
             assertThat(mailRequest.organizationName).isEqualTo(organization.name)
-            assertThat(mailRequest.senderEmail).isEqualTo(userEmail)
+            assertThat(mailRequest.sender).isEqualTo(userUuid)
             assertThat(mailRequest.coop).isEqualTo(COOP)
         }
     }

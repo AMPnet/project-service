@@ -172,7 +172,7 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             val mailRequest = captor.firstValue
             assertThat(mailRequest.emails).containsAll(testContext.emails)
             assertThat(mailRequest.organizationName).isEqualTo(testContext.organization.name)
-            assertThat(mailRequest.senderEmail).isEqualTo("user@email.com")
+            assertThat(mailRequest.sender).isEqualTo(userUuid)
             assertThat(mailRequest.coop).isEqualTo(testContext.organization.coop)
         }
     }
