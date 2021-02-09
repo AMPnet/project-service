@@ -17,6 +17,7 @@ import com.ampnet.projectservice.persistence.model.OrganizationMembership
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
+import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.service.OrganizationMembershipService
@@ -48,7 +49,8 @@ class ProjectServiceImpl(
     private val walletService: WalletService,
     private val projectTagRepository: ProjectTagRepository,
     private val organizationMembershipService: OrganizationMembershipService,
-    private val organizationService: OrganizationService
+    private val organizationService: OrganizationService,
+    private val organizationRepository: OrganizationRepository
 ) : ProjectService {
 
     companion object : KLogging()
@@ -91,6 +93,14 @@ class ProjectServiceImpl(
     @Transactional(readOnly = true)
     override fun getAllProjects(coop: String?, pageable: Pageable): Page<ProjectServiceResponse> {
         val projects = projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
+        return projects.map { ProjectServiceResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    override fun getPersonalProjects(user: UUID): List<ProjectServiceResponse> {
+        val organizations = organizationRepository.findAllOrganizationsForUserUuid(user)
+        if (organizations.isEmpty()) return listOf()
+        val projects = projectRepository.findAllByOrganizations(organizations.map { it.uuid })
         return projects.map { ProjectServiceResponse(it) }
     }
 

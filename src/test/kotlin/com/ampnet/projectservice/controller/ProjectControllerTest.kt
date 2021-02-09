@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.enums.OrganizationRole
@@ -26,6 +27,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -862,6 +864,44 @@ class ProjectControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfundUser
+    fun mustBeAbleToGetPersonalProjects() {
+        suppose("There is an organization") {
+            testContext.organization = createOrganization("some org", UUID.randomUUID())
+        }
+        suppose("User is member of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+        suppose("Organization has projects") {
+            testContext.project = createProject("project1", testContext.organization, userUuid)
+            testContext.anotherProject = createProject("project2", testContext.organization, UUID.randomUUID())
+        }
+        suppose("Some other organization has projects") {
+            createProject("project3", organization, UUID.randomUUID())
+            createProject("project4", organization, UUID.randomUUID())
+        }
+        suppose("User is a member of another organization which has no projects") {
+            val organization = createOrganization("another org", UUID.randomUUID())
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+
+        verify("Controller will return user's personal projects") {
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/project/personal")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+            val response: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.projects).hasSize(2)
+            val projects = response.projects
+            assertThat(projects.map { it.uuid }).containsAll(
+                listOf(testContext.project.uuid, testContext.anotherProject.uuid)
+            )
+        }
+    }
+
     private fun getPutMultipartRequestBuilder(): MockMultipartHttpServletRequestBuilder {
         return multipart("$projectPath/${testContext.project.uuid}").apply {
             with { request ->
@@ -876,6 +916,7 @@ class ProjectControllerTest : ControllerTestBase() {
 
     private class TestContext {
         lateinit var project: Project
+        lateinit var anotherProject: Project
         lateinit var projectRequest: ProjectRequest
         lateinit var projectUpdateRequest: ProjectUpdateRequest
         lateinit var imageMock: MockMultipartFile
@@ -890,5 +931,6 @@ class ProjectControllerTest : ControllerTestBase() {
         lateinit var projectUuid: UUID
         lateinit var tags: List<String>
         lateinit var activeWallet: WalletServiceResponse
+        lateinit var organization: Organization
     }
 }
