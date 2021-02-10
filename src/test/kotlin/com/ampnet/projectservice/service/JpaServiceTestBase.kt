@@ -3,7 +3,6 @@ package com.ampnet.projectservice.service
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.TestBase
 import com.ampnet.projectservice.amqp.mailservice.MailService
-import com.ampnet.projectservice.amqp.mailservice.MailServiceQueueSender
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.config.DatabaseCleanerService
 import com.ampnet.projectservice.controller.COOP
@@ -25,7 +24,6 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
-import com.ampnet.projectservice.service.impl.CloudStorageServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
@@ -84,8 +82,8 @@ abstract class JpaServiceTestBase : TestBase() {
         OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl, projectRepository)
     }
 
-    protected val cloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
-    protected val mailService: MailService = Mockito.mock(MailServiceQueueSender::class.java)
+    protected val cloudStorageService: CloudStorageService = Mockito.mock(CloudStorageService::class.java)
+    protected val mailService: MailService = Mockito.mock(MailService::class.java)
     protected val walletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userService: UserService = Mockito.mock(UserService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
