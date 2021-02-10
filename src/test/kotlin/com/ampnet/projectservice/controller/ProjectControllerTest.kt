@@ -867,24 +867,25 @@ class ProjectControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfundUser
     fun mustBeAbleToGetPersonalProjects() {
-        suppose("There is an organization") {
-            testContext.organization = createOrganization("some org", UUID.randomUUID())
-        }
-        suppose("User is member of organization") {
+        suppose("User is admin of an organization which has 2 projects") {
+            testContext.organization = createOrganization("some org", userUuid)
             databaseCleanerService.deleteAllOrganizationMemberships()
-            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_MEMBER)
-        }
-        suppose("Organization has projects") {
+            addUserToOrganization(userUuid, testContext.organization.uuid, OrganizationRole.ORG_ADMIN)
             testContext.project = createProject("project1", testContext.organization, userUuid)
-            testContext.anotherProject = createProject("project2", testContext.organization, UUID.randomUUID())
-        }
-        suppose("Some other organization has projects") {
-            createProject("project3", organization, UUID.randomUUID())
-            createProject("project4", organization, UUID.randomUUID())
+            testContext.secondProject = createProject("project2", testContext.organization, UUID.randomUUID())
         }
         suppose("User is a member of another organization which has no projects") {
             val organization = createOrganization("another org", UUID.randomUUID())
             addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
+        }
+        suppose("User is a member of another organization which has a project") {
+            val organization = createOrganization("second org", UUID.randomUUID())
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_MEMBER)
+            testContext.thirdProject = createProject("project3", organization, UUID.randomUUID())
+        }
+        suppose("User is not a member of some other organization which has projects") {
+            createProject("other project1", organization, UUID.randomUUID())
+            createProject("other project2", organization, UUID.randomUUID())
         }
 
         verify("Controller will return user's personal projects") {
@@ -894,10 +895,10 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
             val response: ProjectListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.projects).hasSize(2)
+            assertThat(response.projects).hasSize(3)
             val projects = response.projects
             assertThat(projects.map { it.uuid }).containsAll(
-                listOf(testContext.project.uuid, testContext.anotherProject.uuid)
+                listOf(testContext.project.uuid, testContext.secondProject.uuid, testContext.thirdProject.uuid)
             )
         }
     }
@@ -916,7 +917,8 @@ class ProjectControllerTest : ControllerTestBase() {
 
     private class TestContext {
         lateinit var project: Project
-        lateinit var anotherProject: Project
+        lateinit var secondProject: Project
+        lateinit var thirdProject: Project
         lateinit var projectRequest: ProjectRequest
         lateinit var projectUpdateRequest: ProjectUpdateRequest
         lateinit var imageMock: MockMultipartFile
