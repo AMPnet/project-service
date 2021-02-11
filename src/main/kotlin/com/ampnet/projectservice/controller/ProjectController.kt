@@ -48,9 +48,10 @@ class ProjectController(
     ): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }?.toMutableList()
+        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
+            .orEmpty().toMutableList()
         termsOfService?.let {
-            documentSaveRequests?.add(DocumentSaveRequest(it, userPrincipal.uuid, DocumentPurpose.TERMS))
+            documentSaveRequests.add(DocumentSaveRequest(it, userPrincipal.uuid, DocumentPurpose.TERMS))
         }
         val serviceRequest = ProjectUpdateServiceRequest(
             projectUuid, userPrincipal.uuid, request, image, documentSaveRequests
