@@ -28,7 +28,7 @@ class ProjectServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         ProjectServiceImpl(
             projectRepository, storageServiceImpl, applicationProperties, walletService,
-            projectTagRepository, organizationMembershipService, organizationService
+            projectTagRepository, organizationMembershipService, organizationService, organizationRepository
         )
     }
     private val imageContent = "data".toByteArray()
