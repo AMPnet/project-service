@@ -87,20 +87,25 @@ class GrpcProjectServer(
 
     override fun getProjectWithData(request: GetByUuid, responseObserver: StreamObserver<ProjectWithDataResponse>) {
         logger.debug { "Received gRPC request getProjectFull: ${request.projectUuid}" }
-        projectRepository.findByIdWithAllData(UUID.fromString(request.projectUuid)).ifPresent { project ->
-            val builder = ProjectWithDataResponse.newBuilder()
-                .setProject(projectToGrpcResponse(project))
-            project.documents
-                ?.lastOrNull { document -> document.purpose == DocumentPurpose.TERMS }
-                ?.let { tos -> builder.setTosUrl(tos.link) }
-            val response = builder.build()
-            responseObserver.onNext(response)
-            responseObserver.onCompleted()
-            return@ifPresent
-        }
-        val exception = ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: ${request.projectUuid}")
-        logger.warn { exception.message }
-        responseObserver.onError(exception)
+        projectRepository.findByIdWithAllData(UUID.fromString(request.projectUuid))
+            .ifPresentOrElse(
+                { project ->
+                    val builder = ProjectWithDataResponse.newBuilder()
+                        .setProject(projectToGrpcResponse(project))
+                    project.documents
+                        ?.lastOrNull { document -> document.purpose == DocumentPurpose.TERMS }
+                        ?.let { tos -> builder.setTosUrl(tos.link) }
+                    val response = builder.build()
+                    responseObserver.onNext(response)
+                    responseObserver.onCompleted()
+                },
+                {
+                    val exception =
+                        ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: ${request.projectUuid}")
+                    logger.warn { exception.message }
+                    responseObserver.onError(exception)
+                }
+            )
     }
 
     private fun organizationToGrpcResponse(organization: Organization): OrganizationResponse {
