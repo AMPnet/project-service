@@ -58,7 +58,7 @@ class GrpcProjectServerTest : RepositoryTestBase() {
                 as StreamObserver<OrganizationMembershipsResponse>
             grpcServer.getOrganizationMembersForProject(request, streamObserver)
             val organizationMembersResponse = generateMembersResponse(
-                listOf(testContext.firstMembership, testContext.secondMembership)
+                listOf(testContext.secondMembership, testContext.firstMembership)
             )
             val response = OrganizationMembershipsResponse.newBuilder()
                 .addAllMemberships(organizationMembersResponse).build()
