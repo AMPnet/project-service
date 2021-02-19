@@ -179,12 +179,6 @@ include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-re
 .Response
 include::{snippets}/ProjectControllerTest/mustBeAbleToRemoveGalleryImage/http-response.adoc[]
 
-==== Get personal projects
-.Request
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetPersonalProjects/http-request.adoc[]
-.Response
-include::{snippets}/ProjectControllerTest/mustBeAbleToGetPersonalProjects/http-response.adoc[]
-
 === Updates
 
 ==== Get
@@ -204,6 +198,12 @@ include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToCreateProjectUpdate/
 include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/http-request.adoc[]
 .Response
 include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/http-response.adoc[]
+
+=== Get personal projects
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetPersonalProjects/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetPersonalProjects/http-response.adoc[]
 
 == Public API
 
