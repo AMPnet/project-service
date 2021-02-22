@@ -69,9 +69,7 @@ class PublicProjectController(private val projectService: ProjectService) {
             projectsWithWalletAndOrg.number,
             projectsWithWalletAndOrg.totalPages
         )
-        return ResponseEntity.ok()
-            .cacheControl(ControllerUtils.cacheControl)
-            .body(response)
+        return ResponseEntity.ok().body(response)
     }
 
     @GetMapping("/public/project/active/count")
@@ -105,8 +103,6 @@ class PublicProjectController(private val projectService: ProjectService) {
             "Received request to get all projects for organization: $organizationUuid and cooperative with id: $coop"
         }
         val projects = projectService.getAllProjectsForOrganization(organizationUuid, coop)
-        return ResponseEntity.ok()
-            .cacheControl(ControllerUtils.cacheControl)
-            .body(ProjectsWalletsListResponse(projects))
+        return ResponseEntity.ok().body(ProjectsWalletsListResponse(projects))
     }
 }

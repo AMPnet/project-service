@@ -20,6 +20,7 @@ import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
 import com.ampnet.projectservice.proto.ProjectWithDataResponse
 import com.ampnet.projectservice.proto.ProjectsResponse
+import com.ampnet.projectservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -87,20 +88,21 @@ class GrpcProjectServer(
 
     override fun getProjectWithData(request: GetByUuid, responseObserver: StreamObserver<ProjectWithDataResponse>) {
         logger.debug { "Received gRPC request getProjectFull: ${request.projectUuid}" }
-        projectRepository.findByIdWithAllData(UUID.fromString(request.projectUuid)).ifPresent { project ->
-            val builder = ProjectWithDataResponse.newBuilder()
-                .setProject(projectToGrpcResponse(project))
-            project.documents
-                ?.lastOrNull { document -> document.purpose == DocumentPurpose.TERMS }
-                ?.let { tos -> builder.setTosUrl(tos.link) }
-            val response = builder.build()
-            responseObserver.onNext(response)
-            responseObserver.onCompleted()
-            return@ifPresent
+        ServiceUtils.wrapOptional(projectRepository.findByIdWithAllData(UUID.fromString(request.projectUuid)))
+            ?.let { project ->
+                val builder = ProjectWithDataResponse.newBuilder()
+                    .setProject(projectToGrpcResponse(project))
+                project.documents
+                    ?.lastOrNull { document -> document.purpose == DocumentPurpose.TERMS }
+                    ?.let { tos -> builder.setTosUrl(tos.link) }
+                val response = builder.build()
+                responseObserver.onNext(response)
+                responseObserver.onCompleted()
+            } ?: run {
+            val exception = ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: ${request.projectUuid}")
+            logger.warn { exception.message }
+            responseObserver.onError(exception)
         }
-        val exception = ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: ${request.projectUuid}")
-        logger.warn { exception.message }
-        responseObserver.onError(exception)
     }
 
     private fun organizationToGrpcResponse(organization: Organization): OrganizationResponse {

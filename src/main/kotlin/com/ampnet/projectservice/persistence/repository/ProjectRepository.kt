@@ -77,9 +77,10 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     @Query(
         "SELECT project FROM Project project " +
             "INNER JOIN FETCH project.organization organization " +
+            "LEFT JOIN FETCH project.tags " +
             "WHERE organization.uuid IN (:organizationUuids)"
     )
-    fun findAllByOrganizations(organizationUuids: List<UUID>): List<Project>
+    fun findAllByOrganizations(organizationUuids: List<UUID>): Set<Project>
 
     @Query(
         "SELECT COUNT(project.uuid) FROM Project project " +

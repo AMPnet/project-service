@@ -199,6 +199,12 @@ include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/
 .Response
 include::{snippets}/ProjectUpdateControllerTest/mustBeAbleToDeleteProjectUpdate/http-response.adoc[]
 
+=== Get personal projects
+.Request
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetPersonalProjects/http-request.adoc[]
+.Response
+include::{snippets}/ProjectControllerTest/mustBeAbleToGetPersonalProjects/http-response.adoc[]
+
 == Public API
 
 === Project

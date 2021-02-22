@@ -4,6 +4,7 @@ import com.ampnet.projectservice.controller.pojo.request.ImageLinkListRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
 import com.ampnet.projectservice.controller.pojo.request.ProjectUpdateRequest
 import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
+import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.enums.DocumentPurpose
 import com.ampnet.projectservice.service.ProjectService
@@ -12,6 +13,7 @@ import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -48,9 +50,10 @@ class ProjectController(
     ): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to update project with uuid: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }?.toMutableList()
+        val documentSaveRequests = documents?.map { DocumentSaveRequest(it, userPrincipal.uuid) }
+            .orEmpty().toMutableList()
         termsOfService?.let {
-            documentSaveRequests?.add(DocumentSaveRequest(it, userPrincipal.uuid, DocumentPurpose.TERMS))
+            documentSaveRequests.add(DocumentSaveRequest(it, userPrincipal.uuid, DocumentPurpose.TERMS))
         }
         val serviceRequest = ProjectUpdateServiceRequest(
             projectUuid, userPrincipal.uuid, request, image, documentSaveRequests
@@ -113,5 +116,13 @@ class ProjectController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         projectService.removeImagesFromGallery(projectUuid, userPrincipal.uuid, request.images)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/project/personal")
+    fun getPersonalProjects(): ResponseEntity<ProjectListResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get personal projects for user: ${userPrincipal.uuid}" }
+        val projects = projectService.getPersonalProjects(userPrincipal.uuid)
+        return ResponseEntity.ok(ProjectListResponse(projects))
     }
 }

@@ -22,6 +22,7 @@ interface ProjectService {
     fun getProjectByIdWithAllData(id: UUID): Project?
     fun getAllProjectsForOrganization(organizationId: UUID, coop: String?): List<ProjectWithWallet>
     fun getAllProjects(coop: String?, pageable: Pageable): Page<ProjectServiceResponse>
+    fun getPersonalProjects(user: UUID): List<ProjectServiceResponse>
 
     fun getActiveProjects(coop: String?, pageable: Pageable): Page<ProjectWithWallet>
     fun getProjectsByTags(
