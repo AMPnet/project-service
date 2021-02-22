@@ -503,7 +503,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("There is a project with tags") {
             testContext.project = createProject("Projectos", organization, userUuid)
-            testContext.project.tags = listOf("wind", "green")
+            testContext.project.tags = setOf("wind", "green")
             projectRepository.save(testContext.project)
         }
 
@@ -525,9 +525,9 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(project.tags).containsAll(testContext.tags)
         }
         verify("Tags are added to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            assertThat(optionalProject.get().tags).containsAll(testContext.tags)
+            val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+                ?: fail("Missing project")
+            assertThat(updatedProject.tags).containsAll(testContext.tags)
         }
     }
 
@@ -622,9 +622,8 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(documentResponse.link).isEqualTo(testContext.documentLink1)
         }
         verify("Document is stored in database and connected to project") {
-            val optionalProject = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(optionalProject).isPresent
-            val projectDocuments = optionalProject.get().documents ?: fail("Project documents must not be null")
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+            val projectDocuments = project?.documents ?: fail("Project documents must not be null")
             assertThat(projectDocuments).hasSize(2)
 
             val document = projectDocuments.first { it.purpose == DocumentPurpose.GENERIC }
@@ -658,9 +657,8 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
         }
         verify("Document is deleted") {
-            val project = projectRepository.findByIdWithAllData(testContext.project.uuid)
-            assertThat(project).isPresent
-            val documents = project.get().documents
+            val project = projectService.getProjectByIdWithAllData(testContext.project.uuid)
+            val documents = project?.documents
             assertThat(documents).hasSize(2).doesNotContain(testContext.document)
             val document = documentRepository.findById(testContext.document.id)
             assertThat(document).isEmpty
@@ -777,7 +775,7 @@ class ProjectControllerTest : ControllerTestBase() {
             addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
         }
         suppose("Project has gallery images") {
-            testContext.project.gallery = listOf("image-link-1", "image-link-2", "image-link-3")
+            testContext.project.gallery = setOf("image-link-1", "image-link-2", "image-link-3")
             projectRepository.save(testContext.project)
         }
 
@@ -810,7 +808,6 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("User can add news link") {
-
             testContext.projectUpdateRequest = ProjectUpdateRequest(news = listOf("news-link"))
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
@@ -842,7 +839,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
         suppose("There is a project with tags") {
             testContext.project = createProject("Project ex", organization, userUuid)
-            testContext.project.tags = listOf("too long")
+            testContext.project.tags = setOf("too long")
             projectRepository.save(testContext.project)
         }
 
@@ -912,7 +909,7 @@ class ProjectControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun getTos(documents: MutableList<Document>?): Document =
+    private fun getTos(documents: MutableSet<Document>?): Document =
         documents?.lastOrNull { it.purpose == DocumentPurpose.TERMS } ?: fail("Missing tos in documents")
 
     private class TestContext {

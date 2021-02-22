@@ -6,6 +6,7 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.service.SearchService
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
+import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -35,6 +36,7 @@ class SearchServiceImpl(
         val projects = projectRepository.findByNameContainingIgnoreCaseAndCoop(
             name, coop ?: applicationProperties.coop.default, pageable
         )
+        projects.forEach { Hibernate.initialize(it.tags) }
         return projects.map { ProjectServiceResponse(it) }
     }
 }

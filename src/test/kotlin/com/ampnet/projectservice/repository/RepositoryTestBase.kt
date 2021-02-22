@@ -127,8 +127,8 @@ abstract class RepositoryTestBase : TestBase() {
         val project = Project(
             UUID.randomUUID(), organization, name, "description", ProjectLocation(0.1, 1.0),
             ProjectRoi(4.44, 9.99), startDate, endDate, expectedFunding, Currency.EUR, minPerUser, maxPerUser,
-            null, listOf("gallery1", "gallery2"), listOf("news1", "news2"), createdByUserUuid,
-            startDate.minusMinutes(1), active, null, listOf("blue", "yellow", "green"),
+            null, setOf("gallery1", "gallery2"), setOf("news1", "news2"), createdByUserUuid,
+            startDate.minusMinutes(1), active, null, setOf("blue", "yellow", "green"),
             coop, "short description"
         )
         return projectRepository.save(project)
@@ -144,7 +144,7 @@ abstract class RepositoryTestBase : TestBase() {
         purpose: DocumentPurpose = DocumentPurpose.GENERIC
     ): Document {
         val savedDocument = saveDocument(name, link, type, size, createdByUserUuid)
-        val documents = project.documents.orEmpty().toMutableList()
+        val documents = project.documents.orEmpty().toMutableSet()
         documents.add(savedDocument)
         project.documents = documents
         projectRepository.save(project)

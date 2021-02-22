@@ -66,8 +66,9 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.minPerUser).isEqualTo(testContext.project.minPerUser)
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.project.maxPerUser)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.project.mainImage)
-            assertThat(projectResponse.gallery).isEqualTo(testContext.project.gallery.orEmpty())
-            assertThat(projectResponse.news).isEqualTo(testContext.project.newsLinks.orEmpty())
+            assertThat(projectResponse.tags).containsAll(testContext.project.tags.orEmpty())
+            assertThat(projectResponse.gallery).containsAll(testContext.project.gallery.orEmpty())
+            assertThat(projectResponse.news).containsAll(testContext.project.newsLinks.orEmpty())
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.project.shortDescription)
             assertThat(projectResponse.ownerUuid).isEqualTo(userUuid)
@@ -260,17 +261,17 @@ class PublicProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToQueryProjectsByTags() {
         suppose("There are projects with tags") {
             val project1 = createProject("Project 1", organization, userUuid)
-            addTagsToProject(project1, listOf("wind", "blue"))
+            addTagsToProject(project1, setOf("wind", "blue"))
             val project2 = createProject("Project 2", organization, userUuid)
-            addTagsToProject(project2, listOf("wind", "green"))
+            addTagsToProject(project2, setOf("wind", "green"))
         }
         suppose("There is a deactivated project") {
             val project3 = createProject("Project 3", organization, userUuid, active = false)
-            addTagsToProject(project3, listOf("wind", "green"))
+            addTagsToProject(project3, setOf("wind", "green"))
         }
         suppose("There is project from another cooperative") {
             val project4 = createProject("Project 3", organization, userUuid, coop = "another_coop")
-            addTagsToProject(project4, listOf("wind", "green"))
+            addTagsToProject(project4, setOf("wind", "green"))
         }
 
         verify("Controller will return projects containing all tags which are active and from the cooperative") {
@@ -295,15 +296,15 @@ class PublicProjectControllerTest : ControllerTestBase() {
     fun mustBeAbleToGetAllProjectTags() {
         suppose("There are projects with tags") {
             val project1 = createProject("Project 1", organization, userUuid)
-            addTagsToProject(project1, listOf("wind", "solar"))
+            addTagsToProject(project1, setOf("wind", "solar"))
             val project2 = createProject("Project 2", organization, userUuid)
-            addTagsToProject(project2, listOf("wind", "green"))
+            addTagsToProject(project2, setOf("wind", "green"))
             val project3 = createProject("Project 3", organization, userUuid)
-            addTagsToProject(project3, listOf())
+            addTagsToProject(project3, setOf())
         }
         suppose("There is project from another cooperative") {
             val project4 = createProject("Project 1", organization, userUuid, coop = "another_coop")
-            addTagsToProject(project4, listOf("wind", "solar", "blue"))
+            addTagsToProject(project4, setOf("wind", "solar", "blue"))
         }
 
         verify("Controller will return all tags") {
@@ -387,7 +388,7 @@ class PublicProjectControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun addTagsToProject(project: Project, tags: List<String>) {
+    private fun addTagsToProject(project: Project, tags: Set<String>) {
         project.tags = tags
         projectRepository.save(project)
     }
