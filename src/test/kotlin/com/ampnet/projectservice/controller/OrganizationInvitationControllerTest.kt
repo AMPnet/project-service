@@ -1,5 +1,6 @@
 package com.ampnet.projectservice.controller
 
+import com.ampnet.projectservice.amqp.mailservice.MailOrgInvitationMessage
 import com.ampnet.projectservice.controller.pojo.request.OrganizationInviteRequest
 import com.ampnet.projectservice.controller.pojo.response.OrganizationInvitesListResponse
 import com.ampnet.projectservice.controller.pojo.response.PendingInvitationsListResponse
@@ -9,7 +10,6 @@ import com.ampnet.projectservice.exception.ErrorResponse
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.OrganizationInvitation
 import com.ampnet.projectservice.security.WithMockCrowdfundUser
-import com.ampnet.projectservice.service.pojo.OrganizationInvitationMailRequest
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import org.assertj.core.api.Assertions.assertThat
@@ -166,13 +166,13 @@ class OrganizationInvitationControllerTest : ControllerTestBase() {
             assertThat(secondInvite.email).isEqualTo(testContext.emails.last())
         }
         verify("Sending mail invitation is called") {
-            val captor = argumentCaptor<OrganizationInvitationMailRequest>()
+            val captor = argumentCaptor<MailOrgInvitationMessage>()
             Mockito.verify(mailService, Mockito.times(1))
                 .sendOrganizationInvitationMail(captor.capture())
             val mailRequest = captor.firstValue
             assertThat(mailRequest.emails).containsAll(testContext.emails)
             assertThat(mailRequest.organizationName).isEqualTo(testContext.organization.name)
-            assertThat(mailRequest.senderEmail).isEqualTo("user@email.com")
+            assertThat(mailRequest.sender).isEqualTo(userUuid)
             assertThat(mailRequest.coop).isEqualTo(testContext.organization.coop)
         }
     }
