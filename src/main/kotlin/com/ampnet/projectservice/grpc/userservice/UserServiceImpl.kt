@@ -33,9 +33,8 @@ class UserServiceImpl(
             val request = GetUsersRequest.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
-            val response = serviceWithTimeout()
-                .getUsers(request).usersList
-            logger.debug { "Fetched users: $response" }
+            val response = serviceWithTimeout().getUsers(request).usersList
+            logger.debug { "Fetched users: ${response.size}" }
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users. ${ex.localizedMessage}")
@@ -49,9 +48,8 @@ class UserServiceImpl(
                 .addAllEmails(emails)
                 .setCoop(coop)
                 .build()
-            val response = serviceWithTimeout()
-                .getUsersByEmail(request).usersList
-            logger.debug { "Fetched users by emails: $response" }
+            val response = serviceWithTimeout().getUsersByEmail(request).usersList
+            logger.debug { "Fetched users by emails: ${response.size}" }
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users by emails. ${ex.localizedMessage}")
