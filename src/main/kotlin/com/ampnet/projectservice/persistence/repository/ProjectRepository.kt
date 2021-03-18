@@ -70,4 +70,6 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
             "INNER JOIN project.organization organization WHERE organization.uuid = ?1"
     )
     fun countProjectsByOrganization(organizationUuid: UUID): Int
+
+    fun findAllByCoopAndActive(coop: String, active: Boolean = true): List<Project>
 }

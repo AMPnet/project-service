@@ -10,6 +10,10 @@ message GetByUuid {
   string project_uuid = 1;
 }
 
+message CoopRequest {
+  string coop = 1;
+}
+
 message OrganizationResponse {
   string uuid = 1;
   string name = 2;
@@ -71,4 +75,5 @@ service ProjectService {
   rpc GetProjects(GetByUuids) returns (ProjectsResponse);
   rpc GetOrganizationMembersForProject(GetByUuid) returns (OrganizationMembershipsResponse);
   rpc GetProjectWithData(GetByUuid) returns (ProjectWithDataResponse);
+  rpc GetActiveProjects(CoopRequest) returns (ProjectsResponse);
 }

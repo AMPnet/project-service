@@ -10,6 +10,7 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.proto.CoopRequest
 import com.ampnet.projectservice.proto.GetByUuid
 import com.ampnet.projectservice.proto.GetByUuids
 import com.ampnet.projectservice.proto.OrganizationMembershipResponse
@@ -103,6 +104,17 @@ class GrpcProjectServer(
             logger.warn { exception.message }
             responseObserver.onError(exception)
         }
+    }
+
+    override fun getActiveProjects(request: CoopRequest, responseObserver: StreamObserver<ProjectsResponse>) {
+        logger.debug { "Received gRPC request getActiveProjects for coop: ${request.coop}" }
+        val projects = projectRepository.findAllByCoopAndActive(request.coop)
+            .map { projectToGrpcResponse(it) }
+        val response = ProjectsResponse.newBuilder()
+            .addAllProjects(projects)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
     }
 
     private fun organizationToGrpcResponse(organization: Organization): OrganizationResponse {
