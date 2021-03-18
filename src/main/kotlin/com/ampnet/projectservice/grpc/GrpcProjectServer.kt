@@ -10,6 +10,7 @@ import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.repository.OrganizationMembershipRepository
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.proto.CoopRequest
 import com.ampnet.projectservice.proto.GetByUuid
 import com.ampnet.projectservice.proto.GetByUuids
 import com.ampnet.projectservice.proto.OrganizationMembershipResponse
@@ -24,6 +25,8 @@ import com.ampnet.projectservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
+import org.springframework.data.domain.Pageable
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @GrpcService
@@ -103,6 +106,18 @@ class GrpcProjectServer(
             logger.warn { exception.message }
             responseObserver.onError(exception)
         }
+    }
+
+    override fun getActiveProjects(request: CoopRequest, responseObserver: StreamObserver<ProjectsResponse>) {
+        logger.debug { "Received gRPC request getActiveProjects for coop: ${request.coop}" }
+        val projects = projectRepository.findByActive(
+            ZonedDateTime.now(), true, request.coop, Pageable.unpaged()
+        ).content.map { projectToGrpcResponse(it) }
+        val response = ProjectsResponse.newBuilder()
+            .addAllProjects(projects)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
     }
 
     private fun organizationToGrpcResponse(organization: Organization): OrganizationResponse {
