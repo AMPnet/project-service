@@ -25,6 +25,8 @@ import com.ampnet.projectservice.service.impl.ServiceUtils
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
+import org.springframework.data.domain.Pageable
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @GrpcService
@@ -108,8 +110,9 @@ class GrpcProjectServer(
 
     override fun getActiveProjects(request: CoopRequest, responseObserver: StreamObserver<ProjectsResponse>) {
         logger.debug { "Received gRPC request getActiveProjects for coop: ${request.coop}" }
-        val projects = projectRepository.findAllByCoopAndActive(request.coop)
-            .map { projectToGrpcResponse(it) }
+        val projects = projectRepository.findByActive(
+            ZonedDateTime.now(), true, request.coop, Pageable.unpaged()
+        ).content.map { projectToGrpcResponse(it) }
         val response = ProjectsResponse.newBuilder()
             .addAllProjects(projects)
             .build()
