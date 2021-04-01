@@ -28,6 +28,7 @@ class UserServiceImpl(
     }
 
     override fun getUsers(uuids: Iterable<UUID>): List<UserResponse> {
+        if (uuids.none()) return emptyList()
         logger.debug { "Fetching users: $uuids" }
         try {
             val request = GetUsersRequest.newBuilder()
@@ -42,6 +43,7 @@ class UserServiceImpl(
     }
 
     override fun getUsersByEmail(coop: String, emails: List<String>): List<UserResponse> {
+        if (emails.isEmpty()) return emptyList()
         logger.debug { "Fetching users by emails: ${emails.joinToString()}" }
         try {
             val request = GetUsersByEmailRequest.newBuilder()

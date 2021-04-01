@@ -26,6 +26,7 @@ class WalletServiceImpl(
     }
 
     override fun getWalletsByOwner(uuids: List<UUID>): List<WalletServiceResponse> {
+        if (uuids.isEmpty()) return emptyList()
         logger.debug { "Fetching wallets for owners: $uuids" }
         try {
             val request = GetWalletsByOwnerRequest.newBuilder()
