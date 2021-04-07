@@ -2,6 +2,7 @@ package com.ampnet.projectservice.service
 
 import com.ampnet.projectservice.controller.COOP
 import com.ampnet.projectservice.persistence.model.Organization
+import com.ampnet.projectservice.service.impl.ImageProxyServiceImpl
 import com.ampnet.projectservice.service.impl.SearchServiceImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -10,7 +11,8 @@ import org.junit.jupiter.api.Test
 class SearchServiceTest : JpaServiceTestBase() {
 
     private val searchService: SearchService by lazy {
-        SearchServiceImpl(organizationRepository, projectRepository, applicationProperties)
+        val imageProxyService = ImageProxyServiceImpl(applicationProperties)
+        SearchServiceImpl(organizationRepository, projectRepository, applicationProperties, imageProxyService)
     }
 
     private lateinit var testContext: TestContext

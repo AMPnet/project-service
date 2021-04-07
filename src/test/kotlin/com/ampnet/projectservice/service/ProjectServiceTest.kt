@@ -11,6 +11,7 @@ import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.exception.PermissionDeniedException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.service.impl.ImageProxyServiceImpl
 import com.ampnet.projectservice.service.impl.ProjectServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import org.assertj.core.api.Assertions.assertThat
@@ -26,9 +27,11 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
+        val imageProxyService = ImageProxyServiceImpl(applicationProperties)
         ProjectServiceImpl(
             projectRepository, storageServiceImpl, applicationProperties, walletService,
-            projectTagRepository, organizationMembershipService, organizationService, organizationRepository
+            projectTagRepository, organizationMembershipService, organizationService, organizationRepository,
+            imageProxyService
         )
     }
     private val imageContent = "data".toByteArray()
@@ -76,9 +79,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.createdByUserUuid).isEqualTo(userUuid)
             assertThat(project.organization.uuid).isEqualTo(organization.uuid)
             assertThat(project.active).isEqualTo(request.active)
-            assertThat(project.mainImage.isNullOrEmpty()).isTrue()
-            assertThat(project.gallery.isNullOrEmpty()).isTrue()
-            assertThat(project.documents.isNullOrEmpty()).isTrue()
+            assertThat(project.mainImage).isNullOrEmpty()
+            assertThat(project.gallery).isNullOrEmpty()
+            assertThat(project.documents).isNullOrEmpty()
             assertThat(project.createdByUserUuid).isEqualTo(userUuid)
             assertThat(project.coop).isEqualTo(COOP)
             assertThat(project.shortDescription).isEqualTo(request.shortDescription)

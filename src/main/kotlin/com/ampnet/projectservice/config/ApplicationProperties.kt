@@ -11,6 +11,7 @@ class ApplicationProperties {
     var investment: InvestmentProperties = InvestmentProperties()
     var grpc: GrpcProperties = GrpcProperties()
     val coop: CoopProperties = CoopProperties()
+    val imageProxy: ImageProxyProperties = ImageProxyProperties()
 }
 
 class JwtProperties {
@@ -31,11 +32,16 @@ class InvestmentProperties {
 
 @Suppress("MagicNumber")
 class GrpcProperties {
-    var mailServiceTimeout: Long = 1000
     var userServiceTimeout: Long = 1000
     var walletServiceTimeout: Long = 1000
 }
 
 class CoopProperties {
     lateinit var default: String
+}
+
+class ImageProxyProperties {
+    lateinit var key: String
+    lateinit var salt: String
+    lateinit var url: String
 }

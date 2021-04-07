@@ -20,6 +20,7 @@ import com.ampnet.projectservice.persistence.model.ProjectRoi
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.ProjectService
@@ -50,7 +51,8 @@ class ProjectServiceImpl(
     private val projectTagRepository: ProjectTagRepository,
     private val organizationMembershipService: OrganizationMembershipService,
     private val organizationService: OrganizationService,
-    private val organizationRepository: OrganizationRepository
+    private val organizationRepository: OrganizationRepository,
+    private val imageProxyService: ImageProxyService
 ) : ProjectService {
 
     companion object : KLogging()
@@ -84,7 +86,7 @@ class ProjectServiceImpl(
         val walletsMap = walletService.getWalletsByOwner(projects.map { it.uuid }).associateBy { it.owner }
         return projects.map { project ->
             ProjectWithWallet(
-                ProjectServiceResponse(project),
+                ProjectServiceResponse(project, imageProxyService.generateImageResponse(project.mainImage)),
                 walletsMap[project.uuid]
             )
         }
@@ -93,7 +95,7 @@ class ProjectServiceImpl(
     @Transactional(readOnly = true)
     override fun getAllProjects(coop: String?, pageable: Pageable): Page<ProjectServiceResponse> {
         val projects = projectRepository.findAllByCoop(coop ?: applicationProperties.coop.default, pageable)
-        return projects.map { ProjectServiceResponse(it) }
+        return projects.map { ProjectServiceResponse(it, imageProxyService.generateImageResponse(it.mainImage)) }
     }
 
     @Transactional(readOnly = true)
@@ -101,7 +103,7 @@ class ProjectServiceImpl(
         val organizations = organizationRepository.findAllOrganizationsForUserUuid(user)
         if (organizations.isEmpty()) return listOf()
         val projects = projectRepository.findAllByOrganizations(organizations.map { it.uuid })
-        return projects.map { ProjectServiceResponse(it) }
+        return projects.map { ProjectServiceResponse(it, imageProxyService.generateImageResponse(it.mainImage)) }
     }
 
     @Transactional(readOnly = true)
@@ -113,7 +115,10 @@ class ProjectServiceImpl(
             .filter { isWalletActivate(it) }.associateBy { it.owner }
         val projectsWithWallets = activeProjects.toList().mapNotNull { project ->
             activeWallets[project.uuid]?.let { wallet ->
-                ProjectWithWallet(ProjectServiceResponse(project), wallet)
+                ProjectWithWallet(
+                    ProjectServiceResponse(project, imageProxyService.generateImageResponse(project.mainImage)),
+                    wallet
+                )
             }
         }
         return PageImpl(projectsWithWallets, pageable, activeProjects.totalElements)
@@ -232,7 +237,7 @@ class ProjectServiceImpl(
         val projects = projectRepository.findByTags(
             tags, tags.size.toLong(), coop ?: applicationProperties.coop.default, active, pageable
         )
-        return projects.map { ProjectServiceResponse(it) }
+        return projects.map { ProjectServiceResponse(it, imageProxyService.generateImageResponse(it.mainImage)) }
     }
 
     @Transactional(readOnly = true)

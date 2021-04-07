@@ -127,7 +127,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.minPerUser).isEqualTo(testContext.projectRequest.minPerUser)
             assertThat(projectResponse.maxPerUser).isEqualTo(testContext.projectRequest.maxPerUser)
             assertThat(projectResponse.active).isEqualTo(testContext.projectRequest.active)
-            assertThat(projectResponse.mainImage).isNullOrEmpty()
+            assertThat(projectResponse.mainImage).isNull()
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectRequest.shortDescription)
             assertThat(projectResponse.organization.uuid).isEqualTo(organization.uuid)
@@ -266,7 +266,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.roi.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
-            assertThat(projectResponse.mainImage).contains(testContext.imageLink)
+            assertThat(projectResponse.mainImage?.original).contains(testContext.imageLink)
             assertThat(projectResponse.documents).hasSize(3)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
@@ -352,7 +352,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.roi.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(projectResponse.active).isNotEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
-            assertThat(projectResponse.mainImage).contains(testContext.imageLink)
+            assertThat(projectResponse.mainImage?.small).contains(testContext.imageLink)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isNotEqualTo(testContext.projectUpdateRequest.shortDescription)
         }
@@ -434,7 +434,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(documents).hasSize(3)
             val document = updatedProject.documents?.first { it.link == testContext.documentLink2 }
                 ?: fail("Missing document")
-            assertThat(document.id).isNotNull()
+            assertThat(document.id).isNotNull
             assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock2.size)
             assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)

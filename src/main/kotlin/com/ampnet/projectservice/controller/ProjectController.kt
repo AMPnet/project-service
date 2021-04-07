@@ -7,6 +7,9 @@ import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.enums.DocumentPurpose
+import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
+import com.ampnet.projectservice.persistence.model.Project
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.ProjectService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
@@ -27,7 +30,8 @@ import javax.validation.Valid
 
 @RestController
 class ProjectController(
-    private val projectService: ProjectService
+    private val projectService: ProjectService,
+    private val imageProxyService: ImageProxyService
 ) {
 
     companion object : KLogging()
@@ -37,7 +41,7 @@ class ProjectController(
         logger.debug { "Received request to create project: $request" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val project = projectService.createProject(userPrincipal, request)
-        return ResponseEntity.ok(ProjectWithWalletFullResponse(project, null))
+        return ResponseEntity.ok(generateProjectResponse(project, null))
     }
 
     @PutMapping("/project/{projectUuid}", consumes = ["multipart/form-data"])
@@ -59,7 +63,7 @@ class ProjectController(
             projectUuid, userPrincipal.uuid, request, image, documentSaveRequests
         )
         val updatedProject = projectService.updateProject(serviceRequest)
-        return ResponseEntity.ok(ProjectWithWalletFullResponse(updatedProject.project, updatedProject.walletResponse))
+        return ResponseEntity.ok(generateProjectResponse(updatedProject.project, updatedProject.walletResponse))
     }
 
     @PostMapping("/project/{projectUuid}/document")
@@ -124,5 +128,14 @@ class ProjectController(
         logger.debug { "Received request to get personal projects for user: ${userPrincipal.uuid}" }
         val projects = projectService.getPersonalProjects(userPrincipal.uuid)
         return ResponseEntity.ok(ProjectListResponse(projects))
+    }
+
+    private fun generateProjectResponse(
+        project: Project,
+        wallet: WalletServiceResponse?
+    ): ProjectWithWalletFullResponse {
+        val mainImage = imageProxyService.generateImageResponse(project.mainImage)
+        val gallery = project.gallery?.mapNotNull { imageProxyService.generateImageResponse(it) }
+        return ProjectWithWalletFullResponse(project, wallet, mainImage, gallery)
     }
 }

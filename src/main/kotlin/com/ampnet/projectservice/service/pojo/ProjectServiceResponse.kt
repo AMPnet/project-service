@@ -19,7 +19,7 @@ data class ProjectServiceResponse(
     val currency: Currency,
     val minPerUser: Long,
     val maxPerUser: Long,
-    val mainImage: String?,
+    val mainImage: ImageResponse?,
     val active: Boolean,
     val tags: List<String>,
     val coop: String,
@@ -27,7 +27,7 @@ data class ProjectServiceResponse(
     val organization: OrganizationSmallServiceResponse,
     val ownerUuid: UUID
 ) {
-    constructor(project: Project, withDescription: Boolean = false) : this(
+    constructor(project: Project, mainImage: ImageResponse?, withDescription: Boolean = false) : this(
         project.uuid,
         project.name,
         if (withDescription) project.description else null,
@@ -39,7 +39,7 @@ data class ProjectServiceResponse(
         project.currency,
         project.minPerUser,
         project.maxPerUser,
-        project.mainImage,
+        mainImage,
         project.active,
         project.tags.orEmpty(),
         project.coop,
