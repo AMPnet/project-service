@@ -21,9 +21,10 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
 
     override fun generateImageResponse(url: String?): ImageResponse? {
         if (url == null) return null
-        val smallUrl = generateSignedUrlForImgProxy(url, ImageSize.SMALL)
-        val mediumUrl = generateSignedUrlForImgProxy(url, ImageSize.MEDIUM)
-        return ImageResponse(smallUrl, mediumUrl, url)
+        val smallUrl = generateSignedUrlForImgProxy(url, ImageSize.SQUARE_SMALL)
+        val mediumUrl = generateSignedUrlForImgProxy(url, ImageSize.WIDE_MEDIUM)
+        val fullUrl = generateSignedUrlForImgProxy(url, ImageSize.FULL)
+        return ImageResponse(smallUrl, mediumUrl, fullUrl, url)
     }
 
     @Suppress("MagicNumber")
@@ -60,6 +61,6 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
 
     @Suppress("MagicNumber")
     enum class ImageSize(val width: Int, val height: Int) {
-        SMALL(140, 140), MEDIUM(600, 300)
+        SQUARE_SMALL(140, 140), WIDE_MEDIUM(600, 300), FULL(0, 0)
     }
 }

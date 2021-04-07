@@ -27,10 +27,12 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.service.CloudStorageService
 import com.ampnet.projectservice.service.ProjectService
+import com.ampnet.projectservice.service.pojo.ImageResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.proto.WalletResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -280,5 +282,12 @@ abstract class ControllerTestBase : TestBase() {
         hash: String = "wallet_hash"
     ): WalletServiceResponse {
         return WalletServiceResponse(uuid, owner, activationData, type.name, currency, hash)
+    }
+
+    protected fun verifyImageResponse(url: String?, response: ImageResponse?) {
+        Assertions.assertThat(response?.squareSmall).contains(url)
+        Assertions.assertThat(response?.wideMedium).contains(url)
+        Assertions.assertThat(response?.full).contains(url)
+        Assertions.assertThat(response?.original).isEqualTo(url)
     }
 }

@@ -203,12 +203,12 @@ class PublicProjectControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.project.currency).isEqualTo(testContext.project.currency)
             assertThat(projectWithWallet.project.minPerUser).isEqualTo(testContext.project.minPerUser)
             assertThat(projectWithWallet.project.maxPerUser).isEqualTo(testContext.project.maxPerUser)
-            assertThat(projectWithWallet.project.mainImage?.small).contains(testContext.project.mainImage)
             assertThat(projectWithWallet.project.active).isEqualTo(testContext.project.active)
             assertThat(projectWithWallet.project.tags).containsAll(testContext.project.tags)
             assertThat(projectWithWallet.project.coop).isEqualTo(COOP)
             assertThat(projectWithWallet.project.shortDescription).isEqualTo(testContext.project.shortDescription)
             assertThat(projectWithWallet.project.ownerUuid).isEqualTo(userUuid)
+            verifyImageResponse(testContext.project.mainImage, projectWithWallet.project.mainImage)
 
             assertThat(projectWithWallet.wallet?.uuid).isEqualTo(testContext.activeWallet.uuid)
             assertThat(projectWithWallet.wallet?.owner).isEqualTo(testContext.project.uuid)

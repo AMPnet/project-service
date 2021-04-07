@@ -15,11 +15,11 @@ class ImageProxyServiceTest : JpaServiceTestBase() {
             val url = "http://img.example.com/pretty/image.jpg"
             val response = service.generateImageResponse(url) ?: fail("Missing image response")
             assertThat(response.original).isEqualTo(url)
-            assertThat(response.small).startsWith(applicationProperties.imageProxy.url)
-            assertThat(response.small).endsWith(url)
-            assertThat(response.medium).startsWith(applicationProperties.imageProxy.url)
-            assertThat(response.medium).endsWith(url)
-            assertThat(response.small).isNotEqualTo(response.medium)
+            assertThat(response.squareSmall).startsWith(applicationProperties.imageProxy.url)
+            assertThat(response.squareSmall).endsWith(url)
+            assertThat(response.wideMedium).startsWith(applicationProperties.imageProxy.url)
+            assertThat(response.wideMedium).endsWith(url)
+            assertThat(response.squareSmall).isNotEqualTo(response.wideMedium)
         }
     }
 }
