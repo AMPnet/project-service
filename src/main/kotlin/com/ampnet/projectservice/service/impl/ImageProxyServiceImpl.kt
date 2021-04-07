@@ -27,28 +27,15 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
         return ImageResponse(smallUrl, mediumUrl, fullUrl, url)
     }
 
-    @Suppress("MagicNumber")
-    private fun hexStringToByteArray(hex: String): ByteArray {
-        require(hex.length % 2 == 0) { "Even-length string required" }
-        val res = ByteArray(hex.length / 2)
-        for (i in res.indices) {
-            res[i] = (Character.digit(hex[i * 2], 16) shl 4 or Character.digit(hex[i * 2 + 1], 16)).toByte()
-        }
-        return res
-    }
-
     @Throws(Exception::class)
-    fun generateSignedUrlForImgProxy(
+    private fun generateSignedUrlForImgProxy(
         url: String,
         imageSize: ImageSize,
         resize: String = "fill",
         gravity: String = "sm",
-        enlarge: Int = 0,
-        // extension: String
+        enlarge: Int = 0
     ): String {
         val algorithm = "HmacSHA256"
-        // val encodedUrl: String = Base64.getUrlEncoder().withoutPadding().encodeToString(url.toByteArray())
-        // val path = "/$resize/$width/$height/$gravity/$enlarge/$encodedUrl.$extension"
         val path = "/$resize/${imageSize.width}/${imageSize.height}/$gravity/$enlarge/plain/$url"
         val sha256HMAC: Mac = Mac.getInstance(algorithm).apply {
             init(SecretKeySpec(key, algorithm))
@@ -57,6 +44,16 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
         val hash: String = Base64.getUrlEncoder().withoutPadding()
             .encodeToString(sha256HMAC.doFinal(path.toByteArray()))
         return "${applicationProperties.imageProxy.url}/$hash$path"
+    }
+
+    @Suppress("MagicNumber")
+    private fun hexStringToByteArray(hex: String): ByteArray {
+        require(hex.length % 2 == 0) { "Even-length string required" }
+        val res = ByteArray(hex.length / 2)
+        for (i in res.indices) {
+            res[i] = (Character.digit(hex[i * 2], 16) shl 4 or Character.digit(hex[i * 2 + 1], 16)).toByte()
+        }
+        return res
     }
 
     @Suppress("MagicNumber")
