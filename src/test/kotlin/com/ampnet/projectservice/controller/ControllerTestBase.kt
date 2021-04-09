@@ -33,6 +33,7 @@ import com.ampnet.walletservice.proto.WalletResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -285,9 +286,9 @@ abstract class ControllerTestBase : TestBase() {
     }
 
     protected fun verifyImageResponse(url: String?, response: ImageResponse?) {
-        Assertions.assertThat(response?.squareSmall).contains(url)
-        Assertions.assertThat(response?.wideMedium).contains(url)
-        Assertions.assertThat(response?.full).contains(url)
-        Assertions.assertThat(response?.original).isEqualTo(url)
+        assertThat(response?.original).isEqualTo(url)
+        assertThat(response?.squareSmall).isNotBlank
+        assertThat(response?.wideMedium).isNotBlank
+        assertThat(response?.full).isNotBlank
     }
 }

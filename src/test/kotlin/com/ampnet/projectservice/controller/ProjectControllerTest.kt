@@ -266,7 +266,8 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.roi.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
-            assertThat(projectResponse.mainImage?.original).contains(testContext.imageLink)
+            assertThat(projectResponse.mainImage).isEqualTo(testContext.imageLink)
+            assertThat(projectResponse.image?.original).contains(testContext.imageLink)
             assertThat(projectResponse.documents).hasSize(3)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
@@ -354,7 +355,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.coop).isEqualTo(COOP)
             assertThat(projectResponse.shortDescription).isNotEqualTo(testContext.projectUpdateRequest.shortDescription)
-            verifyImageResponse(testContext.imageLink, projectResponse.mainImage)
+            verifyImageResponse(testContext.imageLink, projectResponse.image)
         }
         verify("Only project image is updated") {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
