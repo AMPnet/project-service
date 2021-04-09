@@ -93,6 +93,7 @@ class PublicOrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationFullServiceResponse.name).isEqualTo(testContext.organization.name)
             assertThat(organizationFullServiceResponse.description).isEqualTo(testContext.organization.description)
             assertThat(organizationFullServiceResponse.headerImage).isEqualTo(testContext.organization.headerImage)
+            verifyImageResponse(testContext.organization.headerImage, organizationFullServiceResponse.image)
             assertThat(organizationFullServiceResponse.uuid).isEqualTo(testContext.organization.uuid)
             assertThat(organizationFullServiceResponse.approved).isEqualTo(testContext.organization.approved)
             assertThat(organizationFullServiceResponse.documents.size)

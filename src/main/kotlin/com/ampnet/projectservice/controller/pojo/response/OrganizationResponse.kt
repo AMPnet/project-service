@@ -1,6 +1,7 @@
 package com.ampnet.projectservice.controller.pojo.response
 
 import com.ampnet.projectservice.persistence.model.Organization
+import com.ampnet.projectservice.service.pojo.ImageResponse
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -11,17 +12,19 @@ data class OrganizationResponse(
     val approved: Boolean,
     val description: String,
     val headerImage: String?,
+    val image: ImageResponse?,
     val coop: String,
     val active: Boolean,
     val ownerUuid: UUID
 ) {
-    constructor(organization: Organization) : this(
+    constructor(organization: Organization, image: ImageResponse?) : this(
         organization.uuid,
         organization.name,
         organization.createdAt,
         organization.approved,
         organization.description.orEmpty(),
         organization.headerImage,
+        image,
         organization.coop,
         organization.active,
         organization.createdByUserUuid
@@ -42,10 +45,11 @@ data class OrganizationWithDocumentResponse(
     val documents: List<DocumentResponse>,
     val description: String,
     val headerImage: String?,
+    val image: ImageResponse?,
     val coop: String,
     val ownerUuid: UUID
 ) {
-    constructor(organization: Organization) : this(
+    constructor(organization: Organization, image: ImageResponse?) : this(
         organization.uuid,
         organization.name,
         organization.createdAt,
@@ -53,6 +57,7 @@ data class OrganizationWithDocumentResponse(
         organization.documents?.map { DocumentResponse(it) }.orEmpty(),
         organization.description.orEmpty(),
         organization.headerImage,
+        image,
         organization.coop,
         organization.createdByUserUuid
     )

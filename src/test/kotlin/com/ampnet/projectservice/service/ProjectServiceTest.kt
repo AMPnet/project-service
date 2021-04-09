@@ -11,7 +11,6 @@ import com.ampnet.projectservice.exception.InvalidRequestException
 import com.ampnet.projectservice.exception.PermissionDeniedException
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.model.Project
-import com.ampnet.projectservice.service.impl.ImageProxyServiceImpl
 import com.ampnet.projectservice.service.impl.ProjectServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
 import org.assertj.core.api.Assertions.assertThat
@@ -27,7 +26,6 @@ class ProjectServiceTest : JpaServiceTestBase() {
 
     private val projectService: ProjectServiceImpl by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        val imageProxyService = ImageProxyServiceImpl(applicationProperties)
         ProjectServiceImpl(
             projectRepository, storageServiceImpl, applicationProperties, walletService,
             projectTagRepository, organizationMembershipService, organizationService, organizationRepository,

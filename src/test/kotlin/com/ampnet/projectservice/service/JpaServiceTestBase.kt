@@ -24,6 +24,7 @@ import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
 import com.ampnet.projectservice.persistence.repository.ProjectTagRepository
 import com.ampnet.projectservice.persistence.repository.impl.ProjectTagRepositoryImpl
+import com.ampnet.projectservice.service.impl.ImageProxyServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationMembershipServiceImpl
 import com.ampnet.projectservice.service.impl.OrganizationServiceImpl
 import com.ampnet.projectservice.service.impl.StorageServiceImpl
@@ -77,9 +78,14 @@ abstract class JpaServiceTestBase : TestBase() {
 
     protected val organizationMembershipService by lazy { OrganizationMembershipServiceImpl(membershipRepository) }
 
+    protected val imageProxyService by lazy { ImageProxyServiceImpl(applicationProperties) }
+
     protected val organizationService: OrganizationService by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
-        OrganizationServiceImpl(organizationRepository, organizationMembershipService, storageServiceImpl, projectRepository)
+        OrganizationServiceImpl(
+            organizationRepository, organizationMembershipService, storageServiceImpl,
+            imageProxyService, projectRepository
+        )
     }
 
     protected val cloudStorageService: CloudStorageService = Mockito.mock(CloudStorageService::class.java)
