@@ -16,6 +16,7 @@ class ImageProxyServiceTest : JpaServiceTestBase() {
             val response = service.generateImageResponse(url) ?: fail("Missing image response")
             assertThat(response.original).isEqualTo(url)
             assertThat(response.full).startsWith(applicationProperties.imageProxy.url)
+                .endsWith(ImageProxyServiceImpl.ImageSize.FULL.extension)
             assertThat(response.squareSmall).startsWith(applicationProperties.imageProxy.url)
             assertThat(response.wideMedium).startsWith(applicationProperties.imageProxy.url)
             assertThat(response.squareSmall).isNotEqualTo(response.wideMedium)

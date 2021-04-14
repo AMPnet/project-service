@@ -38,7 +38,7 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
         val encodedUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(url.toByteArray())
         val width = imageSize.width ?: ""
         val height = imageSize.height ?: ""
-        val path = "/rs:$resize:$width:$height:0/g:$gravity/$encodedUrl${imageSize.extension}"
+        val path = "/rs:$resize:$width:$height:0/g:$gravity/$encodedUrl${imageSize.extension.orEmpty()}"
         val sha256HMAC: Mac = Mac.getInstance(algorithm).apply {
             init(SecretKeySpec(key, algorithm))
             update(salt)
