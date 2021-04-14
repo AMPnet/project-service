@@ -12,7 +12,7 @@ class ImageProxyServiceTest : JpaServiceTestBase() {
     @Test
     fun mustGenerateCorrectUrl() {
         verify("Service will generate correct url") {
-            val url = "http://img.example.com/pretty/image.jpg"
+            val url = "https://ampnet-storage.ams3.digitaloceanspaces.com/test/baner-1617959968.jpg"
             val response = service.generateImageResponse(url) ?: fail("Missing image response")
             assertThat(response.original).isEqualTo(url)
             assertThat(response.full).startsWith(applicationProperties.imageProxy.url)

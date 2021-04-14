@@ -31,13 +31,14 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
     private fun generateSignedUrlForImgProxy(
         url: String,
         imageSize: ImageSize,
-        resize: String = "fill",
-        gravity: String = "sm",
-        enlarge: Int = 1
+        resize: String = "auto",
+        gravity: String = "ce"
     ): String {
         val algorithm = "HmacSHA256"
         val encodedUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(url.toByteArray())
-        val path = "/$resize/${imageSize.width}/${imageSize.height}/$gravity/$enlarge/$encodedUrl"
+        val width = imageSize.width ?: ""
+        val height = imageSize.height ?: ""
+        val path = "/rs:$resize:$width:$height:0/g:$gravity/$encodedUrl${imageSize.extension}"
         val sha256HMAC: Mac = Mac.getInstance(algorithm).apply {
             init(SecretKeySpec(key, algorithm))
             update(salt)
@@ -58,7 +59,9 @@ class ImageProxyServiceImpl(private val applicationProperties: ApplicationProper
     }
 
     @Suppress("MagicNumber")
-    enum class ImageSize(val width: Int, val height: Int) {
-        SQUARE_SMALL(140, 140), WIDE_MEDIUM(600, 300), FULL(0, 0)
+    enum class ImageSize(val width: Int?, val height: Int?, val extension: String? = null) {
+        SQUARE_SMALL(140, 140),
+        WIDE_MEDIUM(600, 300),
+        FULL(null, null, ".jpg")
     }
 }
