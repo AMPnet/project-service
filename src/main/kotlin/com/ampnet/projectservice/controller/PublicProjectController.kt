@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.response.ProjectListResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectWithWalletFullResponse
 import com.ampnet.projectservice.controller.pojo.response.ProjectsWalletsListResponse
 import com.ampnet.projectservice.controller.pojo.response.TagsResponse
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.ProjectService
 import mu.KLogging
 import org.springframework.data.domain.Pageable
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class PublicProjectController(private val projectService: ProjectService) {
+class PublicProjectController(
+    private val projectService: ProjectService,
+    private val imageProxyService: ImageProxyService
+) {
 
     companion object : KLogging()
 
@@ -24,8 +28,12 @@ class PublicProjectController(private val projectService: ProjectService) {
     fun getProject(@PathVariable uuid: UUID): ResponseEntity<ProjectWithWalletFullResponse> {
         logger.debug { "Received request to get project with wallet with uuid: $uuid" }
         projectService.getProjectWithWallet(uuid)?.let { projectWithWallet ->
-            return ResponseEntity.ok()
-                .body(ProjectWithWalletFullResponse(projectWithWallet.project, projectWithWallet.walletResponse))
+            val mainImage = imageProxyService.generateImageResponse(projectWithWallet.project.mainImage)
+            val gallery = projectWithWallet.project.gallery?.mapNotNull { imageProxyService.generateImageResponse(it) }
+            val response = ProjectWithWalletFullResponse(
+                projectWithWallet.project, projectWithWallet.walletResponse, mainImage, gallery
+            )
+            return ResponseEntity.ok().body(response)
         }
         return ResponseEntity.notFound().build()
     }
@@ -49,9 +57,7 @@ class PublicProjectController(private val projectService: ProjectService) {
             }
             projectService.getProjectsByTags(tags, coop, pageable)
         }
-        val response = ProjectListResponse(
-            projects.toList(), projects.number, projects.totalPages
-        )
+        val response = ProjectListResponse(projects.toList(), projects.number, projects.totalPages)
         return ResponseEntity.ok()
             .cacheControl(ControllerUtils.cacheControl)
             .body(response)

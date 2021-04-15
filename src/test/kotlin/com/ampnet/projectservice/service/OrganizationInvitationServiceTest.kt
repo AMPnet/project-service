@@ -19,7 +19,8 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
 
     private val organizationInviteService: OrganizationInviteService by lazy {
         OrganizationInviteServiceImpl(
-            inviteRepository, followerRepository, mailService, organizationService, organizationMembershipService, userService
+            inviteRepository, followerRepository, mailService,
+            organizationService, organizationMembershipService, userService
         )
     }
 
@@ -144,7 +145,8 @@ class OrganizationInvitationServiceTest : JpaServiceTestBase() {
             )
         }
         suppose("User service will return user already in organization") {
-            Mockito.`when`(userService.getUsersByEmail(COOP, invitedUsers)).thenReturn(listOf(createUserResponse(userUuid, userEmail)))
+            Mockito.`when`(userService.getUsersByEmail(COOP, invitedUsers))
+                .thenReturn(listOf(createUserResponse(userUuid, userEmail)))
         }
 
         verify("Service will throw an error for inviting user who is already a member") {

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class SearchServiceTest : JpaServiceTestBase() {
 
     private val searchService: SearchService by lazy {
-        SearchServiceImpl(organizationRepository, projectRepository, applicationProperties)
+        SearchServiceImpl(organizationRepository, projectRepository, applicationProperties, imageProxyService)
     }
 
     private lateinit var testContext: TestContext

@@ -40,7 +40,14 @@ class Document(
     @Column(name = "purpose_id", nullable = false)
     val purpose: DocumentPurpose
 ) {
-    constructor(link: String, name: String, type: String, size: Int, createdByUserUuid: UUID, purpose: DocumentPurpose = DocumentPurpose.GENERIC) : this(
+    constructor(
+        link: String,
+        name: String,
+        type: String,
+        size: Int,
+        createdByUserUuid: UUID,
+        purpose: DocumentPurpose = DocumentPurpose.GENERIC
+    ) : this(
         0, link, name, type.take(MAX_DOCUMENT_TYPE_NAME), size, createdByUserUuid, ZonedDateTime.now(), purpose
     )
 

@@ -82,8 +82,9 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationWithDocumentResponse.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organizationWithDocumentResponse.description).isEqualTo(testContext.organizationRequest.description)
             assertThat(organizationWithDocumentResponse.headerImage).isEqualTo(testContext.imageLink)
-            assertThat(organizationWithDocumentResponse.uuid).isNotNull()
-            assertThat(organizationWithDocumentResponse.approved).isTrue()
+            verifyImageResponse(testContext.imageLink, organizationWithDocumentResponse.image)
+            assertThat(organizationWithDocumentResponse.uuid).isNotNull
+            assertThat(organizationWithDocumentResponse.approved).isTrue
             assertThat(organizationWithDocumentResponse.documents).isEmpty()
             assertThat(organizationWithDocumentResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationWithDocumentResponse.coop).isEqualTo(COOP)
@@ -96,8 +97,8 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organization.name).isEqualTo(testContext.organizationRequest.name)
             assertThat(organization.description).isEqualTo(testContext.organizationRequest.description)
             assertThat(organization.headerImage).isEqualTo(testContext.imageLink)
-            assertThat(organization.uuid).isNotNull()
-            assertThat(organization.approved).isTrue()
+            assertThat(organization.uuid).isNotNull
+            assertThat(organization.approved).isTrue
             assertThat(organization.documents).isEmpty()
             assertThat(organization.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organization.createdByUserUuid).isEqualTo(userUuid)
@@ -289,11 +290,12 @@ class OrganizationControllerTest : ControllerTestBase() {
             assertThat(organizationResponse.name).isEqualTo(testContext.organization.name)
             assertThat(organizationResponse.description).isEqualTo(testContext.organizationUpdateRequest.description)
             assertThat(organizationResponse.headerImage).isEqualTo(testContext.imageLink)
-            assertThat(organizationResponse.uuid).isNotNull()
-            assertThat(organizationResponse.approved).isTrue()
+            verifyImageResponse(testContext.imageLink, organizationResponse.image)
+            assertThat(organizationResponse.uuid).isNotNull
+            assertThat(organizationResponse.approved).isTrue
             assertThat(organizationResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationResponse.coop).isEqualTo(COOP)
-            assertThat(organizationResponse.active).isFalse()
+            assertThat(organizationResponse.active).isFalse
             assertThat(organizationResponse.ownerUuid).isEqualTo(userUuid)
 
             testContext.createdOrganizationUuid = organizationResponse.uuid

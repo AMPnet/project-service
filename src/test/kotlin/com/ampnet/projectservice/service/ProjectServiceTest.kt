@@ -28,7 +28,8 @@ class ProjectServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, cloudStorageService)
         ProjectServiceImpl(
             projectRepository, storageServiceImpl, applicationProperties, walletService,
-            projectTagRepository, organizationMembershipService, organizationService, organizationRepository
+            projectTagRepository, organizationMembershipService, organizationService, organizationRepository,
+            imageProxyService
         )
     }
     private val imageContent = "data".toByteArray()
@@ -76,9 +77,9 @@ class ProjectServiceTest : JpaServiceTestBase() {
             assertThat(project.createdByUserUuid).isEqualTo(userUuid)
             assertThat(project.organization.uuid).isEqualTo(organization.uuid)
             assertThat(project.active).isEqualTo(request.active)
-            assertThat(project.mainImage.isNullOrEmpty()).isTrue()
-            assertThat(project.gallery.isNullOrEmpty()).isTrue()
-            assertThat(project.documents.isNullOrEmpty()).isTrue()
+            assertThat(project.mainImage).isNullOrEmpty()
+            assertThat(project.gallery).isNullOrEmpty()
+            assertThat(project.documents).isNullOrEmpty()
             assertThat(project.createdByUserUuid).isEqualTo(userUuid)
             assertThat(project.coop).isEqualTo(COOP)
             assertThat(project.shortDescription).isEqualTo(request.shortDescription)

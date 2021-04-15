@@ -6,6 +6,7 @@ import com.ampnet.projectservice.controller.pojo.response.DocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithDocumentResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationWithProjectCountListResponse
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
@@ -28,7 +29,8 @@ import javax.validation.Valid
 @RestController
 class OrganizationController(
     private val organizationMembershipService: OrganizationMembershipService,
-    private val organizationService: OrganizationService
+    private val organizationService: OrganizationService,
+    private val imageProxyService: ImageProxyService
 ) {
 
     companion object : KLogging()
@@ -51,7 +53,8 @@ class OrganizationController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val serviceRequest = OrganizationServiceRequest(request, userPrincipal, image)
         val organization = organizationService.createOrganization(serviceRequest)
-        return ResponseEntity.ok(OrganizationWithDocumentResponse(organization))
+        val imageResponse = imageProxyService.generateImageResponse(organization.headerImage)
+        return ResponseEntity.ok(OrganizationWithDocumentResponse(organization, imageResponse))
     }
 
     @PostMapping("/organization/{organizationUuid}/document")
@@ -95,7 +98,7 @@ class OrganizationController(
             val organization = organizationService.updateOrganization(
                 OrganizationUpdateServiceRequest(organizationUuid, image, request)
             )
-            OrganizationResponse(organization)
+            OrganizationResponse(organization, imageProxyService.generateImageResponse(organization.headerImage))
         }
     }
 

@@ -8,6 +8,7 @@ import com.ampnet.projectservice.persistence.model.Document
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.StorageService
@@ -29,6 +30,7 @@ class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository,
     private val organizationMembershipService: OrganizationMembershipService,
     private val storageService: StorageService,
+    private val imageProxyService: ImageProxyService,
     private val projectRepository: ProjectRepository
 ) : OrganizationService {
 
@@ -68,7 +70,8 @@ class OrganizationServiceImpl(
     override fun findOrganizationWithProjectCountById(organizationUuid: UUID): OrganizationFullServiceResponse? {
         val organization = findOrganizationById(organizationUuid) ?: return null
         val projectCount = projectRepository.countProjectsByOrganization(organizationUuid)
-        return OrganizationFullServiceResponse(organization, projectCount)
+        val image = imageProxyService.generateImageResponse(organization.headerImage)
+        return OrganizationFullServiceResponse(organization, image, projectCount)
     }
 
     override fun findOrganizationById(organizationUuid: UUID): Organization? {
@@ -82,7 +85,8 @@ class OrganizationServiceImpl(
             .groupBy { it.organization.uuid }
         return organizations.map { organization ->
             val projectCount = projectsMap[organization.uuid]?.size ?: 0
-            OrganizationWitProjectCountServiceResponse(organization, projectCount)
+            val image = imageProxyService.generateImageResponse(organization.headerImage)
+            OrganizationWitProjectCountServiceResponse(organization, image, projectCount)
         }
     }
 

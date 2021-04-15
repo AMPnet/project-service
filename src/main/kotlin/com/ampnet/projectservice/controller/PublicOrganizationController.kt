@@ -5,6 +5,7 @@ import com.ampnet.projectservice.controller.pojo.response.OrganizationMembership
 import com.ampnet.projectservice.controller.pojo.response.OrganizationMembershipsInfoResponse
 import com.ampnet.projectservice.controller.pojo.response.OrganizationResponse
 import com.ampnet.projectservice.grpc.userservice.UserService
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.OrganizationMembershipService
 import com.ampnet.projectservice.service.OrganizationService
 import com.ampnet.projectservice.service.pojo.OrganizationFullServiceResponse
@@ -20,7 +21,8 @@ import java.util.UUID
 class PublicOrganizationController(
     private val organizationService: OrganizationService,
     private val organizationMembershipService: OrganizationMembershipService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val imageProxyService: ImageProxyService
 ) {
 
     companion object : KLogging()
@@ -28,8 +30,8 @@ class PublicOrganizationController(
     @GetMapping("/public/organization")
     fun getOrganizations(pageable: Pageable): ResponseEntity<OrganizationListResponse> {
         logger.debug { "Received request for all active organizations" }
-        val organizations =
-            organizationService.getAllByActive(pageable).map { OrganizationResponse(it) }
+        val organizations = organizationService.getAllByActive(pageable)
+            .map { OrganizationResponse(it, imageProxyService.generateImageResponse(it.headerImage)) }
         return ResponseEntity.ok()
             .cacheControl(ControllerUtils.cacheControl)
             .body(OrganizationListResponse(organizations.toList(), organizations.number, organizations.totalPages))

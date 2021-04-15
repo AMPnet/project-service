@@ -5,6 +5,7 @@ import com.ampnet.projectservice.grpc.walletservice.WalletServiceResponse
 import com.ampnet.projectservice.persistence.model.Project
 import com.ampnet.projectservice.persistence.model.ProjectLocation
 import com.ampnet.projectservice.persistence.model.ProjectRoi
+import com.ampnet.projectservice.service.pojo.ImageResponse
 import com.ampnet.projectservice.service.pojo.OrganizationSmallServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
@@ -34,9 +35,10 @@ data class ProjectWithWalletFullResponse(
     val minPerUser: Long,
     val maxPerUser: Long,
     val mainImage: String?,
+    val image: ImageResponse?,
     val active: Boolean,
     val tags: List<String>,
-    val gallery: List<String>,
+    val gallery: List<ImageResponse>,
     val news: List<String>,
     val documents: List<DocumentResponse>,
     val wallet: WalletServiceResponse?,
@@ -45,7 +47,12 @@ data class ProjectWithWalletFullResponse(
     val organization: OrganizationSmallServiceResponse,
     val ownerUuid: UUID
 ) {
-    constructor(project: Project, wallet: WalletServiceResponse?) : this(
+    constructor(
+        project: Project,
+        wallet: WalletServiceResponse?,
+        mainImage: ImageResponse?,
+        gallery: List<ImageResponse>?
+    ) : this(
         project.uuid,
         project.name,
         project.description,
@@ -58,9 +65,10 @@ data class ProjectWithWalletFullResponse(
         project.minPerUser,
         project.maxPerUser,
         project.mainImage,
+        mainImage,
         project.active,
         project.tags.orEmpty(),
-        project.gallery.orEmpty(),
+        gallery.orEmpty(),
         project.newsLinks.orEmpty(),
         project.documents.orEmpty().map { DocumentResponse(it) },
         wallet,

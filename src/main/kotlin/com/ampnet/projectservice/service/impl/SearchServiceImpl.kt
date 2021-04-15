@@ -4,6 +4,7 @@ import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.persistence.model.Organization
 import com.ampnet.projectservice.persistence.repository.OrganizationRepository
 import com.ampnet.projectservice.persistence.repository.ProjectRepository
+import com.ampnet.projectservice.service.ImageProxyService
 import com.ampnet.projectservice.service.SearchService
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import org.springframework.data.domain.Page
@@ -15,7 +16,8 @@ import org.springframework.transaction.annotation.Transactional
 class SearchServiceImpl(
     private val organizationRepository: OrganizationRepository,
     private val projectRepository: ProjectRepository,
-    private val applicationProperties: ApplicationProperties
+    private val applicationProperties: ApplicationProperties,
+    private val imageProxyService: ImageProxyService
 ) : SearchService {
 
     @Transactional(readOnly = true)
@@ -35,6 +37,6 @@ class SearchServiceImpl(
         val projects = projectRepository.findByNameContainingIgnoreCaseAndCoop(
             name, coop ?: applicationProperties.coop.default, pageable
         )
-        return projects.map { ProjectServiceResponse(it) }
+        return projects.map { ProjectServiceResponse(it, imageProxyService.generateImageResponse(it.mainImage)) }
     }
 }
