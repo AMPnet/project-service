@@ -259,23 +259,21 @@ class ProjectServiceImpl(
                 throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before present date")
             }
         }
-        if (projectValidation.minPerUser != null && projectValidation.maxPerUser != null) {
-            if (projectValidation.minPerUser > projectValidation.maxPerUser) {
-                throw InvalidRequestException(
-                    ErrorCode.PRJ_MIN_ABOVE_MAX,
-                    "Min per user: ${projectValidation.minPerUser} > Max per user: ${projectValidation.maxPerUser}"
-                )
-            }
-        }
-        if (projectValidation.maxPerUser != null && projectValidation.expectedFunding != null) {
-            if (projectValidation.maxPerUser > projectValidation.expectedFunding) {
-                throw InvalidRequestException(
-                    ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
-                    "Max per user: ${projectValidation.maxPerUser} " +
-                        "> Expected funding: ${projectValidation.expectedFunding} "
-                )
-            }
-        }
+        if (projectValidation.minPerUser != null && projectValidation.maxPerUser != null &&
+            projectValidation.minPerUser > projectValidation.maxPerUser
+        )
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MIN_ABOVE_MAX,
+                "Min per user: ${projectValidation.minPerUser} > Max per user: ${projectValidation.maxPerUser}"
+            )
+        if (projectValidation.maxPerUser != null && projectValidation.expectedFunding != null &&
+            projectValidation.maxPerUser > projectValidation.expectedFunding
+        )
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
+                "Max per user: ${projectValidation.maxPerUser} " +
+                    "> Expected funding: ${projectValidation.expectedFunding} "
+            )
         projectValidation.expectedFunding?.let {
             if (applicationProperties.investment.maxPerProject <= it) {
                 throw InvalidRequestException(

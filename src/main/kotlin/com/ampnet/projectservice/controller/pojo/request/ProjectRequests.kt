@@ -27,8 +27,8 @@ data class ProjectRequest(
     val shortDescription: String? = null
 ) {
     override fun toString(): String {
-        return "ProjectRequest(organizationUuid=$organizationUuid, name=$name, description=$description, " +
-            "location=$location, roi=$roi, startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, " +
+        return "ProjectRequest(organizationUuid=$organizationUuid, name=$name, location=$location, roi=$roi, " +
+            "startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, " +
             "currency=$currency, minPerUser=$minPerUser, maxPerUser=$maxPerUser, active=$active, tags=$tags, " +
             "shortDescription=$shortDescription)"
     }
@@ -57,7 +57,7 @@ data class ProjectUpdateRequest(
     val shortDescription: String? = null
 ) {
     override fun toString(): String {
-        return "ProjectUpdateRequest(name=$name, description=$description, location=$location, roi=$roi, " +
+        return "ProjectUpdateRequest(name=$name, location=$location, roi=$roi, " +
             "startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, currency=$currency, " +
             "minPerUser=$minPerUser, maxPerUser=$maxPerUser, active=$active, tags=$tags, " +
             "shortDescription=$shortDescription)"
