@@ -220,16 +220,17 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createProjectRequest(
         organizationUuid: UUID,
         name: String,
-        expectedFunding: Long = 1_000_000,
-        minPerUser: Long = 1,
-        maxPerUser: Long = 1_000_000
+        expectedFunding: Long? = 1_000_000,
+        minPerUser: Long? = 1,
+        maxPerUser: Long? = 1_000_000,
+        location: ProjectLocationRequest? = ProjectLocationRequest(12.234, 23.432)
     ): ProjectRequest {
         val time = ZonedDateTime.now()
         return ProjectRequest(
             organizationUuid,
             name,
             "description",
-            ProjectLocationRequest(12.234, 23.432),
+            location,
             ProjectRoiRequest(2.22, 7.77),
             time,
             time.plusDays(30),

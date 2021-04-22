@@ -10,26 +10,26 @@ data class ProjectRequest(
     val organizationUuid: UUID,
     @field:Size(max = 256)
     val name: String,
-    val description: String,
-    val location: ProjectLocationRequest,
-    val roi: ProjectRoiRequest,
-    val startDate: ZonedDateTime,
-    val endDate: ZonedDateTime,
+    val description: String? = null,
+    val location: ProjectLocationRequest? = null,
+    val roi: ProjectRoiRequest? = null,
+    val startDate: ZonedDateTime? = null,
+    val endDate: ZonedDateTime? = null,
     @field:Positive
-    val expectedFunding: Long,
-    val currency: Currency,
+    val expectedFunding: Long? = null,
+    val currency: Currency? = null,
     @field:Positive
-    val minPerUser: Long,
+    val minPerUser: Long? = null,
     @field:Positive
-    val maxPerUser: Long,
-    val active: Boolean,
+    val maxPerUser: Long? = null,
+    val active: Boolean? = null,
     val tags: List<String>? = null,
     val shortDescription: String? = null
 ) {
     override fun toString(): String {
-        return "ProjectRequest(organizationUuid=$organizationUuid, name='$name', location=$location, roi=$roi, " +
-            "startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, currency=$currency, " +
-            "minPerUser=$minPerUser, maxPerUser=$maxPerUser, active=$active, tags=$tags, " +
+        return "ProjectRequest(organizationUuid=$organizationUuid, name=$name, description=$description, " +
+            "location=$location, roi=$roi, startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, " +
+            "currency=$currency, minPerUser=$minPerUser, maxPerUser=$maxPerUser, active=$active, tags=$tags, " +
             "shortDescription=$shortDescription)"
     }
 }
@@ -42,13 +42,24 @@ data class ProjectUpdateRequest(
     val description: String? = null,
     val location: ProjectLocationRequest? = null,
     val roi: ProjectRoiRequest? = null,
+    val startDate: ZonedDateTime? = null,
+    val endDate: ZonedDateTime? = null,
+    @field:Positive
+    val expectedFunding: Long? = null,
+    val currency: Currency? = null,
+    @field:Positive
+    val minPerUser: Long? = null,
+    @field:Positive
+    val maxPerUser: Long? = null,
     val active: Boolean? = null,
     val tags: List<String>? = null,
     val news: List<String>? = null,
     val shortDescription: String? = null
 ) {
     override fun toString(): String {
-        return "ProjectUpdateRequest(name=$name, location=$location, roi=$roi, active=$active, tags=$tags, " +
-            "news=$news, shortDescription=$shortDescription)"
+        return "ProjectUpdateRequest(name=$name, description=$description, location=$location, roi=$roi, " +
+            "startDate=$startDate, endDate=$endDate, expectedFunding=$expectedFunding, currency=$currency, " +
+            "minPerUser=$minPerUser, maxPerUser=$maxPerUser, active=$active, tags=$tags, " +
+            "shortDescription=$shortDescription)"
     }
 }

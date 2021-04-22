@@ -3,7 +3,6 @@ package com.ampnet.projectservice.service.impl
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.config.ApplicationProperties
 import com.ampnet.projectservice.controller.pojo.request.ProjectRequest
-import com.ampnet.projectservice.controller.pojo.request.ProjectRoiRequest
 import com.ampnet.projectservice.exception.ErrorCode
 import com.ampnet.projectservice.exception.InternalException
 import com.ampnet.projectservice.exception.InvalidRequestException
@@ -29,6 +28,7 @@ import com.ampnet.projectservice.service.pojo.DocumentSaveRequest
 import com.ampnet.projectservice.service.pojo.FullProjectWithWallet
 import com.ampnet.projectservice.service.pojo.ProjectServiceResponse
 import com.ampnet.projectservice.service.pojo.ProjectUpdateServiceRequest
+import com.ampnet.projectservice.service.pojo.ProjectValidation
 import com.ampnet.projectservice.service.pojo.ProjectWithWallet
 import mu.KLogging
 import org.hibernate.Hibernate
@@ -61,7 +61,7 @@ class ProjectServiceImpl(
     @Throws(InvalidRequestException::class, AccessDeniedException::class)
     override fun createProject(user: UserPrincipal, request: ProjectRequest): Project {
         throwExceptionIfUserHasNoPrivilegeToWriteInOrganization(user.uuid, request.organizationUuid)
-        validateCreateProjectRequest(request)
+        validateProjectRequest(ProjectValidation(request))
         logger.debug { "Creating project: ${request.name}" }
         val organization = getOrganization(request.organizationUuid)
         val project = createProjectFromRequest(user, organization, request)
@@ -132,26 +132,22 @@ class ProjectServiceImpl(
     override fun updateProject(serviceRequest: ProjectUpdateServiceRequest): FullProjectWithWallet {
         val project = getProjectWithAllData(serviceRequest.projectUuid)
         throwExceptionIfUserHasNoPrivilegeToWriteInProject(serviceRequest.userUuid, project.organization.uuid)
-        validateRoi(serviceRequest.request?.roi)
+        serviceRequest.request?.let { validateProjectRequest(ProjectValidation(it)) }
         serviceRequest.request?.name?.let { project.name = it }
         serviceRequest.request?.description?.let { project.description = it }
-        serviceRequest.request?.shortDescription?.let { project.shortDescription = it }
-        serviceRequest.request?.location?.let {
-            project.location.lat = it.lat
-            project.location.long = it.long
-        }
-        serviceRequest.request?.roi?.let {
-            project.roi.from = it.from
-            project.roi.to = it.to
-        }
+        serviceRequest.request?.location?.let { project.location = ProjectLocation(it.lat, it.long) }
+        serviceRequest.request?.roi?.let { project.roi = ProjectRoi(it.from, it.to) }
+        serviceRequest.request?.startDate?.let { project.startDate = it }
+        serviceRequest.request?.endDate?.let { project.endDate = it }
+        serviceRequest.request?.expectedFunding?.let { project.expectedFunding = it }
+        serviceRequest.request?.currency?.let { project.currency = it }
+        serviceRequest.request?.minPerUser?.let { project.minPerUser = it }
+        serviceRequest.request?.maxPerUser?.let { project.maxPerUser = it }
         serviceRequest.request?.active?.let { project.active = it }
-        serviceRequest.request?.tags?.let {
-            project.tags = it.toSet().map { tag -> tag.toLowerCase() }
-        }
+        serviceRequest.request?.tags?.let { project.tags = it.toSet().map { tag -> tag.toLowerCase() } }
         serviceRequest.request?.news?.let { project.newsLinks = it }
-        serviceRequest.image?.let {
-            addMainImageToProject(it, project)
-        }
+        serviceRequest.request?.shortDescription?.let { project.shortDescription = it }
+        serviceRequest.image?.let { addMainImageToProject(it, project) }
         serviceRequest.documentSaveRequests?.parallelStream()?.forEach {
             val document = storageService.saveDocument(it)
             addDocumentToProject(project, document)
@@ -254,42 +250,49 @@ class ProjectServiceImpl(
         )
 
     @Suppress("ThrowsCount")
-    private fun validateCreateProjectRequest(request: ProjectRequest) {
-        if (request.endDate.isBefore(request.startDate)) {
-            throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before start date")
+    private fun validateProjectRequest(projectValidation: ProjectValidation) {
+        projectValidation.endDate?.let {
+            if (it.isBefore(projectValidation.startDate)) {
+                throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before start date")
+            }
+            if (it.isBefore(ZonedDateTime.now())) {
+                throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before present date")
+            }
         }
-        if (request.endDate.isBefore(ZonedDateTime.now())) {
-            throw InvalidRequestException(ErrorCode.PRJ_DATE, "End date cannot be before present date")
+        if (projectValidation.minPerUser != null && projectValidation.maxPerUser != null) {
+            if (projectValidation.minPerUser > projectValidation.maxPerUser) {
+                throw InvalidRequestException(
+                    ErrorCode.PRJ_MIN_ABOVE_MAX,
+                    "Min per user: ${projectValidation.minPerUser} > Max per user: ${projectValidation.maxPerUser}"
+                )
+            }
         }
-        if (request.minPerUser > request.maxPerUser) {
-            throw InvalidRequestException(
-                ErrorCode.PRJ_MIN_ABOVE_MAX,
-                "Min per user: ${request.minPerUser} > Max per user: ${request.maxPerUser}"
-            )
+        if (projectValidation.maxPerUser != null && projectValidation.expectedFunding != null) {
+            if (projectValidation.maxPerUser > projectValidation.expectedFunding) {
+                throw InvalidRequestException(
+                    ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
+                    "Max per user: ${projectValidation.maxPerUser} " +
+                        "> Expected funding: ${projectValidation.expectedFunding} "
+                )
+            }
         }
-        if (request.maxPerUser > request.expectedFunding) {
-            throw InvalidRequestException(
-                ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
-                "Max per user: ${request.maxPerUser} > Expected funding: ${request.expectedFunding} "
-            )
+        projectValidation.expectedFunding?.let {
+            if (applicationProperties.investment.maxPerProject <= it) {
+                throw InvalidRequestException(
+                    ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH,
+                    "Max expected funding is: ${applicationProperties.investment.maxPerProject}"
+                )
+            }
         }
-        if (applicationProperties.investment.maxPerProject <= request.expectedFunding) {
-            throw InvalidRequestException(
-                ErrorCode.PRJ_MAX_FUNDS_TOO_HIGH,
-                "Max expected funding is: ${applicationProperties.investment.maxPerProject}"
-            )
+        projectValidation.maxPerUser?.let {
+            if (applicationProperties.investment.maxPerUser <= projectValidation.maxPerUser) {
+                throw InvalidRequestException(
+                    ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
+                    "Max funds per user is: ${applicationProperties.investment.maxPerUser}"
+                )
+            }
         }
-        if (applicationProperties.investment.maxPerUser <= request.maxPerUser) {
-            throw InvalidRequestException(
-                ErrorCode.PRJ_MAX_FUNDS_PER_USER_TOO_HIGH,
-                "Max funds per user is: ${applicationProperties.investment.maxPerUser}"
-            )
-        }
-        validateRoi(request.roi)
-    }
-
-    private fun validateRoi(roiRequest: ProjectRoiRequest?) {
-        roiRequest?.let {
+        projectValidation.roi?.let {
             if (it.from > it.to) {
                 throw InvalidRequestException(ErrorCode.PRJ_ROI, "ROI from is bigger than ROI to")
             }
@@ -316,8 +319,8 @@ class ProjectServiceImpl(
             organization,
             request.name,
             request.description,
-            ProjectLocation(request.location.lat, request.location.long),
-            ProjectRoi(request.roi.from, request.roi.to),
+            request.location?.let { ProjectLocation(request.location.lat, request.location.long) },
+            request.roi?.let { ProjectRoi(request.roi.from, request.roi.to) },
             request.startDate,
             request.endDate,
             request.expectedFunding,
