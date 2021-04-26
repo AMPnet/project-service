@@ -31,33 +31,33 @@ class Project(
     @Column(nullable = false)
     var name: String,
 
-    @Column(nullable = false)
-    var description: String,
+    @Column(nullable = true)
+    var description: String?,
 
     @Embedded
-    var location: ProjectLocation,
+    var location: ProjectLocation?,
 
     @Embedded
-    var roi: ProjectRoi,
+    var roi: ProjectRoi?,
 
-    @Column(nullable = false)
-    var startDate: ZonedDateTime,
+    @Column(nullable = true)
+    var startDate: ZonedDateTime?,
 
-    @Column(nullable = false)
-    var endDate: ZonedDateTime,
+    @Column(nullable = true)
+    var endDate: ZonedDateTime?,
 
-    @Column(nullable = false)
-    var expectedFunding: Long,
+    @Column(nullable = true)
+    var expectedFunding: Long?,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 3)
-    var currency: Currency,
+    @Column(nullable = true, length = 3)
+    var currency: Currency?,
 
-    @Column(nullable = false)
-    var minPerUser: Long,
+    @Column(nullable = true)
+    var minPerUser: Long?,
 
-    @Column(nullable = false)
-    var maxPerUser: Long,
+    @Column(nullable = true)
+    var maxPerUser: Long?,
 
     @Column
     var mainImage: String?,
@@ -78,8 +78,8 @@ class Project(
     @Column(nullable = false)
     var createdAt: ZonedDateTime,
 
-    @Column(nullable = false)
-    var active: Boolean,
+    @Column(nullable = true)
+    var active: Boolean?,
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_uuid")

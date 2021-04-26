@@ -105,7 +105,9 @@ class ProjectControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return create project") {
-            testContext.projectRequest = createProjectRequest(organization.uuid, "Das project")
+            testContext.projectRequest = createProjectRequest(
+                organization.uuid, "Das project", minPerUser = null, maxPerUser = null, location = null
+            )
             val result = mockMvc.perform(
                 post(projectPath)
                     .content(objectMapper.writeValueAsString(testContext.projectRequest))
@@ -115,11 +117,11 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectResponse.uuid).isNotNull()
+            assertThat(projectResponse.uuid).isNotNull
             assertThat(projectResponse.name).isEqualTo(testContext.projectRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectRequest.description)
-            assertThat(projectResponse.roi.from).isEqualTo(testContext.projectRequest.roi.from)
-            assertThat(projectResponse.roi.to).isEqualTo(testContext.projectRequest.roi.to)
+            assertThat(projectResponse.roi?.from).isEqualTo(testContext.projectRequest.roi?.from)
+            assertThat(projectResponse.roi?.to).isEqualTo(testContext.projectRequest.roi?.to)
             assertThat(projectResponse.startDate).isEqualTo(testContext.projectRequest.startDate)
             assertThat(projectResponse.endDate).isEqualTo(testContext.projectRequest.endDate)
             assertThat(projectResponse.expectedFunding).isEqualTo(testContext.projectRequest.expectedFunding)
@@ -142,10 +144,10 @@ class ProjectControllerTest : ControllerTestBase() {
             val project = optionalProject.get()
             assertThat(project.name).isEqualTo(testContext.projectRequest.name)
             assertThat(project.description).isEqualTo(testContext.projectRequest.description)
-            assertThat(project.location.lat).isEqualTo(testContext.projectRequest.location.lat)
-            assertThat(project.location.long).isEqualTo(testContext.projectRequest.location.long)
-            assertThat(project.roi.from).isEqualTo(testContext.projectRequest.roi.from)
-            assertThat(project.roi.to).isEqualTo(testContext.projectRequest.roi.to)
+            assertThat(project.location?.lat).isEqualTo(testContext.projectRequest.location?.lat)
+            assertThat(project.location?.long).isEqualTo(testContext.projectRequest.location?.long)
+            assertThat(project.roi?.from).isEqualTo(testContext.projectRequest.roi?.from)
+            assertThat(project.roi?.to).isEqualTo(testContext.projectRequest.roi?.to)
             assertThat(project.startDate).isEqualTo(testContext.projectRequest.startDate)
             assertThat(project.endDate).isEqualTo(testContext.projectRequest.endDate)
             assertThat(project.expectedFunding).isEqualTo(testContext.projectRequest.expectedFunding)
@@ -183,6 +185,38 @@ class ProjectControllerTest : ControllerTestBase() {
             val errorResponse: ErrorResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(errorResponse.errCode).isEqualTo(getResponseErrorCode(ErrorCode.INT_REQUEST))
             assertThat(errorResponse.errors).hasSize(3)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfundUser
+    fun mustRejectProjectUpdateWithInvalidValues() {
+        suppose("User is an admin of organization") {
+            databaseCleanerService.deleteAllOrganizationMemberships()
+            addUserToOrganization(userUuid, organization.uuid, OrganizationRole.ORG_ADMIN)
+        }
+        suppose("Project exists") {
+            testContext.project = createProject("My project", organization, userUuid)
+        }
+
+        verify("Controller will reject project") {
+            testContext.projectUpdateRequest = ProjectUpdateRequest(
+                StringBuilder().apply { repeat(257) { append("a") } }.toString(), "description",
+                expectedFunding = -100000, minPerUser = -100, maxPerUser = 0
+            )
+            val requestJson = MockMultipartFile(
+                "request", "request.json", "application/json",
+                objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
+            )
+            val builder = getPutMultipartRequestBuilder()
+            val result = mockMvc.perform(
+                builder.file(requestJson)
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            val errorResponse: ErrorResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(errorResponse.errCode).isEqualTo(getResponseErrorCode(ErrorCode.INT_REQUEST))
+            assertThat(errorResponse.errors).hasSize(4)
         }
     }
 
@@ -239,7 +273,7 @@ class ProjectControllerTest : ControllerTestBase() {
         verify("Admin can update project") {
             testContext.projectUpdateRequest = ProjectUpdateRequest(
                 "new name", "description",
-                ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), false, listOf("tag"),
+                ProjectLocationRequest(22.1, 0.3), ProjectRoiRequest(1.11, 5.55), active = false, tags = listOf("tag"),
                 shortDescription = "new short description"
             )
             val requestJson = MockMultipartFile(
@@ -260,10 +294,10 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isEqualTo(testContext.projectUpdateRequest.description)
-            assertThat(projectResponse.location.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
-            assertThat(projectResponse.location.long).isEqualTo(testContext.projectUpdateRequest.location?.long)
-            assertThat(projectResponse.roi.from).isEqualTo(testContext.projectUpdateRequest.roi?.from)
-            assertThat(projectResponse.roi.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
+            assertThat(projectResponse.location?.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(projectResponse.location?.long).isEqualTo(testContext.projectUpdateRequest.location?.long)
+            assertThat(projectResponse.roi?.from).isEqualTo(testContext.projectUpdateRequest.roi?.from)
+            assertThat(projectResponse.roi?.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(projectResponse.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.mainImage).isEqualTo(testContext.imageLink)
@@ -273,7 +307,7 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.shortDescription).isEqualTo(testContext.projectUpdateRequest.shortDescription)
             assertThat(projectResponse.organization.uuid).isEqualTo(testContext.project.organization.uuid)
             val document = projectResponse.documents.first { it.link == testContext.documentLink1 }
-            assertThat(document.id).isNotNull()
+            assertThat(document.id).isNotNull
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
@@ -286,10 +320,10 @@ class ProjectControllerTest : ControllerTestBase() {
                 ?: fail("Missing project")
             assertThat(updatedProject.name).isEqualTo(testContext.projectUpdateRequest.name)
             assertThat(updatedProject.description).isEqualTo(testContext.projectUpdateRequest.description)
-            assertThat(updatedProject.location.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
-            assertThat(updatedProject.location.long).isEqualTo(testContext.projectUpdateRequest.location?.long)
-            assertThat(updatedProject.roi.from).isEqualTo(testContext.projectUpdateRequest.roi?.from)
-            assertThat(updatedProject.roi.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
+            assertThat(updatedProject.location?.lat).isEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(updatedProject.location?.long).isEqualTo(testContext.projectUpdateRequest.location?.long)
+            assertThat(updatedProject.roi?.from).isEqualTo(testContext.projectUpdateRequest.roi?.from)
+            assertThat(updatedProject.roi?.to).isEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(updatedProject.active).isEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).containsAll(testContext.projectUpdateRequest.tags)
             assertThat(updatedProject.mainImage).contains(testContext.imageLink)
@@ -297,7 +331,7 @@ class ProjectControllerTest : ControllerTestBase() {
             val documents = updatedProject.documents ?: fail("Missing documents")
             assertThat(documents).hasSize(3)
             val document = documents.first { it.link == testContext.documentLink2 }
-            assertThat(document.id).isNotNull()
+            assertThat(document.id).isNotNull
             assertThat(document.name).isEqualTo(testContext.documentMock2.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock2.size)
             assertThat(document.type).isEqualTo(testContext.documentMock2.contentType)
@@ -347,10 +381,10 @@ class ProjectControllerTest : ControllerTestBase() {
             assertThat(projectResponse.uuid).isEqualTo(testContext.project.uuid)
             assertThat(projectResponse.name).isNotEqualTo(testContext.projectUpdateRequest.name)
             assertThat(projectResponse.description).isNotEqualTo(testContext.projectUpdateRequest.description)
-            assertThat(projectResponse.location.lat).isNotEqualTo(testContext.projectUpdateRequest.location?.lat)
-            assertThat(projectResponse.location.long).isNotEqualTo(testContext.projectUpdateRequest.location?.long)
-            assertThat(projectResponse.roi.from).isNotEqualTo(testContext.projectUpdateRequest.roi?.from)
-            assertThat(projectResponse.roi.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
+            assertThat(projectResponse.location?.lat).isNotEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(projectResponse.location?.long).isNotEqualTo(testContext.projectUpdateRequest.location?.long)
+            assertThat(projectResponse.roi?.from).isNotEqualTo(testContext.projectUpdateRequest.roi?.from)
+            assertThat(projectResponse.roi?.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(projectResponse.active).isNotEqualTo(testContext.projectUpdateRequest.active)
             assertThat(projectResponse.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
             assertThat(projectResponse.coop).isEqualTo(COOP)
@@ -362,10 +396,10 @@ class ProjectControllerTest : ControllerTestBase() {
                 ?: fail("Missing project")
             assertThat(updatedProject.name).isNotEqualTo(testContext.projectUpdateRequest.name)
             assertThat(updatedProject.description).isNotEqualTo(testContext.projectUpdateRequest.description)
-            assertThat(updatedProject.location.lat).isNotEqualTo(testContext.projectUpdateRequest.location?.lat)
-            assertThat(updatedProject.location.long).isNotEqualTo(testContext.projectUpdateRequest.location?.long)
-            assertThat(updatedProject.roi.from).isNotEqualTo(testContext.projectUpdateRequest.roi?.from)
-            assertThat(updatedProject.roi.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
+            assertThat(updatedProject.location?.lat).isNotEqualTo(testContext.projectUpdateRequest.location?.lat)
+            assertThat(updatedProject.location?.long).isNotEqualTo(testContext.projectUpdateRequest.location?.long)
+            assertThat(updatedProject.roi?.from).isNotEqualTo(testContext.projectUpdateRequest.roi?.from)
+            assertThat(updatedProject.roi?.to).isNotEqualTo(testContext.projectUpdateRequest.roi?.to)
             assertThat(updatedProject.active).isNotEqualTo(testContext.projectUpdateRequest.active)
             assertThat(updatedProject.tags).isNotEqualTo(testContext.projectUpdateRequest.tags)
             assertThat(updatedProject.mainImage).contains(testContext.imageLink)
@@ -423,7 +457,7 @@ class ProjectControllerTest : ControllerTestBase() {
             val projectResponse: ProjectWithWalletFullResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(projectResponse.documents).hasSize(3)
             val document = projectResponse.documents.first { it.link == testContext.documentLink1 }
-            assertThat(document.id).isNotNull()
+            assertThat(document.id).isNotNull
             assertThat(document.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(document.size).isEqualTo(testContext.documentMock1.size)
             assertThat(document.type).isEqualTo(testContext.documentMock1.contentType)
@@ -487,7 +521,7 @@ class ProjectControllerTest : ControllerTestBase() {
             val updatedProject = projectService.getProjectByIdWithAllData(testContext.project.uuid)
                 ?: fail("Missing project")
             val termsOfServiceDocument = getTos(updatedProject.documents)
-            assertThat(termsOfServiceDocument.id).isNotNull()
+            assertThat(termsOfServiceDocument.id).isNotNull
             assertThat(termsOfServiceDocument.name).isEqualTo(testContext.termsOfService.originalFilename)
             assertThat(termsOfServiceDocument.size).isEqualTo(testContext.termsOfService.size)
             assertThat(termsOfServiceDocument.type).isEqualTo(testContext.termsOfService.contentType)
@@ -546,7 +580,7 @@ class ProjectControllerTest : ControllerTestBase() {
             testContext.projectUpdateRequest =
                 ProjectUpdateRequest(
                     "new name", "description",
-                    ProjectLocationRequest(12.234, 23.432), ProjectRoiRequest(4.44, 8.88), false
+                    ProjectLocationRequest(12.234, 23.432), ProjectRoiRequest(4.44, 8.88), active = false
                 )
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
@@ -565,7 +599,7 @@ class ProjectControllerTest : ControllerTestBase() {
     fun mustReturnErrorForUpdatingNonExistingProject() {
         verify("User cannot update non existing project") {
             testContext.projectUpdateRequest =
-                ProjectUpdateRequest("new name", "description", null, null, false)
+                ProjectUpdateRequest("new name", "description", null, null, active = false)
             val requestJson = MockMultipartFile(
                 "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(testContext.projectUpdateRequest)
@@ -616,7 +650,7 @@ class ProjectControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val documentResponse: DocumentResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(documentResponse.id).isNotNull()
+            assertThat(documentResponse.id).isNotNull
             assertThat(documentResponse.name).isEqualTo(testContext.documentMock1.originalFilename)
             assertThat(documentResponse.size).isEqualTo(testContext.documentMock1.size)
             assertThat(documentResponse.type).isEqualTo(testContext.documentMock1.contentType)
